@@ -86,32 +86,32 @@ static const std::map<unsigned int, SA::Keys> KEYS_MAP = {
     { XK_8,             SA::Key_8           },
     { XK_9,             SA::Key_9           },
     { XK_semicolon,     SA::Key_Semicolon   },
-    { XK_A,             SA::Key_A           },
-    { XK_B,             SA::Key_B           },
-    { XK_C,             SA::Key_C           },
-    { XK_D,             SA::Key_D           },
-    { XK_E,             SA::Key_E           },
-    { XK_F,             SA::Key_F           },
-    { XK_G,             SA::Key_G           },
-    { XK_H,             SA::Key_H           },
-    { XK_I,             SA::Key_I           },
-    { XK_J,             SA::Key_J           },
-    { XK_K,             SA::Key_K           },
-    { XK_L,             SA::Key_L           },
-    { XK_M,             SA::Key_M           },
-    { XK_N,             SA::Key_N           },
-    { XK_O,             SA::Key_O           },
-    { XK_P,             SA::Key_P           },
-    { XK_Q,             SA::Key_Q           },
-    { XK_R,             SA::Key_R           },
-    { XK_S,             SA::Key_S           },
-    { XK_T,             SA::Key_T           },
-    { XK_U,             SA::Key_U           },
-    { XK_V,             SA::Key_V           },
-    { XK_W,             SA::Key_W           },
-    { XK_X,             SA::Key_X           },
-    { XK_Y,             SA::Key_Y           },
-    { XK_Z,             SA::Key_Z           },
+    { XK_a,             SA::Key_A           },
+    { XK_b,             SA::Key_B           },
+    { XK_c,             SA::Key_C           },
+    { XK_d,             SA::Key_D           },
+    { XK_e,             SA::Key_E           },
+    { XK_f,             SA::Key_F           },
+    { XK_g,             SA::Key_G           },
+    { XK_h,             SA::Key_H           },
+    { XK_i,             SA::Key_I           },
+    { XK_j,             SA::Key_J           },
+    { XK_k,             SA::Key_K           },
+    { XK_l,             SA::Key_L           },
+    { XK_m,             SA::Key_M           },
+    { XK_n,             SA::Key_N           },
+    { XK_o,             SA::Key_O           },
+    { XK_p,             SA::Key_P           },
+    { XK_q,             SA::Key_Q           },
+    { XK_r,             SA::Key_R           },
+    { XK_s,             SA::Key_S           },
+    { XK_t,             SA::Key_T           },
+    { XK_u,             SA::Key_U           },
+    { XK_v,             SA::Key_V           },
+    { XK_w,             SA::Key_W           },
+    { XK_x,             SA::Key_X           },
+    { XK_y,             SA::Key_Y           },
+    { XK_z,             SA::Key_Z           },
     { XK_braceleft,     SA::Key_BracketLeft },
     { XK_backslash,     SA::Key_Backslash   },
     { XK_braceright,    SA::Key_BracketRight},
@@ -416,32 +416,34 @@ namespace SA
             {
             case KeyPress:
             {
-                if (KEYS_MAP.find(d->event.xbutton.button) == KEYS_MAP.end())
+                KeySym key = XLookupKeysym(&d->event.xkey, 0);
+
+                if (KEYS_MAP.find(key) == KEYS_MAP.end())
                 {
                     sendEvent(SA::EventTypes::ButtonPressEvent,
-                              static_cast<unsigned int>(SA::Key_Unknown + d->event.xbutton.button));
+                              static_cast<unsigned int>(SA::Key_Unknown + key));
                 }
                 else
                 {
                     sendEvent(SA::EventTypes::ButtonPressEvent,
-                               static_cast<unsigned int>(KEYS_MAP.at(d->event.xbutton.button)));
+                               static_cast<unsigned int>(KEYS_MAP.at(key)));
                 }
 
                 break;
             }
             case KeyRelease:
             {
-                std::cout << __PRETTY_FUNCTION__ << " keyCode: " << std::hex << d->event.xbutton.button << std::endl;
+                KeySym key = XLookupKeysym(&d->event.xkey, 0);
 
-                if (KEYS_MAP.find(d->event.xbutton.button) == KEYS_MAP.end())
+                if (KEYS_MAP.find(key) == KEYS_MAP.end())
                 {
                     sendEvent(SA::EventTypes::ButtonReleaseEvent,
-                              static_cast<unsigned int>(SA::Key_Unknown + d->event.xbutton.button));
+                              static_cast<unsigned int>(SA::Key_Unknown + key));
                 }
                 else
                 {
                     sendEvent(SA::EventTypes::ButtonReleaseEvent,
-                               static_cast<unsigned int>(KEYS_MAP.at(d->event.xbutton.button)));
+                               static_cast<unsigned int>(KEYS_MAP.at(key)));
                 }
 
                 break;

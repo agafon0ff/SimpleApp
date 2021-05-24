@@ -342,7 +342,15 @@ namespace SA
 
     void WidgetWindows::drawText(int x, int y, const std::string &text)
     {
+//        SetTextColor(d->memDC, 0x00000000);
+//        SetBkMode(d->memDC,TRANSPARENT);
 
+//        RECT rect;
+//        rect.left = x;
+//        rect.top = y;
+//        rect.right = x + 100;
+//        rect.bottom = y + 100;
+//        DrawText(d->dc, text.c_str(), text.size(), &rect, DT_SINGLELINE | DT_NOCLIP  ) ;
     }
 
     void WidgetWindows::mainLoopEvent()
@@ -382,6 +390,19 @@ namespace SA
                 sendEvent(SA::EventTypes::ButtonReleaseEvent, static_cast<unsigned int>(SA::Key_Unknown + wParam));
             else sendEvent(SA::EventTypes::ButtonReleaseEvent, static_cast<unsigned int>(KEYS_MAP.at(wParam)));
         }
+        else if (msg == WM_PAINT)
+        {
+//            PAINTSTRUCT ps;
+//            HDC hdc;
+//            hdc = BeginPaint(d->hwnd,&ps);
+//            SelectObject(d->memDC, d->memBM);
+//            TextOut(hdc,10,70,"Points: 0",9);
+//            TextOut(hdc,10,85,"Level: 0",8);
+//            EndPaint(d->hwnd,&ps);
+
+//            cout << __PRETTY_FUNCTION__ << " WM_PAINT " << this << endl;
+        }
+
 
 //        cout << __PRETTY_FUNCTION__ << " " << this << endl;
 

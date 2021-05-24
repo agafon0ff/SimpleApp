@@ -109,7 +109,7 @@ void SnakeGame::paintEvent()
 
     if (d->gameOver)
     {
-        setPen(1, 230, 90, 90);
+        setPen(1, 230, 160, 90);
         drawText(d->gameRect.x + d->gameRect.width / 2 - 48,
                  d->gameRect.y + d->gameRect.height / 2 - 8,
                  "GAME OVER");
