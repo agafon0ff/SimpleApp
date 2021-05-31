@@ -48,7 +48,6 @@ namespace SA
 
         void sendEvent(SA::EventTypes type, const std::any &value);
         void geometryUpdated();
-        void updateBitmapSize();
 
         struct WidgetWindowsPrivate;
         WidgetWindowsPrivate * const d;

@@ -145,19 +145,21 @@ namespace SA
         WidgetWindows *parent = nullptr;
         HWND hwnd = nullptr;
         HDC dc = nullptr;
-        HDC memDC = nullptr;
-        HBITMAP memBM = nullptr;
 
+        // paint event
+        PAINTSTRUCT paintStruct;
+        HDC paintingHandle = nullptr;
+
+        HPEN pen = nullptr;
+        HBRUSH brush = nullptr;
+
+        // geometry
         int x = 0;
         int y = 0;
         int width = 200;
         int height = 200;
         bool isHidden = false;
         bool isPosChanged = false;
-
-        unsigned long widthPen = 1L;
-        unsigned long colorPen = 0L;
-        unsigned long colorBrush = 0L;
 
         std::list<SA::Object*> eventListners;
     };
@@ -220,8 +222,6 @@ namespace SA
         }
 
         d->dc = GetDC(d->hwnd);
-        d->memDC = CreateCompatibleDC(d->dc);
-        d->memBM = CreateCompatibleBitmap(d->dc, d->width, d->height);
 
         sendEvent(SA::EventTypes::PaintEvent, true);
     }
@@ -229,8 +229,6 @@ namespace SA
     WidgetWindows::~WidgetWindows()
     {
         DeleteDC(d->dc);
-        DeleteDC(d->memDC);
-        DeleteObject(d->memBM);
         WIDGETS_MAP.erase(WIDGETS_MAP.find(d->hwnd));
     }
 
@@ -253,10 +251,12 @@ namespace SA
 
     void WidgetWindows::update()
     {
-        for (SA::Object *object: d->eventListners)
-            object->event(SA::EventTypes::PaintEvent, true);
+//        for (SA::Object *object: d->eventListners)
+//            object->event(SA::EventTypes::PaintEvent, true);
 
-        BitBlt(d->dc, 0, 0, d->width, d->height, d->memDC, 0, 0, SRCCOPY);
+//        BitBlt(d->dc, 0, 0, d->width, d->height, d->memDC, 0, 0, SRCCOPY);
+
+        InvalidateRect(d->hwnd, NULL, TRUE);
     }
 
     void WidgetWindows::setTitle(const std::string &title)
@@ -269,6 +269,7 @@ namespace SA
         d->x = x;
         d->y = y;
         MoveWindow(d->hwnd, d->x, d->y, d->width, d->height, true);
+        update();
     }
 
     void WidgetWindows::resize(int w, int h)
@@ -276,7 +277,7 @@ namespace SA
         d->width = w;
         d->height = h;
         MoveWindow(d->hwnd, d->x, d->y, d->width, d->height, true);
-        updateBitmapSize();
+        update();
     }
 
     void WidgetWindows::setGeometry(int x, int y, int w, int h)
@@ -286,7 +287,7 @@ namespace SA
         d->width = w;
         d->height = h;
         MoveWindow(d->hwnd, d->x, d->y, d->width, d->height, true);
-        updateBitmapSize();
+        update();
     }
 
     int WidgetWindows::x()
@@ -312,45 +313,47 @@ namespace SA
     void WidgetWindows::setPen(unsigned int width, unsigned char red,
                                 unsigned char green, unsigned char blue)
     {
-        SelectObject(d->memDC, d->memBM);
-        SelectObject(d->memDC, GetStockObject(DC_PEN));
-        SetDCPenColor(d->memDC, RGB(red, green, blue));
+        if (!d->paintingHandle) return;
+
+        SetBkMode(d->paintingHandle, TRANSPARENT);
+        SetTextColor(d->paintingHandle, RGB(red, green, blue));
+
+        if (d->pen) DeleteObject(d->pen);
+        d->pen = CreatePen(PS_SOLID, width, RGB(red, green, blue));
     }
 
     void WidgetWindows::setBrush(unsigned char red, unsigned char green, unsigned char blue)
     {
-        SelectObject(d->memDC, d->memBM);
-        SelectObject(d->memDC, GetStockObject(DC_BRUSH));
-        SetDCBrushColor(d->memDC, RGB(red, green, blue));
+        if (!d->paintingHandle) return;
+
+        if (d->brush) DeleteObject(d->brush);
+        d->brush = CreateSolidBrush(RGB(red,green,blue));
     }
 
     void WidgetWindows::setFont()
     {
-
+        // https://docs.microsoft.com/ru-ru/windows/win32/gdi/setting-the-pen-or-brush-color
     }
 
     void WidgetWindows::drawLine(int x1, int y1, int x2, int y2)
     {
-
+        // https://docs.microsoft.com/ru-ru/windows/win32/gdi/setting-the-pen-or-brush-color
     }
 
     void WidgetWindows::drawRect(int x, int y, int width, int height)
     {
-        SelectObject(d->memDC, d->memBM);
-        Rectangle(d->memDC, x, y, width + x, height + y);
+        if (!d->paintingHandle) return;
+
+        SelectObject(d->paintingHandle, d->pen);
+        SelectObject(d->paintingHandle, d->brush);
+
+        Rectangle(d->paintingHandle, x, y, x + width, y + height);
     }
 
     void WidgetWindows::drawText(int x, int y, const std::string &text)
     {
-//        SetTextColor(d->memDC, 0x00000000);
-//        SetBkMode(d->memDC,TRANSPARENT);
-
-//        RECT rect;
-//        rect.left = x;
-//        rect.top = y;
-//        rect.right = x + 100;
-//        rect.bottom = y + 100;
-//        DrawText(d->dc, text.c_str(), text.size(), &rect, DT_SINGLELINE | DT_NOCLIP  ) ;
+        if (!d->paintingHandle) return;
+        TextOut(d->paintingHandle, x, y, text.c_str(), text.size());
     }
 
     void WidgetWindows::mainLoopEvent()
@@ -392,17 +395,11 @@ namespace SA
         }
         else if (msg == WM_PAINT)
         {
-//            PAINTSTRUCT ps;
-//            HDC hdc;
-//            hdc = BeginPaint(d->hwnd,&ps);
-//            SelectObject(d->memDC, d->memBM);
-//            TextOut(hdc,10,70,"Points: 0",9);
-//            TextOut(hdc,10,85,"Level: 0",8);
-//            EndPaint(d->hwnd,&ps);
-
-//            cout << __PRETTY_FUNCTION__ << " WM_PAINT " << this << endl;
+            d->paintingHandle = BeginPaint(d->hwnd, &d->paintStruct);
+            sendEvent(SA::EventTypes::PaintEvent, true);
+            EndPaint(d->hwnd, &d->paintStruct);
+            d->paintingHandle = nullptr;
         }
-
 
 //        cout << __PRETTY_FUNCTION__ << " " << this << endl;
 
@@ -439,16 +436,7 @@ namespace SA
             d->height = static_cast<int>(height);
             sendEvent(SA::EventTypes::ResizeEvent,
                       std::pair<int, int>(d->width, d->height));
-
-            updateBitmapSize();
         }
-    }
-
-    void SA::WidgetWindows::updateBitmapSize()
-    {
-        DeleteObject(d->memBM);
-        d->memBM = CreateCompatibleBitmap(d->dc, d->width, d->height);
-        update();
     }
 }
 

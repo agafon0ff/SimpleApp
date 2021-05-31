@@ -46,6 +46,7 @@ SnakeGame::SnakeGame(Widget *parent) : SA::Widget(parent),
     std::srand(std::time(nullptr));
 
     setTitle("Snake game");
+    drawText(10, 10, "123123123123");
 
     d->timerId = startTimer(150);
 
@@ -118,8 +119,6 @@ void SnakeGame::paintEvent()
 
 void SnakeGame::resizeEvent(int width, int height)
 {
-    std::cout << __PRETTY_FUNCTION__ << " " << width << " " << height << std::endl;
-
     std::ignore = width;
     std::ignore = height;
     updateGeometry();
@@ -207,4 +206,6 @@ void SnakeGame::updateGeometry()
     d->gameRect = Rect(width() / 2 - d->gameRect.width / 2,
                        height() / 2 - d->gameRect.height / 2,
                        d->gameRect.width, d->gameRect.height);
+
+    update();
 }
