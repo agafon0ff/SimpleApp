@@ -222,8 +222,7 @@ namespace SA
         }
 
         d->dc = GetDC(d->hwnd);
-
-        sendEvent(SA::EventTypes::PaintEvent, true);
+        update();
     }
 
     WidgetWindows::~WidgetWindows()
@@ -237,8 +236,8 @@ namespace SA
         d->isHidden = false;
 
         ShowWindow(d->hwnd, SW_SHOWNORMAL);
-        sendEvent(SA::EventTypes::PaintEvent, true);
         UpdateWindow(d->hwnd);
+        update();
     }
 
     void WidgetWindows::hide()
@@ -251,11 +250,6 @@ namespace SA
 
     void WidgetWindows::update()
     {
-//        for (SA::Object *object: d->eventListners)
-//            object->event(SA::EventTypes::PaintEvent, true);
-
-//        BitBlt(d->dc, 0, 0, d->width, d->height, d->memDC, 0, 0, SRCCOPY);
-
         InvalidateRect(d->hwnd, NULL, TRUE);
     }
 

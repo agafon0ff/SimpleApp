@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <thread>
 #include <chrono>
 #include <ctime>
 #include <list>
@@ -45,6 +46,8 @@ namespace SA {
                 object->mainLoopEvent();
 
             if (d->quitFlag) break;
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
         }
 
         return d->exitCode;

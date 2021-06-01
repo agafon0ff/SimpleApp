@@ -46,7 +46,6 @@ SnakeGame::SnakeGame(Widget *parent) : SA::Widget(parent),
     std::srand(std::time(nullptr));
 
     setTitle("Snake game");
-    drawText(10, 10, "123123123123");
 
     d->timerId = startTimer(150);
 
@@ -108,13 +107,17 @@ void SnakeGame::paintEvent()
              d->foodPoint.y * cellHeight + d->gameRect.y,
              cellWidth, cellHeight);
 
+    setPen(1, 230, 160, 90);
+
     if (d->gameOver)
     {
-        setPen(1, 230, 160, 90);
         drawText(d->gameRect.x + d->gameRect.width / 2 - 48,
                  d->gameRect.y + d->gameRect.height / 2 - 8,
                  "GAME OVER");
     }
+
+    drawText(d->gameRect.x + 6, d->gameRect.y + 4,
+             "Score: " + std::to_string(d->snake.size() - 4));
 }
 
 void SnakeGame::resizeEvent(int width, int height)
