@@ -401,6 +401,16 @@ namespace SA
                     text.length());
     }
 
+    int WidgetLinux::textWidth(const std::string &text)
+    {
+        return XTextWidth(d->font, text.c_str(), text.size());
+    }
+
+    int WidgetLinux::textHeight()
+    {
+        return d->font->ascent + d->font->descent;
+    }
+
     void WidgetLinux::mainLoopEvent()
     {
         FD_ZERO(&d->inFileDescriptor);
