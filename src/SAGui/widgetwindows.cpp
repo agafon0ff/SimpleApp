@@ -331,7 +331,11 @@ namespace SA
 
     void WidgetWindows::drawLine(int x1, int y1, int x2, int y2)
     {
-        // https://docs.microsoft.com/ru-ru/windows/win32/gdi/setting-the-pen-or-brush-color
+        if (!d->paintingHandle) return;
+
+        SelectObject(d->paintingHandle, d->pen);
+        MoveToEx(d->paintingHandle, x1, y1, (LPPOINT) NULL);
+        LineTo(d->paintingHandle, x2, y2);
     }
 
     void WidgetWindows::drawRect(int x, int y, int width, int height)
