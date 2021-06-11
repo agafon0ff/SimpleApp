@@ -15,7 +15,7 @@ TextTest::~TextTest()
 void TextTest::paintEvent()
 {
     setPen(1, 30, 30, 30);
-    setBrush(255, 255, 255);
+    setBrush(220, 220, 220);
     drawRect(10, 10, 105, 30);
 
     setPen(1, 30, 30, 30);
