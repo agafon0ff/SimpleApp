@@ -111,12 +111,13 @@ void SnakeGame::paintEvent()
 
     if (d->gameOver)
     {
-        drawText(d->gameRect.x + d->gameRect.width / 2 - 48,
-                 d->gameRect.y + d->gameRect.height / 2 - 8,
-                 "GAME OVER");
+        std::string gameOver = "GAME OVER";
+        drawText(width() / 2 - textWidth(gameOver) / 2,
+                 height() / 2 - textHeight() / 2,
+                 gameOver);
     }
 
-    drawText(d->gameRect.x + 6, d->gameRect.y + 4,
+    drawText(d->gameRect.x + 6, d->gameRect.y + textHeight() + 2,
              "Score: " + std::to_string(d->snake.size() - 4));
 }
 
