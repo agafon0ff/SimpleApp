@@ -222,6 +222,7 @@ namespace SA
         }
 
         d->dc = GetDC(d->hwnd);
+        d->paintStruct.hdc = d->dc;
         update();
     }
 
@@ -354,6 +355,16 @@ namespace SA
         TextOut(d->paintingHandle, x, y, text.c_str(), text.size());
     }
 
+    int WidgetWindows::textWidth(const std::string &text)
+    {
+        return 30;
+    }
+
+    int WidgetWindows::textHeight()
+    {
+        return 10;
+    }
+
     void WidgetWindows::mainLoopEvent()
     {
         MSG msg;
@@ -393,10 +404,23 @@ namespace SA
         }
         else if (msg == WM_PAINT)
         {
-            d->paintingHandle = BeginPaint(d->hwnd, &d->paintStruct);
+            HDC tmpDC = BeginPaint(d->hwnd, &d->paintStruct);
+
+            d->paintingHandle = CreateCompatibleDC(tmpDC);
+            HBITMAP memBM = CreateCompatibleBitmap(tmpDC, d->width, d->height);
+            SelectObject(d->paintingHandle, memBM);
+
             sendEvent(SA::EventTypes::PaintEvent, true);
+
+            BitBlt(tmpDC, d->x, d->y, d->width, d->height, d->paintingHandle, 0, 0, SRCCOPY);
+
             EndPaint(d->hwnd, &d->paintStruct);
-            d->paintingHandle = nullptr;
+            DeleteDC(d->paintingHandle);
+            DeleteObject(memBM);
+        }
+        else if (msg == WM_ERASEBKGND)
+        {
+            return 1;
         }
 
 //        cout << __PRETTY_FUNCTION__ << " " << this << endl;
@@ -414,6 +438,7 @@ namespace SA
     {
         RECT rect;
         GetClientRect(d->hwnd, &rect);
+        d->paintStruct.rcPaint = rect;
 
         int x = rect.left;
         int y = rect.top;
