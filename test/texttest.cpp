@@ -16,8 +16,8 @@ void TextTest::paintEvent()
 {
     setPen(1, 30, 30, 30);
     setBrush(220, 220, 220);
-    drawRect(10, 10, 105, 30);
+    drawRect(20, 20, 100, 30);
 
     setPen(1, 30, 30, 30);
-    drawText(20, 16, "Simple text");
+    drawText(26, 40, "Simple text");
 }
