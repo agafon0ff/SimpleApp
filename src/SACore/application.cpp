@@ -97,7 +97,6 @@ namespace SA {
 
     Application::Application(): d(new ApplicationPrivate)
     {
-
     }
 
     Application::~Application()

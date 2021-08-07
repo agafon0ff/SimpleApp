@@ -7,13 +7,11 @@ namespace SA
 {
     struct Object::ObjectPrivate
     {
-
     };
 
     Object::Object() :
         d(new ObjectPrivate)
     {
-
     }
 
     Object::~Object()
@@ -23,7 +21,6 @@ namespace SA
 
     void Object::mainLoopEvent()
     {
-
     }
 
     void Object::event(EventTypes type, const std::any &value)
