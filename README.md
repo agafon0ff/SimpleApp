@@ -8,7 +8,7 @@ sudo apt install libxtst-dev -y
 
 ### Build:
 ```shell
-make CMakeLists.txt && make
+cmake CMakeLists.txt && make
 ```
 
 ### Snake-game test app
