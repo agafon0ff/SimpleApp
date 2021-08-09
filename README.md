@@ -10,3 +10,6 @@ sudo apt install libxtst-dev -y
 ```shell
 make CMakeLists.txt && make
 ```
+
+### Snake-game test app
+![PrintScreenSnake](https://user-images.githubusercontent.com/13070282/128700184-d645ea61-fe59-4a02-8781-0b1b1ca48c3a.png)
