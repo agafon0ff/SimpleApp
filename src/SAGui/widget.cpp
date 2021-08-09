@@ -136,6 +136,16 @@ namespace SA
         d->widget->drawText(x, y, text);
     }
 
+    int Widget::textWidth(const std::string &text)
+    {
+        return d->widget->textWidth(text);
+    }
+
+    int Widget::textHeight()
+    {
+        return d->widget->textHeight();
+    }
+
     void Widget::keyPressEvent(unsigned int keyCode)
     {
         std::ignore = keyCode;

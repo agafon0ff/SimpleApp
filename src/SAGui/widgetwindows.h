@@ -40,6 +40,9 @@ namespace SA
         void drawRect(int x, int y, int width, int height);
         void drawText(int x, int y, const std::string &text);
 
+        int textWidth(const std::string &text);
+        int textHeight();
+
         void mainLoopEvent();
         void addEventListener(SA::Object *object);
 

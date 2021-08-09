@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(SOURCES test/main.cpp
     test/snakegame.cpp
+    test/texttest.cpp
     src/SACore/application.cpp
     src/SACore/object.cpp
     src/SAGui/widget.cpp
@@ -14,6 +15,7 @@ set(SOURCES test/main.cpp
     src/SAGui/widgetwindows.cpp)
 
 set(HEADERS test/snakegame.h
+    test/texttest.h
     src/SACore/application.h
     src/SACore/global.h
     src/SACore/object.h

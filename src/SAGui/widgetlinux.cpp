@@ -337,16 +337,14 @@ namespace SA
 
     void WidgetLinux::setFont()
     {
-        // https://www.itec.suny.edu/scsys/vms/ovmsdoc073/v73/5642/5642pro_011.html
-
         if (d->font)
         {
             XFreeFont(d->display, d->font);
             d->font = nullptr;
         }
 
-
-        const char *fontname = "-*-*-*-*-*--20-*-*-*-*-*-*-*";
+        // https://www.oreilly.com/library/view/x-window-system/9780937175149/Chapter05.html
+        const char *fontname = "-misc-fixed-bold-r-normal--13-120-75-75-c-80-iso8859-1";
         d->font = XLoadQueryFont(d->display, fontname);
         /* If the font could not be loaded, revert to the "fixed" font. */
         if (!d->font)
@@ -401,6 +399,16 @@ namespace SA
                     d->gc,
                     x, y, text.c_str(),
                     text.length());
+    }
+
+    int WidgetLinux::textWidth(const std::string &text)
+    {
+        return XTextWidth(d->font, text.c_str(), text.size());
+    }
+
+    int WidgetLinux::textHeight()
+    {
+        return d->font->ascent + d->font->descent;
     }
 
     void WidgetLinux::mainLoopEvent()

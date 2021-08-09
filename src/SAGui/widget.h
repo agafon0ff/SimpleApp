@@ -34,6 +34,9 @@ namespace SA
         void drawRect(int x, int y, int width, int height);
         void drawText(int x, int y, const std::string &text);
 
+        int textWidth(const std::string &text);
+        int textHeight();
+
         virtual void keyPressEvent(unsigned int keyCode);
         virtual void keyReleaseEvent(unsigned int keyCode);
         virtual void paintEvent();
