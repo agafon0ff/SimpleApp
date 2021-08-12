@@ -1,5 +1,4 @@
 #include <iostream>
-
 #include "texttest.h"
 
 TextTest::TextTest(SA::Widget *parent) : SA::Widget(parent)
@@ -19,5 +18,5 @@ void TextTest::paintEvent()
     drawRect(20, 20, 100, 30);
 
     setPen(1, 30, 30, 30);
-    drawText(26, 40, "Simple text");
+    drawText(26, 20, u8"Simpe Text");
 }

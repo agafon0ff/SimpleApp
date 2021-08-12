@@ -5,6 +5,10 @@ project(SimpleApp LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    add_definitions(-D__PRETTY_FUNCTION__ -D__FUNCSIG__)
+endif()
+
 set(SOURCES test/main.cpp
     test/snakegame.cpp
     test/texttest.cpp
