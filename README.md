@@ -1,5 +1,5 @@
 # SimpleApp
-Simple GUI application without any graphics frameworks. (winapi/xlib only)
+Simple GUI application without any graphics frameworks. (winapi / xlib only)
 
 ### Depends (linux):
 ```shell
