@@ -155,6 +155,7 @@ namespace SA
         HFONT font = nullptr;
 
         // geometry
+        RECT rect;
         int x = 0;
         int y = 0;
         int width = 200;
@@ -359,10 +360,10 @@ namespace SA
     {
         if (!d->paintingHandle) return;
 
-        HFONT fontTmp;
-        if (fontTmp = (HFONT)SelectObject(d->dc, d->font))
+        HFONT fontTmp = (HFONT)SelectObject(d->dc, d->font);
+        if (fontTmp)
         {
-            TextOut(d->paintingHandle, x, y - textHeight(), text.c_str(), text.size());
+            TextOut(d->paintingHandle, x, y, text.c_str(), text.size());
             SelectObject(d->dc, fontTmp);
         }
     }
@@ -425,6 +426,7 @@ namespace SA
             d->paintingHandle = CreateCompatibleDC(tmpDC);
             HBITMAP memBM = CreateCompatibleBitmap(tmpDC, d->width, d->height);
             SelectObject(d->paintingHandle, memBM);
+            FillRect(d->paintingHandle, &d->rect, (HBRUSH)GetStockObject(DC_BRUSH));
 
             sendEvent(SA::EventTypes::PaintEvent, true);
 
@@ -452,14 +454,13 @@ namespace SA
 
     void WidgetWindows::geometryUpdated()
     {
-        RECT rect;
-        GetClientRect(d->hwnd, &rect);
-        d->paintStruct.rcPaint = rect;
+        GetClientRect(d->hwnd, &d->rect);
+        d->paintStruct.rcPaint = d->rect;
 
-        int x = rect.left;
-        int y = rect.top;
-        int width = rect.right - rect.left;
-        int height = rect.bottom - rect.top;
+        int x = d->rect.left;
+        int y = d->rect.top;
+        int width = d->rect.right - d->rect.left;
+        int height = d->rect.bottom - d->rect.top;
 
         if (x != d->x || y != d->y)
         {

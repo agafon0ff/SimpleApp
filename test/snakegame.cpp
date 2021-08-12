@@ -117,7 +117,7 @@ void SnakeGame::paintEvent()
                  gameOver);
     }
 
-    drawText(d->gameRect.x + 6, d->gameRect.y + textHeight() + 2,
+    drawText(d->gameRect.x + 6, d->gameRect.y + 3,
              "Score: " + std::to_string(d->snake.size() - 4));
 }
 

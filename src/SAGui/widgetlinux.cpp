@@ -397,8 +397,8 @@ namespace SA
         XDrawString(d->display,
                     d->window,
                     d->gc,
-                    x, y, text.c_str(),
-                    text.length());
+                    x, y + textHeight(),
+                    text.c_str(), text.length());
     }
 
     int WidgetLinux::textWidth(const std::string &text)
