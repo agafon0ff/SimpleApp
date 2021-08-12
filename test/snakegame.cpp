@@ -179,10 +179,13 @@ void SnakeGame::updateSnakePos()
 
     Point head = d->snake[0];
 
-    if (d->dirCurrent == Direction::Right) ++head.x;
-    else if (d->dirCurrent == Direction::Left) --head.x;
-    else if (d->dirCurrent == Direction::Down) ++head.y;
-    else if (d->dirCurrent == Direction::Up) --head.y;
+    switch (d->dirCurrent)
+    {
+    case Direction::Right: ++head.x; break;
+    case Direction::Left: --head.x; break;
+    case Direction::Down: ++head.y; break;
+    case Direction::Up: --head.y; break;
+    }
 
     if (head.x >= d->cellsCount) head.x = 0;
     else if (head.x < 0) head.x = d->cellsCount - 1;

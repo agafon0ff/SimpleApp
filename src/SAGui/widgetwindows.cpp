@@ -152,6 +152,7 @@ namespace SA
 
         HPEN pen = nullptr;
         HBRUSH brush = nullptr;
+        HFONT font = nullptr;
 
         // geometry
         int x = 0;
@@ -223,6 +224,8 @@ namespace SA
 
         d->dc = GetDC(d->hwnd);
         d->paintStruct.hdc = d->dc;
+
+        setFont();
         update();
     }
 
@@ -327,7 +330,10 @@ namespace SA
 
     void WidgetWindows::setFont()
     {
-        // https://docs.microsoft.com/ru-ru/windows/win32/gdi/setting-the-pen-or-brush-color
+        // https://docs.microsoft.com/ru-ru/windows/win32/gdi/using-a-stock-font-to-draw-text
+
+        if (d->font) DeleteObject(d->font);
+        d->font = (HFONT)GetStockObject(ANSI_VAR_FONT);
     }
 
     void WidgetWindows::drawLine(int x1, int y1, int x2, int y2)
@@ -352,17 +358,27 @@ namespace SA
     void WidgetWindows::drawText(int x, int y, const std::string &text)
     {
         if (!d->paintingHandle) return;
-        TextOut(d->paintingHandle, x, y, text.c_str(), text.size());
+
+        HFONT fontTmp;
+        if (fontTmp = (HFONT)SelectObject(d->dc, d->font))
+        {
+            TextOut(d->paintingHandle, x, y - textHeight(), text.c_str(), text.size());
+            SelectObject(d->dc, fontTmp);
+        }
     }
 
     int WidgetWindows::textWidth(const std::string &text)
     {
-        return 30;
+        SIZE textSize;
+        GetTextExtentPoint32(d->dc, text.c_str(), text.size(), &textSize);
+        return static_cast<int>(textSize.cx);
     }
 
     int WidgetWindows::textHeight()
     {
-        return 10;
+        SIZE textSize;
+        GetTextExtentPoint32(d->dc, " ", 1, &textSize);
+        return static_cast<int>(textSize.cy);
     }
 
     void WidgetWindows::mainLoopEvent()
