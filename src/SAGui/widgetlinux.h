@@ -1,5 +1,6 @@
 #pragma once
 
+#ifdef __linux__
 #include <string>
 #include <memory>
 #include <functional>
@@ -56,5 +57,5 @@ namespace SA
         WidgetLinuxPrivate * const d;
     };
 }
-
+#endif
 
