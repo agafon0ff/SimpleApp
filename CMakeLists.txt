@@ -1,15 +1,10 @@
 cmake_minimum_required(VERSION 3.5)
 
+
 project(SimpleApp LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
-    set(CMAKE_CREATE_WIN32_EXE "/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup")
-#    target_link_options(target PRIVATE "/SUBSYSTEM:WINDOWS" "/ENTRY:mainCRTStartup")
-    add_definitions(-D__PRETTY_FUNCTION__ -D__FUNCSIG__)
-endif()
 
 set(SOURCES test/main.cpp
     test/snakegame.cpp
@@ -54,3 +49,10 @@ if (WIN32)
 endif (WIN32)
 
 add_executable(SimpleApp ${SOURCES} ${HEADERS})
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
+    add_definitions(-D__PRETTY_FUNCTION__ -D__FUNCSIG__)
+
+    # Tell the linker that this is a GUI-application
+    target_link_options(SimpleApp PRIVATE "/SUBSYSTEM:WINDOWS" "/ENTRY:mainCRTStartup")
+endif()
