@@ -37,11 +37,16 @@ namespace SA
         int textWidth(const std::string &text);
         int textHeight();
 
+        bool isHovered();
+
         virtual void keyPressEvent(unsigned int keyCode);
         virtual void keyReleaseEvent(unsigned int keyCode);
         virtual void paintEvent();
         virtual void moveEvent(int x, int y);
         virtual void resizeEvent(int width, int height);
+        virtual void mouseMoveEvent(int x, int y);
+        virtual void mouseHoverEvent(bool state);
+        virtual void mousePressEvent(bool state, unsigned int button);
 
     private:
         void mainLoopEvent();
@@ -49,5 +54,7 @@ namespace SA
 
         struct WidgetPrivate;
         WidgetPrivate * const d;
-    };
-}
+
+    }; // class Widget
+
+} // namespace SA

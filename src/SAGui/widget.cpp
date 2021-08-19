@@ -146,6 +146,11 @@ namespace SA
         return d->widget->textHeight();
     }
 
+    bool Widget::isHovered()
+    {
+        return d->widget->isHovered();
+    }
+
     void Widget::keyPressEvent(unsigned int keyCode)
     {
         std::ignore = keyCode;
@@ -172,6 +177,22 @@ namespace SA
         std::ignore = height;
     }
 
+    void Widget::mouseMoveEvent(int x, int y)
+    {
+        std::ignore = x;
+        std::ignore = y;
+    }
+
+    void Widget::mouseHoverEvent(bool state)
+    {
+        std::ignore = state;
+    }
+
+    void Widget::mousePressEvent(bool state, unsigned int button)
+    {
+
+    }
+
     void Widget::mainLoopEvent()
     {
         d->widget->mainLoopEvent();
@@ -179,21 +200,52 @@ namespace SA
 
     void Widget::event(EventTypes type, const std::any &value)
     {
-        if (type == EventTypes::ButtonPressEvent)
+        switch (type)
+        {
+        case EventTypes::ButtonPressEvent:
             keyPressEvent(std::any_cast<unsigned int>(value));
-        else if (type == EventTypes::ButtonReleaseEvent)
+            break;
+        case EventTypes::ButtonReleaseEvent:
             keyReleaseEvent(std::any_cast<unsigned int>(value));
-        else if (type == EventTypes::PaintEvent)
-            paintEvent();
-        else if (type == EventTypes::MoveEvent)
+            break;
+        case EventTypes::MouseMoveEvent:
         {
-            auto pair = std::any_cast<std::pair<int, int> >(value);
-            moveEvent(pair.first, pair.second);
+            auto mousePair = std::any_cast<std::pair<int, int> >(value);
+            mouseMoveEvent(mousePair.first, mousePair.second);
+            break;
         }
-        else if (type == EventTypes::ResizeEvent)
+        case EventTypes::MouseHoverEvent:
         {
-            auto pair = std::any_cast<std::pair<int, int> >(value);
-            resizeEvent(pair.first, pair.second);
+            mouseHoverEvent(std::any_cast<bool>(value));
+            break;
+        }
+        case EventTypes::MousePressEvent:
+        {
+            mousePressEvent(true, std::any_cast<unsigned int>(value));
+            break;
+        }
+        case EventTypes::MouseReleaseEvent:
+        {
+            mousePressEvent(false, std::any_cast<unsigned int>(value));
+            break;
+        }
+        case EventTypes::PaintEvent:
+            paintEvent();
+            break;
+        case EventTypes::MoveEvent:
+        {
+            auto movePair = std::any_cast<std::pair<int, int> >(value);
+            moveEvent(movePair.first, movePair.second);
+            break;
+        }
+        case EventTypes::ResizeEvent:
+        {
+            auto sizePair = std::any_cast<std::pair<int, int> >(value);
+            resizeEvent(sizePair.first, sizePair.second);
+            break;
+        }
+        default:
+            break;
         }
     }
 }

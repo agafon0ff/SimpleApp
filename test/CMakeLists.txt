@@ -5,8 +5,8 @@ project(SimpleApp LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(SOURCES main.cpp snakegame.cpp texttest.cpp)
-set(HEADERS snakegame.h texttest.h)
+set(SOURCES main.cpp snakegame.cpp controls.cpp)
+set(HEADERS snakegame.h controls.h)
 include_directories(test)
 
 add_executable(SimpleApp ${SOURCES} ${HEADERS})

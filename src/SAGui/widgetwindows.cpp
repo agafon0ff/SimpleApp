@@ -4,6 +4,7 @@
 #include "SACore/application.h"
 #include "SACore/global.h"
 
+#include <windowsx.h>
 #include <windows.h>
 #include <winuser.h>
 #include <iostream>
@@ -162,6 +163,7 @@ namespace SA
         int height = 200;
         bool isHidden = false;
         bool isPosChanged = false;
+        bool isHovered = false;
 
         std::list<SA::Object*> eventListners;
     };
@@ -170,64 +172,111 @@ namespace SA
         d(new WidgetWindowsPrivate)
     {
         d->parent = parent;
+        cout << __PRETTY_FUNCTION__ << " " << d->parent << endl;
 
-        const TCHAR CLSNAME[] = TEXT("WidgetWindows");
-        WNDCLASSEX wc = { };
-        HINSTANCE hInst = GetModuleHandle(NULL);
-
-        wc.cbSize        = sizeof (wc);
-        wc.style         = 0;
-        wc.lpfnWndProc   = winproc;
-        wc.cbClsExtra    = 0;
-        wc.cbWndExtra    = 0;
-        wc.hInstance     = hInst;
-        wc.hIcon         = LoadIcon (NULL, IDI_APPLICATION);
-        wc.hCursor       = LoadCursor (NULL, IDC_ARROW);
-        wc.hbrBackground = (HBRUSH) GetStockObject (LTGRAY_BRUSH);
-        wc.lpszMenuName  = NULL;
-        wc.lpszClassName = CLSNAME;
-        wc.hIconSm       = LoadIcon (NULL, IDI_APPLICATION);
-
-        if (!RegisterClassEx(&wc)) {
-            MessageBox(NULL, TEXT("Could not register window class"),
-                       NULL, MB_ICONERROR);
-            return;
-        }
-
-        d->hwnd = CreateWindowEx(WS_EX_LEFT,
-                              CLSNAME,
-                              NULL,
-                              WS_OVERLAPPEDWINDOW,
-                              CW_USEDEFAULT,
-                              CW_USEDEFAULT,
-                              CW_USEDEFAULT,
-                              CW_USEDEFAULT,
-                              NULL,
-                              NULL,
-                              hInst,
-                              NULL);
-        if (!d->hwnd) {
-            MessageBox(NULL, TEXT("Could not create window"), NULL, MB_ICONERROR);
-            SA::Application::instance().quit();
-            return;
-        }
-
-        WIDGETS_MAP.insert({d->hwnd, this});
-
-        RECT rect;
-        if (GetWindowRect(d->hwnd, &rect))
+        if (!d->parent)
         {
-            d->x = rect.left;
-            d->y = rect.top;
-            d->width = rect.right - rect.left;
-            d->height = rect.bottom - rect.top;
+            const TCHAR CLSNAME[] = TEXT("WidgetWindows");
+            WNDCLASSEX wc = { };
+            HINSTANCE hInst = GetModuleHandle(NULL);
+
+            wc.cbSize        = sizeof (wc);
+            wc.style         = 0;
+            wc.lpfnWndProc   = winproc;
+            wc.cbClsExtra    = 0;
+            wc.cbWndExtra    = 0;
+            wc.hInstance     = hInst;
+            wc.hIcon         = LoadIcon (NULL, IDI_APPLICATION);
+            wc.hCursor       = LoadCursor (NULL, IDC_ARROW);
+            wc.hbrBackground = (HBRUSH) GetStockObject (LTGRAY_BRUSH);
+            wc.lpszMenuName  = NULL;
+            wc.lpszClassName = CLSNAME;
+            wc.hIconSm       = LoadIcon (NULL, IDI_APPLICATION);
+
+            if (!RegisterClassEx(&wc)) {
+                MessageBox(NULL, TEXT("Could not register window class"),
+                           NULL, MB_ICONERROR);
+                return;
+            }
+
+            d->hwnd = CreateWindowEx(WS_EX_LEFT,
+                                  CLSNAME,
+                                  NULL,
+                                  WS_OVERLAPPEDWINDOW,
+                                  CW_USEDEFAULT,
+                                  CW_USEDEFAULT,
+                                  CW_USEDEFAULT,
+                                  CW_USEDEFAULT,
+                                  NULL,
+                                  NULL,
+                                  hInst,
+                                  NULL);
+            if (!d->hwnd) {
+                MessageBox(NULL, TEXT("Could not create window"), NULL, MB_ICONERROR);
+                SA::Application::instance().quit();
+                return;
+            }
+
+            WIDGETS_MAP.insert({d->hwnd, this});
+
+            RECT rect;
+            if (GetWindowRect(d->hwnd, &rect))
+            {
+                d->x = rect.left;
+                d->y = rect.top;
+                d->width = rect.right - rect.left;
+                d->height = rect.bottom - rect.top;
+            }
+
+            d->dc = GetDC(d->hwnd);
+            d->paintStruct.hdc = d->dc;
+
+            setFont();
+            update();
         }
+        else
+        {
+            const TCHAR CLSNAME[] = TEXT("Class");
+            WNDCLASSEX wc = { };
+//            HINSTANCE hInst = GetModuleHandle(NULL);
+            HINSTANCE hInst = (HINSTANCE) GetWindowLong (d->parent->d->hwnd, GWL_HINSTANCE);
 
-        d->dc = GetDC(d->hwnd);
-        d->paintStruct.hdc = d->dc;
+            wc.cbSize        = sizeof (wc);
+            wc.style         = 0;
+            wc.lpfnWndProc   = winproc;
+            wc.cbClsExtra    = 0;
+            wc.cbWndExtra    = 0;
+            wc.hInstance     = hInst;
+            wc.hIcon         = LoadIcon (NULL, IDI_APPLICATION);
+            wc.hCursor       = LoadCursor (NULL, IDC_ARROW);
+            wc.hbrBackground = (HBRUSH) GetStockObject (LTGRAY_BRUSH);
+            wc.lpszMenuName  = NULL;
+            wc.lpszClassName = CLSNAME;
+            wc.hIconSm       = LoadIcon (NULL, IDI_APPLICATION);
+            RegisterClassEx(&wc);
 
-        setFont();
-        update();
+            d->hwnd = CreateWindowEx(WS_EX_LEFT,
+                                     CLSNAME,
+                                     NULL,
+                                     WS_CHILD | WS_VISIBLE,
+                                     CW_USEDEFAULT,
+                                     CW_USEDEFAULT,
+                                     CW_USEDEFAULT,
+                                     CW_USEDEFAULT,
+                                     d->parent->d->hwnd,
+                                     NULL,
+                                     hInst,
+                                     NULL);
+
+
+            WIDGETS_MAP.insert({d->hwnd, this});
+
+            d->dc = GetDC(d->hwnd);
+            d->paintStruct.hdc = d->dc;
+
+            setFont();
+            update();
+        }
     }
 
     WidgetWindows::~WidgetWindows()
@@ -382,6 +431,11 @@ namespace SA
         return static_cast<int>(textSize.cy);
     }
 
+    bool WidgetWindows::isHovered()
+    {
+        return d->isHovered;
+    }
+
     void WidgetWindows::mainLoopEvent()
     {
         MSG msg;
@@ -399,27 +453,59 @@ namespace SA
 
     int WidgetWindows::windowProc(unsigned int msg, unsigned int &wParam, long &lParam)
     {
-        if (msg == WM_DESTROY || msg == WM_QUIT)
+        switch(msg)
         {
-            SA::Application::instance().quit();
-        }
-        else if (msg == WM_SIZE || msg == WM_MOVE)
-        {
-            geometryUpdated();
-        }
-        else if (msg == WM_KEYDOWN)
+        case WM_DESTROY: SA::Application::instance().quit(); break;
+        case WM_QUIT: SA::Application::instance().quit(); break;
+        case WM_SIZE: geometryUpdated(); break;
+        case WM_MOVE: geometryUpdated(); break;
+        case WM_KEYDOWN:
         {
             if (KEYS_MAP.find(wParam) == KEYS_MAP.end())
-                sendEvent(SA::EventTypes::ButtonPressEvent, static_cast<unsigned int>(SA::Key_Unknown + wParam));
-            else sendEvent(SA::EventTypes::ButtonPressEvent, static_cast<unsigned int>(KEYS_MAP.at(wParam)));
+                sendEvent(ButtonPressEvent, static_cast<unsigned int>(SA::Key_Unknown + wParam));
+            else sendEvent(ButtonPressEvent, static_cast<unsigned int>(KEYS_MAP.at(wParam)));
+            break;
         }
-        else if (msg == WM_KEYUP)
+        case WM_KEYUP:
         {
             if (KEYS_MAP.find(wParam) == KEYS_MAP.end())
-                sendEvent(SA::EventTypes::ButtonReleaseEvent, static_cast<unsigned int>(SA::Key_Unknown + wParam));
-            else sendEvent(SA::EventTypes::ButtonReleaseEvent, static_cast<unsigned int>(KEYS_MAP.at(wParam)));
+                sendEvent(ButtonReleaseEvent, static_cast<unsigned int>(SA::Key_Unknown + wParam));
+            else sendEvent(ButtonReleaseEvent, static_cast<unsigned int>(KEYS_MAP.at(wParam)));
+            break;
         }
-        else if (msg == WM_PAINT)
+        case WM_LBUTTONDOWN: sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonLeft)); break;
+        case WM_RBUTTONDOWN: sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonRight)); break;
+        case WM_MBUTTONDOWN: sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonMiddle)); break;
+        case WM_XBUTTONDOWN: sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonX)); break;
+        case WM_LBUTTONUP: sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonLeft)); break;
+        case WM_RBUTTONUP: sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonRight)); break;
+        case WM_MBUTTONUP: sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonMiddle)); break;
+        case WM_XBUTTONUP: sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonX)); break;
+        case WM_MOUSEMOVE:
+        {
+            sendEvent(MouseMoveEvent,
+                      std::pair<int, int>(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
+
+            if (!d->isHovered)
+            {
+                TRACKMOUSEEVENT tme = {0};
+                tme.cbSize = sizeof(TRACKMOUSEEVENT);
+                tme.dwFlags = TME_HOVER | TME_LEAVE;
+                tme.hwndTrack = d->hwnd;
+                tme.dwHoverTime = HOVER_DEFAULT;
+                TrackMouseEvent(&tme);
+                d->isHovered = true;
+                sendEvent(MouseHoverEvent, true);
+            }
+            break;
+        }
+        case WM_MOUSELEAVE:
+        {
+            d->isHovered = false;
+            sendEvent(MouseHoverEvent, false);
+            break;
+        }
+        case WM_PAINT:
         {
             HDC tmpDC = BeginPaint(d->hwnd, &d->paintStruct);
 
@@ -428,22 +514,24 @@ namespace SA
             SelectObject(d->paintingHandle, memBM);
             FillRect(d->paintingHandle, &d->rect, (HBRUSH)GetStockObject(DC_BRUSH));
 
-            sendEvent(SA::EventTypes::PaintEvent, true);
+            sendEvent(PaintEvent, true);
 
             BitBlt(tmpDC, d->x, d->y, d->width, d->height, d->paintingHandle, 0, 0, SRCCOPY);
 
             EndPaint(d->hwnd, &d->paintStruct);
             DeleteDC(d->paintingHandle);
             DeleteObject(memBM);
+            break;
         }
-        else if (msg == WM_ERASEBKGND)
+        case WM_ERASEBKGND:
         {
             return 1;
         }
+        default:
+            return DefWindowProc(d->hwnd, msg, wParam, lParam);
+        }
 
 //        cout << __PRETTY_FUNCTION__ << " " << this << endl;
-
-        return DefWindowProc(d->hwnd, msg, wParam, lParam);
     }
 
     void WidgetWindows::sendEvent(EventTypes type, const any &value)
@@ -466,7 +554,7 @@ namespace SA
         {
             d->x = x;
             d->y = y;
-            sendEvent(SA::EventTypes::MoveEvent,
+            sendEvent(MoveEvent,
                       std::pair<int, int>(d->x, d->y));
         }
 
@@ -474,7 +562,7 @@ namespace SA
         {
             d->width = static_cast<int>(width);
             d->height = static_cast<int>(height);
-            sendEvent(SA::EventTypes::ResizeEvent,
+            sendEvent(ResizeEvent,
                       std::pair<int, int>(d->width, d->height));
         }
     }
