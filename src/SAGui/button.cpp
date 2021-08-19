@@ -6,6 +6,7 @@ namespace SA
     struct Button::ButtonPrivate
     {
         std::string text = "Button";
+        bool pressed = false;
     };
 
     Button::Button(Widget *parent) : Widget(parent),
@@ -27,12 +28,24 @@ namespace SA
             setBrush(200, 200, 200);
         else setBrush(220, 220, 220);
 
+        if (d->pressed) setBrush(180, 180, 180);
+
         drawRect(0, 0, width(), height());
-        drawText(width() / 2 - textWidth(d->text) / 2, height() / 2 - textHeight() / 2, d->text);
+        drawText(width() / 2 - textWidth(d->text) / 2,
+                 height() / 2 - textHeight() / 2,
+                 d->text);
     }
 
     void Button::mouseHoverEvent(bool state)
     {
+        update();
+    }
+
+    void Button::mousePressEvent(bool state, unsigned int button)
+    {
+        if (button != ButtonLeft) return;
+
+        d->pressed = state;
         update();
     }
 }

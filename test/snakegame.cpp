@@ -58,8 +58,10 @@ SnakeGame::~SnakeGame()
     delete d;
 }
 
-void SnakeGame::keyPressEvent(unsigned int keyCode)
+void SnakeGame::keyPressEvent(bool state, unsigned int keyCode)
 {
+    if (!state) return;
+
     if (d->dirCurrent == Direction::Left || d->dirCurrent == Direction::Right)
     {
         if (keyCode == SA::Key_Up || keyCode == SA::Key_W) d->dirNext = Direction::Up;

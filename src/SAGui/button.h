@@ -12,6 +12,7 @@ namespace SA
     private:
         virtual void paintEvent();
         virtual void mouseHoverEvent(bool state);
+        virtual void mousePressEvent(bool state, unsigned int button);
 
         struct ButtonPrivate;
         ButtonPrivate * const d;

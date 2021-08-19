@@ -39,8 +39,7 @@ namespace SA
 
         bool isHovered();
 
-        virtual void keyPressEvent(unsigned int keyCode);
-        virtual void keyReleaseEvent(unsigned int keyCode);
+        virtual void keyPressEvent(bool state, unsigned int keyCode);
         virtual void paintEvent();
         virtual void moveEvent(int x, int y);
         virtual void resizeEvent(int width, int height);

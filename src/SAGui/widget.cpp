@@ -151,13 +151,9 @@ namespace SA
         return d->widget->isHovered();
     }
 
-    void Widget::keyPressEvent(unsigned int keyCode)
+    void Widget::keyPressEvent(bool state, unsigned int keyCode)
     {
-        std::ignore = keyCode;
-    }
-
-    void Widget::keyReleaseEvent(unsigned int keyCode)
-    {
+        std::ignore = state;
         std::ignore = keyCode;
     }
 
@@ -190,7 +186,8 @@ namespace SA
 
     void Widget::mousePressEvent(bool state, unsigned int button)
     {
-
+        std::ignore = state;
+        std::ignore = button;
     }
 
     void Widget::mainLoopEvent()
@@ -203,10 +200,10 @@ namespace SA
         switch (type)
         {
         case EventTypes::ButtonPressEvent:
-            keyPressEvent(std::any_cast<unsigned int>(value));
+            keyPressEvent(true, std::any_cast<unsigned int>(value));
             break;
         case EventTypes::ButtonReleaseEvent:
-            keyReleaseEvent(std::any_cast<unsigned int>(value));
+            keyPressEvent(false, std::any_cast<unsigned int>(value));
             break;
         case EventTypes::MouseMoveEvent:
         {

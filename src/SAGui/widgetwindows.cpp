@@ -172,111 +172,76 @@ namespace SA
         d(new WidgetWindowsPrivate)
     {
         d->parent = parent;
-        cout << __PRETTY_FUNCTION__ << " " << d->parent << endl;
 
-        if (!d->parent)
+        HWND hwnd = NULL;
+        DWORD style = WS_OVERLAPPEDWINDOW;
+        const TCHAR CLSNAME_NAIN[] = TEXT("WidgetWindows");
+        const TCHAR CLSNAME_CHILD[] = TEXT("Class");
+
+
+        if (d->parent)
         {
-            const TCHAR CLSNAME[] = TEXT("WidgetWindows");
-            WNDCLASSEX wc = { };
-            HINSTANCE hInst = GetModuleHandle(NULL);
-
-            wc.cbSize        = sizeof (wc);
-            wc.style         = 0;
-            wc.lpfnWndProc   = winproc;
-            wc.cbClsExtra    = 0;
-            wc.cbWndExtra    = 0;
-            wc.hInstance     = hInst;
-            wc.hIcon         = LoadIcon (NULL, IDI_APPLICATION);
-            wc.hCursor       = LoadCursor (NULL, IDC_ARROW);
-            wc.hbrBackground = (HBRUSH) GetStockObject (LTGRAY_BRUSH);
-            wc.lpszMenuName  = NULL;
-            wc.lpszClassName = CLSNAME;
-            wc.hIconSm       = LoadIcon (NULL, IDI_APPLICATION);
-
-            if (!RegisterClassEx(&wc)) {
-                MessageBox(NULL, TEXT("Could not register window class"),
-                           NULL, MB_ICONERROR);
-                return;
-            }
-
-            d->hwnd = CreateWindowEx(WS_EX_LEFT,
-                                  CLSNAME,
-                                  NULL,
-                                  WS_OVERLAPPEDWINDOW,
-                                  CW_USEDEFAULT,
-                                  CW_USEDEFAULT,
-                                  CW_USEDEFAULT,
-                                  CW_USEDEFAULT,
-                                  NULL,
-                                  NULL,
-                                  hInst,
-                                  NULL);
-            if (!d->hwnd) {
-                MessageBox(NULL, TEXT("Could not create window"), NULL, MB_ICONERROR);
-                SA::Application::instance().quit();
-                return;
-            }
-
-            WIDGETS_MAP.insert({d->hwnd, this});
-
-            RECT rect;
-            if (GetWindowRect(d->hwnd, &rect))
-            {
-                d->x = rect.left;
-                d->y = rect.top;
-                d->width = rect.right - rect.left;
-                d->height = rect.bottom - rect.top;
-            }
-
-            d->dc = GetDC(d->hwnd);
-            d->paintStruct.hdc = d->dc;
-
-            setFont();
-            update();
+            hwnd = d->parent->d->hwnd;
+            style = WS_CHILD | WS_VISIBLE;
         }
-        else
+        WNDCLASSEX wc = { };
+        HINSTANCE hInst = GetModuleHandle(NULL);
+
+        wc.cbSize        = sizeof (wc);
+        wc.style         = 0;
+        wc.lpfnWndProc   = winproc;
+        wc.cbClsExtra    = 0;
+        wc.cbWndExtra    = 0;
+        wc.hInstance     = hInst;
+        wc.hIcon         = LoadIcon (NULL, IDI_APPLICATION);
+        wc.hCursor       = LoadCursor (NULL, IDC_ARROW);
+        wc.hbrBackground = (HBRUSH) GetStockObject (LTGRAY_BRUSH);
+        wc.lpszMenuName  = NULL;
+        wc.lpszClassName = d->parent ? CLSNAME_NAIN : CLSNAME_CHILD;
+        wc.hIconSm       = LoadIcon (NULL, IDI_APPLICATION);
+
+        if (!RegisterClassEx(&wc))
         {
-            const TCHAR CLSNAME[] = TEXT("Class");
-            WNDCLASSEX wc = { };
-//            HINSTANCE hInst = GetModuleHandle(NULL);
-            HINSTANCE hInst = (HINSTANCE) GetWindowLong (d->parent->d->hwnd, GWL_HINSTANCE);
-
-            wc.cbSize        = sizeof (wc);
-            wc.style         = 0;
-            wc.lpfnWndProc   = winproc;
-            wc.cbClsExtra    = 0;
-            wc.cbWndExtra    = 0;
-            wc.hInstance     = hInst;
-            wc.hIcon         = LoadIcon (NULL, IDI_APPLICATION);
-            wc.hCursor       = LoadCursor (NULL, IDC_ARROW);
-            wc.hbrBackground = (HBRUSH) GetStockObject (LTGRAY_BRUSH);
-            wc.lpszMenuName  = NULL;
-            wc.lpszClassName = CLSNAME;
-            wc.hIconSm       = LoadIcon (NULL, IDI_APPLICATION);
-            RegisterClassEx(&wc);
-
-            d->hwnd = CreateWindowEx(WS_EX_LEFT,
-                                     CLSNAME,
-                                     NULL,
-                                     WS_CHILD | WS_VISIBLE,
-                                     CW_USEDEFAULT,
-                                     CW_USEDEFAULT,
-                                     CW_USEDEFAULT,
-                                     CW_USEDEFAULT,
-                                     d->parent->d->hwnd,
-                                     NULL,
-                                     hInst,
-                                     NULL);
-
-
-            WIDGETS_MAP.insert({d->hwnd, this});
-
-            d->dc = GetDC(d->hwnd);
-            d->paintStruct.hdc = d->dc;
-
-            setFont();
-            update();
+            MessageBox(NULL, TEXT("Could not register window class"),
+                       NULL, MB_ICONERROR);
+            return;
         }
+
+        d->hwnd = CreateWindowEx(WS_EX_LEFT,
+                                 d->parent ? CLSNAME_NAIN : CLSNAME_CHILD,
+                                 NULL,
+                                 style,
+                                 CW_USEDEFAULT,
+                                 CW_USEDEFAULT,
+                                 CW_USEDEFAULT,
+                                 CW_USEDEFAULT,
+                                 hwnd,
+                                 NULL,
+                                 hInst,
+                                 NULL);
+        if (!d->hwnd)
+        {
+            MessageBox(NULL, TEXT("Could not create window"), NULL, MB_ICONERROR);
+            SA::Application::instance().quit();
+            return;
+        }
+
+        WIDGETS_MAP.insert({d->hwnd, this});
+
+        RECT rect;
+        if (GetWindowRect(d->hwnd, &rect))
+        {
+            d->x = rect.left;
+            d->y = rect.top;
+            d->width = rect.right - rect.left;
+            d->height = rect.bottom - rect.top;
+        }
+
+        d->dc = GetDC(d->hwnd);
+        d->paintStruct.hdc = d->dc;
+
+        setFont();
+        update();
     }
 
     WidgetWindows::~WidgetWindows()
@@ -456,7 +421,7 @@ namespace SA
         switch(msg)
         {
         case WM_DESTROY: SA::Application::instance().quit(); break;
-        case WM_QUIT: SA::Application::instance().quit(); break;
+        case WM_QUIT:    SA::Application::instance().quit(); break;
         case WM_SIZE: geometryUpdated(); break;
         case WM_MOVE: geometryUpdated(); break;
         case WM_KEYDOWN:
@@ -523,15 +488,12 @@ namespace SA
             DeleteObject(memBM);
             break;
         }
-        case WM_ERASEBKGND:
-        {
-            return 1;
-        }
-        default:
-            return DefWindowProc(d->hwnd, msg, wParam, lParam);
+        case WM_ERASEBKGND: return 1;
         }
 
-//        cout << __PRETTY_FUNCTION__ << " " << this << endl;
+        //        cout << __PRETTY_FUNCTION__ << " " << this << endl;
+
+        return DefWindowProc(d->hwnd, msg, wParam, lParam);
     }
 
     void WidgetWindows::sendEvent(EventTypes type, const any &value)
