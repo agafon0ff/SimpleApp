@@ -148,7 +148,7 @@ namespace SA
 
     bool Widget::isHovered()
     {
-        return d->widget->isHovered();
+        return false;
     }
 
     void Widget::keyPressEvent(bool state, unsigned int keyCode)

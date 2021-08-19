@@ -23,13 +23,6 @@ set(SA_DIRS
     SACore
     SAGui)
 
-add_library(SA ${SA_SOURCES} ${SA_HEADERS})
-
-target_include_directories(SA PUBLIC ${SA_DIRS}
-    "${CMAKE_CURRENT_SOURCE_DIR/src}"
-    "${CMAKE_CURRENT_SOURCE_DIR/src/SACore}"
-    "${CMAKE_CURRENT_SOURCE_DIR/src/SAGui}")
-
 if (UNIX)
     # X11 libs
     # sudo apt install libxtst-dev -y
@@ -42,3 +35,10 @@ if (WIN32)
     # user32.lib
     find_library(USER32 user32)
 endif (WIN32)
+
+add_library(SA ${SA_SOURCES} ${SA_HEADERS})
+
+target_include_directories(SA PUBLIC ${SA_DIRS}
+    "${CMAKE_CURRENT_SOURCE_DIR/src}"
+    "${CMAKE_CURRENT_SOURCE_DIR/src/SACore}"
+    "${CMAKE_CURRENT_SOURCE_DIR/src/SAGui}")

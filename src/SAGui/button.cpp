@@ -22,11 +22,11 @@ namespace SA
 
     void Button::paintEvent()
     {
-        setPen(1, 0, 0, 0);
+        setPen(3, 250, 0, 0);
 
         if (isHovered())
             setBrush(200, 200, 200);
-        else setBrush(220, 220, 220);
+        else setBrush(220, 250, 220);
 
         if (d->pressed) setBrush(180, 180, 180);
 

@@ -16,3 +16,4 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "MSVC")
     add_definitions(-D__PRETTY_FUNCTION__ -D__FUNCSIG__)
     target_link_options(SimpleApp PRIVATE "/SUBSYSTEM:WINDOWS" "/ENTRY:mainCRTStartup")
 endif()
+
