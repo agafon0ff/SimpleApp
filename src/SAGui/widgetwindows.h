@@ -43,6 +43,8 @@ namespace SA
         int textWidth(const std::string &text);
         int textHeight();
 
+        bool isHovered();
+
         void mainLoopEvent();
         void addEventListener(SA::Object *object);
 

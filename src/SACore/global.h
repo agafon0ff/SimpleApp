@@ -6,9 +6,21 @@ namespace SA
     {
         ButtonPressEvent,
         ButtonReleaseEvent,
+        MouseMoveEvent,
+        MouseHoverEvent,
+        MousePressEvent,
+        MouseReleaseEvent,
         PaintEvent,
         MoveEvent,
         ResizeEvent
+    };
+
+    enum MouseButton
+    {
+        ButtonLeft,
+        ButtonRight,
+        ButtonMiddle,
+        ButtonX,
     };
 
     enum Keys {
