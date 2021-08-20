@@ -10,10 +10,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <iostream>
-#include <list>
+#include <vector>
 #include <map>
 
 extern int errno;
+using namespace std;
+
+static std::map<Window, SA::WidgetLinux*> WIDGETS_MAP;
 
 static const std::map<unsigned int, SA::Keys> KEYS_MAP = {
     { XK_Escape,        SA::Key_Escape      },
@@ -154,7 +157,7 @@ namespace SA
         unsigned long colorPen = 0L;
         unsigned long colorBrush = 0L;
 
-        std::list<SA::Object*> eventListners;
+        std::vector<SA::Object*> eventListners;
     };
 
     WidgetLinux::WidgetLinux(WidgetLinux *parent):
@@ -200,8 +203,6 @@ namespace SA
                                             XBlackPixel(d->display, d->screen),
                                             XWhitePixel(d->display, d->screen));
 
-
-
             show();
         }
 
@@ -220,6 +221,7 @@ namespace SA
         d->x11FileDescriptor = ConnectionNumber(d->display);
 
         setFont();
+        WIDGETS_MAP.insert({d->window, this});
     }
 
     WidgetLinux::~WidgetLinux()
@@ -227,9 +229,11 @@ namespace SA
         if (d->font)
             XFreeFont(d->display, d->font);
 
+        WIDGETS_MAP.erase(WIDGETS_MAP.find(d->window));
         XDestroyWindow(d->display, d->window);
-        if (d->parent) return;
-        XCloseDisplay(d->display);
+
+        if (!d->parent)
+            XCloseDisplay(d->display);
 
         delete d;
     }
@@ -261,6 +265,7 @@ namespace SA
         XEvent event = {0};
         event.type = Expose;
         event.xexpose.display = d->display;
+        event.xexpose.window = d->window;
         XSendEvent(d->display, d->window, False, ExposureMask, &event);
     }
 
@@ -412,6 +417,11 @@ namespace SA
         return d->font->ascent + d->font->descent;
     }
 
+    bool WidgetLinux::isHovered()
+    {
+        return false;
+    }
+
     void WidgetLinux::mainLoopEvent()
     {
         FD_ZERO(&d->inFileDescriptor);
@@ -421,60 +431,17 @@ namespace SA
         {
             XNextEvent(d->display, &d->event);
 
-            switch (d->event.type)
+            if (d->event.xany.window == d->window)
             {
-            case KeyPress:
+                procEvent(d->event);
+            }
+            else
             {
-                KeySym key = XLookupKeysym(&d->event.xkey, 0);
+                auto it = WIDGETS_MAP.find(d->event.xany.window);
 
-                if (KEYS_MAP.find(key) == KEYS_MAP.end())
-                {
-                    sendEvent(SA::EventTypes::ButtonPressEvent,
-                              static_cast<unsigned int>(SA::Key_Unknown + key));
-                }
-                else
-                {
-                    sendEvent(SA::EventTypes::ButtonPressEvent,
-                               static_cast<unsigned int>(KEYS_MAP.at(key)));
-                }
-
-                break;
-            }
-            case KeyRelease:
-            {
-                KeySym key = XLookupKeysym(&d->event.xkey, 0);
-
-                if (KEYS_MAP.find(key) == KEYS_MAP.end())
-                {
-                    sendEvent(SA::EventTypes::ButtonReleaseEvent,
-                              static_cast<unsigned int>(SA::Key_Unknown + key));
-                }
-                else
-                {
-                    sendEvent(SA::EventTypes::ButtonReleaseEvent,
-                               static_cast<unsigned int>(KEYS_MAP.at(key)));
-                }
-
-                break;
-            }
-            case Expose:
-            {
-                for (SA::Object *object: d->eventListners)
-                    object->event(SA::EventTypes::PaintEvent, true);
-                break;
-            }
-            case ConfigureNotify:
-            {
-                geometryUpdated();
-                break;
-            }
-            case ClientMessage:
-            {
-                SA::Application::instance().quit();
-                break;
-            }
-            default:
-                break;
+                if (it != WIDGETS_MAP.end())
+                    return it->second->procEvent(d->event);
+                else cout << "strange event: " << d->event.xany.window << endl;
             }
         }
     }
@@ -482,6 +449,64 @@ namespace SA
     void WidgetLinux::addEventListener(Object *object)
     {
         d->eventListners.push_back(object);
+    }
+
+    void WidgetLinux::procEvent(const XEvent &event)
+    {
+        switch (d->event.type)
+        {
+        case KeyPress:
+        {
+            KeySym key = XLookupKeysym(&d->event.xkey, 0);
+
+            if (KEYS_MAP.find(key) == KEYS_MAP.end())
+            {
+                sendEvent(SA::EventTypes::ButtonPressEvent,
+                          static_cast<unsigned int>(SA::Key_Unknown + key));
+            }
+            else
+            {
+                sendEvent(SA::EventTypes::ButtonPressEvent,
+                           static_cast<unsigned int>(KEYS_MAP.at(key)));
+            }
+
+            break;
+        }
+        case KeyRelease:
+        {
+            KeySym key = XLookupKeysym(&d->event.xkey, 0);
+
+            if (KEYS_MAP.find(key) == KEYS_MAP.end())
+            {
+                sendEvent(SA::EventTypes::ButtonReleaseEvent,
+                          static_cast<unsigned int>(SA::Key_Unknown + key));
+            }
+            else
+            {
+                sendEvent(SA::EventTypes::ButtonReleaseEvent,
+                           static_cast<unsigned int>(KEYS_MAP.at(key)));
+            }
+
+            break;
+        }
+        case Expose:
+        {
+            sendEvent(SA::EventTypes::PaintEvent, true);
+            break;
+        }
+        case ConfigureNotify:
+        {
+            geometryUpdated();
+            break;
+        }
+        case ClientMessage:
+        {
+            SA::Application::instance().quit();
+            break;
+        }
+        default:
+            break;
+        }
     }
 
     void WidgetLinux::sendEvent(EventTypes type, const std::any &value)

@@ -9,7 +9,7 @@
 #include <winuser.h>
 #include <iostream>
 #include <tchar.h>
-#include <list>
+#include <vector>
 #include <map>
 
 using namespace std;
@@ -165,7 +165,7 @@ namespace SA
         bool isPosChanged = false;
         bool isHovered = false;
 
-        std::list<SA::Object*> eventListners;
+        std::vector<SA::Object*> eventListners;
     };
 
     WidgetWindows::WidgetWindows(WidgetWindows *parent):
