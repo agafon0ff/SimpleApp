@@ -20,7 +20,8 @@ namespace SA
         ButtonLeft,
         ButtonRight,
         ButtonMiddle,
-        ButtonX,
+        ButtonX1,
+        ButtonX2
     };
 
     enum Keys {

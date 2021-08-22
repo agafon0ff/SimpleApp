@@ -4,8 +4,8 @@
 Controls::Controls(SA::Widget *parent) : SA::Widget(parent),
     m_button(new SA::Button(this))
 {
-    m_button->setGeometry(5, 5, 100, 40);
-    m_button->show();
+    m_button->setGeometry(5, 5, 120, 30);
+
     std::cout << __PRETTY_FUNCTION__ << std::endl;
 }
 

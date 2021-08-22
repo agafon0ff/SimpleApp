@@ -152,6 +152,7 @@ namespace SA
         int height = 200;
         bool isHidden = false;
         bool isPosChanged = false;
+        bool isHovered = false;
 
         unsigned long widthPen = 1L;
         unsigned long colorPen = 0L;
@@ -199,7 +200,7 @@ namespace SA
 
             d->window = XCreateSimpleWindow(d->display,
                                             d->parent->d->window,
-                                            d->x, d->y, d->width, d->height, 1,
+                                            d->x, d->y, d->width, d->height, 0,
                                             XBlackPixel(d->display, d->screen),
                                             XWhitePixel(d->display, d->screen));
 
@@ -208,14 +209,11 @@ namespace SA
 
         /* What events need to be responded to */
         XSelectInput(d->display, d->window, ExposureMask |
-                     KeyPressMask |
-                     KeyReleaseMask |
-                     ButtonPressMask |
-                     ButtonReleaseMask |
-                     PointerMotionMask |
-                     StructureNotifyMask |
-                     SubstructureNotifyMask |
-                     VisibilityChangeMask);
+                     KeyPressMask | KeyReleaseMask |
+                     ButtonPressMask | ButtonReleaseMask |
+                     PointerMotionMask | StructureNotifyMask |
+                     EnterWindowMask | LeaveWindowMask |
+                     SubstructureNotifyMask | VisibilityChangeMask);
 
         d->gc = DefaultGC(d->display, d->screen);
         d->x11FileDescriptor = ConnectionNumber(d->display);
@@ -414,12 +412,12 @@ namespace SA
 
     int WidgetLinux::textHeight()
     {
-        return d->font->ascent + d->font->descent;
+        return d->font->ascent - d->font->descent;
     }
 
     bool WidgetLinux::isHovered()
     {
-        return false;
+        return d->isHovered;
     }
 
     void WidgetLinux::mainLoopEvent()
@@ -433,14 +431,14 @@ namespace SA
 
             if (d->event.xany.window == d->window)
             {
-                procEvent(d->event);
+                procEvent(&d->event);
             }
             else
             {
                 auto it = WIDGETS_MAP.find(d->event.xany.window);
 
                 if (it != WIDGETS_MAP.end())
-                    return it->second->procEvent(d->event);
+                    return it->second->procEvent(&d->event);
                 else cout << "strange event: " << d->event.xany.window << endl;
             }
         }
@@ -451,61 +449,57 @@ namespace SA
         d->eventListners.push_back(object);
     }
 
-    void WidgetLinux::procEvent(const XEvent &event)
+    void WidgetLinux::procEvent(_XEvent *event)
     {
-        switch (d->event.type)
+        switch (event->type)
         {
         case KeyPress:
         {
-            KeySym key = XLookupKeysym(&d->event.xkey, 0);
-
+            KeySym key = XLookupKeysym(&event->xkey, 0);
             if (KEYS_MAP.find(key) == KEYS_MAP.end())
-            {
-                sendEvent(SA::EventTypes::ButtonPressEvent,
-                          static_cast<unsigned int>(SA::Key_Unknown + key));
-            }
-            else
-            {
-                sendEvent(SA::EventTypes::ButtonPressEvent,
-                           static_cast<unsigned int>(KEYS_MAP.at(key)));
-            }
-
+                sendEvent(SA::EventTypes::ButtonPressEvent, static_cast<unsigned int>(SA::Key_Unknown + key));
+            else sendEvent(SA::EventTypes::ButtonPressEvent, static_cast<unsigned int>(KEYS_MAP.at(key)));
             break;
         }
         case KeyRelease:
         {
-            KeySym key = XLookupKeysym(&d->event.xkey, 0);
-
+            KeySym key = XLookupKeysym(&event->xkey, 0);
             if (KEYS_MAP.find(key) == KEYS_MAP.end())
+                sendEvent(SA::EventTypes::ButtonReleaseEvent, static_cast<unsigned int>(SA::Key_Unknown + key));
+            else sendEvent(SA::EventTypes::ButtonReleaseEvent, static_cast<unsigned int>(KEYS_MAP.at(key)));
+            break;
+        }
+        case EnterNotify: sendEvent(SA::EventTypes::MouseHoverEvent, true); d->isHovered = true; break;
+        case LeaveNotify: sendEvent(SA::EventTypes::MouseHoverEvent, false); d->isHovered = false; break;
+        case ButtonPress:
+        {
+            switch (event->xbutton.button)
             {
-                sendEvent(SA::EventTypes::ButtonReleaseEvent,
-                          static_cast<unsigned int>(SA::Key_Unknown + key));
+            case Button1: sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonLeft)); break;
+            case Button2: sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonMiddle)); break;
+            case Button3: sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonRight)); break;
+            case Button4: sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonX1)); break;
+            case Button5: sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonX2)); break;
             }
-            else
+            break;
+        }
+        case ButtonRelease:
+        {
+            switch (event->xbutton.button)
             {
-                sendEvent(SA::EventTypes::ButtonReleaseEvent,
-                           static_cast<unsigned int>(KEYS_MAP.at(key)));
+            case Button1: sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonLeft)); break;
+            case Button2: sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonMiddle)); break;
+            case Button3: sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonRight)); break;
+            case Button4: sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonX1)); break;
+            case Button5: sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonX2)); break;
             }
-
             break;
         }
-        case Expose:
-        {
-            sendEvent(SA::EventTypes::PaintEvent, true);
-            break;
-        }
-        case ConfigureNotify:
-        {
-            geometryUpdated();
-            break;
-        }
-        case ClientMessage:
-        {
-            SA::Application::instance().quit();
-            break;
-        }
-        default:
-            break;
+        case MotionNotify: sendEvent(MouseMoveEvent, std::pair<int, int>(event->xmotion.x, event->xmotion.y)); break;
+        case Expose: if (event->xexpose.count > 0) break; sendEvent(SA::EventTypes::PaintEvent, true); break;
+        case ConfigureNotify: geometryUpdated(); break;
+        case ClientMessage: SA::Application::instance().quit(); break;
+        default: break;
         }
     }
 

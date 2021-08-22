@@ -52,7 +52,7 @@ namespace SA
 
     private:
 
-        void procEvent(const XEvent &event);
+        void procEvent(_XEvent *event);
         void sendEvent(SA::EventTypes type, const std::any &value);
         void geometryUpdated();
         void setWindowProperties();

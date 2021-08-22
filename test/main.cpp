@@ -23,7 +23,7 @@ int main()
 //    sg.show();
 
     Controls tt;
-    tt.setGeometry(1500, 500 ,300, 200);
+    tt.setGeometry(500, 200 , 600, 600);
     tt.show();
 
     return SA::Application::instance().exec();
