@@ -4,6 +4,7 @@
 #include <string>
 #include <memory>
 #include <functional>
+#include <X11/Xlib.h>
 
 #include "SACore/object.h"
 
@@ -44,11 +45,14 @@ namespace SA
         int textWidth(const std::string &text);
         int textHeight();
 
+        bool isHovered();
+
         void mainLoopEvent();
         void addEventListener(SA::Object *object);
 
     private:
 
+        void procEvent(_XEvent *event);
         void sendEvent(SA::EventTypes type, const std::any &value);
         void geometryUpdated();
         void setWindowProperties();

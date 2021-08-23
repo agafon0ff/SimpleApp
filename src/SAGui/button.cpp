@@ -5,7 +5,7 @@ namespace SA
 {
     struct Button::ButtonPrivate
     {
-        std::string text = "Button";
+        std::string text = "Button 1";
         bool pressed = false;
     };
 
@@ -22,15 +22,15 @@ namespace SA
 
     void Button::paintEvent()
     {
-        setPen(3, 250, 0, 0);
+        setPen(1, 0, 0, 0);
 
         if (isHovered())
             setBrush(200, 200, 200);
-        else setBrush(220, 250, 220);
+        else setBrush(220, 220, 220);
 
         if (d->pressed) setBrush(180, 180, 180);
 
-        drawRect(0, 0, width(), height());
+        drawRect(0, 0, width() - 1, height() - 1);
         drawText(width() / 2 - textWidth(d->text) / 2,
                  height() / 2 - textHeight() / 2,
                  d->text);

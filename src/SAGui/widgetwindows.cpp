@@ -9,7 +9,7 @@
 #include <winuser.h>
 #include <iostream>
 #include <tchar.h>
-#include <list>
+#include <vector>
 #include <map>
 
 using namespace std;
@@ -165,7 +165,7 @@ namespace SA
         bool isPosChanged = false;
         bool isHovered = false;
 
-        std::list<SA::Object*> eventListners;
+        std::vector<SA::Object*> eventListners;
     };
 
     WidgetWindows::WidgetWindows(WidgetWindows *parent):
@@ -441,11 +441,11 @@ namespace SA
         case WM_LBUTTONDOWN: sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonLeft)); break;
         case WM_RBUTTONDOWN: sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonRight)); break;
         case WM_MBUTTONDOWN: sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonMiddle)); break;
-        case WM_XBUTTONDOWN: sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonX)); break;
+        case WM_XBUTTONDOWN: sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonX1)); break;
         case WM_LBUTTONUP: sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonLeft)); break;
         case WM_RBUTTONUP: sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonRight)); break;
         case WM_MBUTTONUP: sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonMiddle)); break;
-        case WM_XBUTTONUP: sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonX)); break;
+        case WM_XBUTTONUP: sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonX1)); break;
         case WM_MOUSEMOVE:
         {
             sendEvent(MouseMoveEvent,

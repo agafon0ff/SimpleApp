@@ -2,6 +2,7 @@
 
 #include "widget.h"
 #include "button.h"
+#include "snakegame.h"
 
 class Controls : public SA::Widget
 {
