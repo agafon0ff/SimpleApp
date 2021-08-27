@@ -199,7 +199,7 @@ namespace SA
     {
         switch (type)
         {
-        case EventTypes::ButtonPressEvent:
+        case ButtonPressEvent:
             keyPressEvent(true, std::any_cast<unsigned int>(value));
             break;
         case EventTypes::ButtonReleaseEvent:
