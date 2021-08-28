@@ -323,8 +323,8 @@ namespace SA
         return d->height;
     }
 
-    void WidgetWindows::setPen(unsigned int width, unsigned char red,
-                                unsigned char green, unsigned char blue)
+    void WidgetWindows::setPen(unsigned char red, unsigned char green,
+                               unsigned char blue, unsigned int width);
     {
         if (!d->paintingHandle) return;
 

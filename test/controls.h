@@ -19,6 +19,7 @@ public:
 
     void btnPressed(bool state);
     void btnHovered(bool state);
+    void btnChecked(bool state);
 };
 
 

@@ -110,13 +110,14 @@ namespace SA
         return d->widget->height();
     }
 
-    void Widget::setPen(unsigned int width, unsigned char red,
-                           unsigned char green, unsigned char blue)
+    void Widget::setPen(unsigned char red, unsigned char green,
+                           unsigned char blue, unsigned int width)
     {
-        d->widget->setPen(width, red, green, blue);
+        d->widget->setPen(red, green, blue, width);
     }
 
-    void Widget::setBrush(unsigned char red, unsigned char green, unsigned char blue)
+    void Widget::setBrush(unsigned char red, unsigned char green,
+                          unsigned char blue)
     {
         d->widget->setBrush(red, green, blue);
     }

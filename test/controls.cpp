@@ -3,20 +3,20 @@
 #include "controls.h"
 
 Controls::Controls(SA::Widget *parent) : SA::Widget(parent),
-    m_button1(new SA::Button(this)),
-    m_button2(new SA::Button(this)),
-    m_button3(new SA::Button(this)),
-    m_button4(new SA::Button(this))
+    m_button1(new SA::Button("Button 1", this)),
+    m_button2(new SA::Button("Button 2", this)),
+    m_button3(new SA::Button("Button 3", this)),
+    m_button4(new SA::Button("Button 4", this))
 {
     using namespace std::placeholders;
     m_button1->setGeometry(5, 5, 120, 30);
-    m_button2->setGeometry(125, 5, 120, 30);
-    m_button3->setGeometry(5, 35, 120, 30);
-    m_button4->setGeometry(125, 35, 120, 30);
-    m_button1->addPressHandler(std::bind(&Controls::btnPressed, this, _1));
+    m_button2->setGeometry(130, 5, 120, 30);
+    m_button3->setGeometry(5, 40, 120, 30);
+    m_button4->setGeometry(130, 40, 120, 30);
+    m_button1->addCheckHandler(std::bind(&Controls::btnChecked, this, _1));
     m_button2->addPressHandler(std::bind(&Controls::btnPressed, this, _1));
-    m_button3->addPressHandler(std::bind(&Controls::btnPressed, this, _1));
-    m_button4->addPressHandler(std::bind(&Controls::btnPressed, this, _1));
+    m_button3->addHoverHandler(std::bind(&Controls::btnHovered, this, _1));
+    m_button1->setCheckable(true);
 
     std::cout << __PRETTY_FUNCTION__ << std::endl;
 }
@@ -38,6 +38,13 @@ void Controls::btnPressed(bool state)
 }
 
 void Controls::btnHovered(bool state)
+{
+    std::cout << __PRETTY_FUNCTION__
+              << " state: " << state
+              << std::endl;
+}
+
+void Controls::btnChecked(bool state)
 {
     std::cout << __PRETTY_FUNCTION__
               << " state: " << state

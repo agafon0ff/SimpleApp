@@ -29,8 +29,8 @@ namespace SA
         int width();
         int height();
 
-        void setPen(unsigned int width, unsigned char red,
-                       unsigned char green, unsigned char blue);
+        void setPen(unsigned char red, unsigned char green,
+                    unsigned char blue, unsigned int width);
 
         void setBrush(unsigned char red, unsigned char green, unsigned char blue);
 
