@@ -13,7 +13,7 @@ int main()
     signal(SIGTERM, signalHandler);
     signal(SIGINT, signalHandler);
 
-#ifndef Q_OS_WIN
+#ifdef __linux__
     signal(SIGKILL, signalHandler);
     signal(SIGQUIT, signalHandler);
 #endif // Q_OS_WIN
