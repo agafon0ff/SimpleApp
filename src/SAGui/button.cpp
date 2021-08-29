@@ -33,8 +33,8 @@ namespace SA
         d->text = text;
         resize(150, 40);
         calcTextColors({20, 20, 20});
-        calcBorders({20, 20, 20, 1});
-        calcBackgrounds({200, 200, 200});
+        calcBorders({90, 90, 90, 1});
+        calcBackgrounds({250, 250, 250});
     }
 
     Button::~Button()
@@ -56,6 +56,8 @@ namespace SA
     void Button::setEnabled(bool state)
     {
         d->enable = state;
+        d->styleState = state ? EnableState : DisableState;
+        update();
     }
 
     bool Button::isEnabled()
@@ -181,9 +183,8 @@ namespace SA
     {
         if (!d->enable) return;
 
-        d->styleState = state ? HoveredState :
-                                d->checked ? CheckedState :
-                                             EnableState;
+        d->styleState = d->checked ? CheckedState :
+                                     state ? HoveredState : EnableState;
         update();
         for (const auto &it: d->hoverHanders) it.second(state);
     }

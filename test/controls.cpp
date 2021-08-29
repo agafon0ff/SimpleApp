@@ -13,10 +13,13 @@ Controls::Controls(SA::Widget *parent) : SA::Widget(parent),
     m_button2->setGeometry(130, 5, 120, 30);
     m_button3->setGeometry(5, 40, 120, 30);
     m_button4->setGeometry(130, 40, 120, 30);
+
     m_button1->addCheckHandler(std::bind(&Controls::btnChecked, this, _1));
     m_button2->addPressHandler(std::bind(&Controls::btnPressed, this, _1));
     m_button3->addHoverHandler(std::bind(&Controls::btnHovered, this, _1));
+
     m_button1->setCheckable(true);
+    m_button4->setEnabled(false);
 
     std::cout << __PRETTY_FUNCTION__ << std::endl;
 }
