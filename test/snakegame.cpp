@@ -84,15 +84,15 @@ void SnakeGame::timerEvent(int id)
 
 void SnakeGame::paintEvent()
 {
-    setPen(1, 30, 30, 30);
+    setPen(30, 30, 30, 1);
     setBrush(30, 30, 30);
     drawRect(0, 0, width(), height());
 
-    setPen(2, 20, 20, 20);
+    setPen(20, 20, 20, 2);
     setBrush(50, 50, 50);
     drawRect(d->gameRect.x, d->gameRect.y, d->gameRect.width, d->gameRect.height);
 
-    setPen(1, 50, 50, 50);
+    setPen(50, 50, 50, 1);
     int cellWidth = d->gameRect.width / d->cellsCount;
     int cellHeight = d->gameRect.height / d->cellsCount;
 
@@ -109,7 +109,7 @@ void SnakeGame::paintEvent()
              d->foodPoint.y * cellHeight + d->gameRect.y,
              cellWidth, cellHeight);
 
-    setPen(1, 230, 160, 90);
+    setPen(230, 160, 90, 1);
 
     if (d->gameOver)
     {
