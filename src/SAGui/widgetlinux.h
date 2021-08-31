@@ -41,6 +41,7 @@ namespace SA
         void drawLine(int x1, int y1, int x2, int y2);
         void drawRect(int x, int y, int width, int height);
         void drawText(int x, int y, const std::string &text);
+        void drawImage(int x, int y, int width, int height, const std::string &path);
 
         int textWidth(const std::string &text);
         int textHeight();

@@ -10,6 +10,8 @@ namespace SA
         MouseHoverEvent,
         MousePressEvent,
         MouseReleaseEvent,
+        FocusInEvent,
+        FocusOutEvent,
         PaintEvent,
         MoveEvent,
         ResizeEvent

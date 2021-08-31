@@ -209,7 +209,7 @@ namespace SA
 
         /* What events need to be responded to */
         XSelectInput(d->display, d->window, ExposureMask |
-                     KeyPressMask | KeyReleaseMask |
+                     KeyPressMask | KeyReleaseMask | FocusChangeMask |
                      ButtonPressMask | ButtonReleaseMask |
                      PointerMotionMask | StructureNotifyMask |
                      EnterWindowMask | LeaveWindowMask |
@@ -405,6 +405,40 @@ namespace SA
                     text.c_str(), text.length());
     }
 
+    static const uint8_t xlogo16_bits[] = {
+           0x0f, 0x80, 0x1e, 0x80, 0x3c, 0x40, 0x78, 0x20, 0x78, 0x10, 0xf0, 0x08,
+           0xe0, 0x09, 0xc0, 0x05, 0xc0, 0x02, 0x40, 0x07, 0x20, 0x0f, 0x20, 0x1e,
+           0x10, 0x1e, 0x08, 0x3c, 0x04, 0x78, 0x02, 0xf0};
+
+    void WidgetLinux::drawImage(int x, int y, int width, int height, const std::string &path)
+    {
+        Pixmap bitmap = XCreateBitmapFromData(d->display, d->window,
+                                              reinterpret_cast<const char*>(xlogo16_bits),
+                                              16, 16);
+//        Pixmap bitmap;
+//        unsigned int bitmap_width, bitmap_height;
+//        int hotspot_x, hotspot_y;
+//        int rc = XReadBitmapFile(d->display, d->window,
+//                                 path.c_str(),
+//                                 &bitmap_width, &bitmap_height,
+//                                 &bitmap,
+//                                 &hotspot_x, &hotspot_y);
+//        switch (rc) {
+//        case BitmapOpenFailed: cout << "XReadBitmapFile - could not open file: " << path << endl; return;
+//        case BitmapFileInvalid: cout << "XReadBitmapFile - file doesn't contain a valid bitmap: " << path << endl; return;
+//        case BitmapNoMemory: cout << "XReadBitmapFile - not enough memory: " << path << endl; return;
+//        }
+
+        XCopyPlane(d->display, bitmap, d->window, d->gc,
+                   0, 0,
+                   16, 16,
+                   x, y,
+                   1);
+
+        XSync(d->display, False);
+        XFlush(d->display);
+    }
+
     int WidgetLinux::textWidth(const std::string &text)
     {
         return XTextWidth(d->font, text.c_str(), text.size());
@@ -412,7 +446,7 @@ namespace SA
 
     int WidgetLinux::textHeight()
     {
-        return d->font->ascent - d->font->descent;
+        return d->font->ascent;// - d->font->descent;
     }
 
     bool WidgetLinux::isHovered()
@@ -495,6 +529,8 @@ namespace SA
             }
             break;
         }
+        case FocusIn: std::cout << __PRETTY_FUNCTION__ << " FocusIn:" << std::endl; sendEvent(SA::EventTypes::FocusInEvent, true); break;
+        case FocusOut:  std::cout << __PRETTY_FUNCTION__ << " FocusOut:" << std::endl; sendEvent(SA::EventTypes::FocusOutEvent, false); break;
         case MotionNotify: sendEvent(MouseMoveEvent, std::pair<int, int>(event->xmotion.x, event->xmotion.y)); break;
         case Expose: if (event->xexpose.count > 0) break; sendEvent(SA::EventTypes::PaintEvent, true); break;
         case ConfigureNotify: geometryUpdated(); break;

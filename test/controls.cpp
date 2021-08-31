@@ -6,13 +6,17 @@ Controls::Controls(SA::Widget *parent) : SA::Widget(parent),
     m_button1(new SA::Button("Button 1", this)),
     m_button2(new SA::Button("Button 2", this)),
     m_button3(new SA::Button("Button 3", this)),
-    m_button4(new SA::Button("Button 4", this))
+    m_button4(new SA::Button("Button 4", this)),
+    m_textEdit(new SA::TextEdit(this))
 {
     using namespace std::placeholders;
     m_button1->setGeometry(5, 5, 120, 30);
     m_button2->setGeometry(130, 5, 120, 30);
     m_button3->setGeometry(5, 40, 120, 30);
     m_button4->setGeometry(130, 40, 120, 30);
+
+    m_textEdit->setGeometry(5, 80, 500, 500);
+    m_textEdit->setText("Hello World!");
 
     m_button1->addCheckHandler(std::bind(&Controls::btnChecked, this, _1));
     m_button2->addPressHandler(std::bind(&Controls::btnPressed, this, _1));

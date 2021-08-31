@@ -48,6 +48,7 @@ namespace SA
         virtual void mouseMoveEvent(int x, int y);
         virtual void mouseHoverEvent(bool state);
         virtual void mousePressEvent(bool state, unsigned int button);
+        virtual void focusEvent(bool state);
 
     private:
         void mainLoopEvent();

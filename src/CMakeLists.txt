@@ -8,7 +8,8 @@ set(SA_SOURCES
     SAGui/widget.cpp
     SAGui/widgetlinux.cpp
     SAGui/widgetwindows.cpp
-    SAGui/button.cpp)
+    SAGui/button.cpp
+    SAGui/textedit.cpp)
 
 set(SA_HEADERS
     SACore/application.h
@@ -18,7 +19,8 @@ set(SA_HEADERS
     SAGui/widget.h
     SAGui/widgetlinux.h
     SAGui/widgetwindows.h
-    SAGui/button.h)
+    SAGui/button.h
+    SAGui/textedit.h)
 
 set(SA_DIRS
     SACore

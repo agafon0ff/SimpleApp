@@ -2,9 +2,8 @@
 
 #include "widget.h"
 #include "button.h"
+#include "textedit.h"
 #include "snakegame.h"
-
-#include <iostream>
 
 class Controls : public SA::Widget
 {
@@ -16,6 +15,7 @@ public:
     SA::Button *m_button2 = nullptr;
     SA::Button *m_button3 = nullptr;
     SA::Button *m_button4 = nullptr;
+    SA::TextEdit *m_textEdit = nullptr;
 
     void btnPressed(bool state);
     void btnHovered(bool state);

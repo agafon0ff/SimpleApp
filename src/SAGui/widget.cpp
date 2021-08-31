@@ -191,6 +191,11 @@ namespace SA
         std::ignore = button;
     }
 
+    void Widget::focusEvent(bool state)
+    {
+        std::ignore = state;
+    }
+
     void Widget::mainLoopEvent()
     {
         d->widget->mainLoopEvent();
@@ -236,6 +241,8 @@ namespace SA
             moveEvent(movePair.first, movePair.second);
             break;
         }
+        case EventTypes::FocusInEvent: focusEvent(true); break;
+        case EventTypes::FocusOutEvent: focusEvent(false); break;
         case EventTypes::ResizeEvent:
         {
             auto sizePair = std::any_cast<std::pair<int, int> >(value);
