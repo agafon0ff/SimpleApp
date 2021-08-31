@@ -16,7 +16,8 @@ using namespace std;
 
 static std::map<HWND, SA::WidgetWindows*> WIDGETS_MAP;
 
-static const std::map<unsigned int, SA::Keys> KEYS_MAP = {
+static const std::map<unsigned int, SA::Keys> KEYS_MAP =
+{
     { VK_ESCAPE,    SA::Key_Escape      },
     { VK_TAB,       SA::Key_Tab         },
     { VK_BACK,      SA::Key_Backspace   },
@@ -125,7 +126,7 @@ static const std::map<unsigned int, SA::Keys> KEYS_MAP = {
     { VK_MEDIA_PREV_TRACK,  SA::Key_MediaPrev   },
     { VK_MEDIA_STOP,        SA::Key_MediaStop   },
     { VK_MEDIA_PLAY_PAUSE,  SA::Key_MediaPlay   }
-};
+}; // KEYS_MAP
 
 LRESULT CALLBACK winproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -477,6 +478,8 @@ namespace SA
             sendEvent(MouseHoverEvent, false);
             break;
         }
+        case WM_SETFOCUS: sendEvent(FocusInEvent, true); break;
+        case WM_KILLFOCUS: sendEvent(FocusOutEvent, false); break;
         case WM_PAINT:
         {
             HDC tmpDC = BeginPaint(d->hwnd, &d->paintStruct);

@@ -30,7 +30,7 @@ namespace SA
         calcBorders({90, 90, 90, 1});
         calcBackgrounds({250, 250, 250});
 
-        d->cursorHeight = textHeight() + 4;
+        d->cursorHeight = textHeight() + 2;
         d->timerId = startTimer(500);
     }
 
@@ -128,7 +128,7 @@ namespace SA
             brush = d->textColors[d->styleState];
             setPen(brush.red, brush.green, brush.blue, 2);
 
-            int posX = textWidth(d->text);
+            int posX = textWidth(d->text) + 2;
             drawLine(posX, 2, posX, d->cursorHeight);
         }
     }

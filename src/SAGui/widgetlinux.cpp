@@ -529,8 +529,8 @@ namespace SA
             }
             break;
         }
-        case FocusIn: std::cout << __PRETTY_FUNCTION__ << " FocusIn:" << std::endl; sendEvent(SA::EventTypes::FocusInEvent, true); break;
-        case FocusOut:  std::cout << __PRETTY_FUNCTION__ << " FocusOut:" << std::endl; sendEvent(SA::EventTypes::FocusOutEvent, false); break;
+        case FocusIn: sendEvent(SA::EventTypes::FocusInEvent, true); break;
+        case FocusOut: sendEvent(SA::EventTypes::FocusOutEvent, false); break;
         case MotionNotify: sendEvent(MouseMoveEvent, std::pair<int, int>(event->xmotion.x, event->xmotion.y)); break;
         case Expose: if (event->xexpose.count > 0) break; sendEvent(SA::EventTypes::PaintEvent, true); break;
         case ConfigureNotify: geometryUpdated(); break;
