@@ -16,121 +16,122 @@
 extern int errno;
 using namespace std;
 
-static std::map<Window, SA::WidgetLinux*> WIDGETS_MAP;
-
-static const std::map<unsigned int, SA::Keys> KEYS_MAP = {
-    { XK_Escape,        SA::Key_Escape      },
-    { XK_Tab,           SA::Key_Tab         },
-    { XK_BackSpace,     SA::Key_Backspace   },
-    { XK_Return,        SA::Key_Return      },
-    { XK_Insert,        SA::Key_Insert      },
-    { XK_Delete,        SA::Key_Delete      },
-    { XK_Pause,         SA::Key_Pause       },
-    { XK_Print,         SA::Key_Print       },
-    { XK_Clear,         SA::Key_Clear       },
-    { XK_Home,          SA::Key_Home        },
-    { XK_End,           SA::Key_End         },
-    { XK_Left,          SA::Key_Left        },
-    { XK_Up,            SA::Key_Up          },
-    { XK_Right,         SA::Key_Right       },
-    { XK_Down,          SA::Key_Down        },
-    { XK_Page_Up,       SA::Key_PageUp      },
-    { XK_Page_Down,     SA::Key_PageDown    },
-    { XK_Shift_L,       SA::Key_LShift      },
-    { XK_Shift_R,       SA::Key_RShift      },
-    { XK_Control_R,     SA::Key_ControlR    },
-    { XK_Control_L,     SA::Key_ControlL    },
-    { XK_Alt_L,         SA::Key_AltL        },
-    { XK_Alt_R,         SA::Key_AltR        },
-    { XK_Caps_Lock,     SA::Key_CapsLock    },
-    { XK_Num_Lock,      SA::Key_NumLock     },
-    { XK_Scroll_Lock,   SA::Key_ScrollLock  },
-    { XK_F1,            SA::Key_F1          },
-    { XK_F2,            SA::Key_F2          },
-    { XK_F3,            SA::Key_F3          },
-    { XK_F4,            SA::Key_F4          },
-    { XK_F5,            SA::Key_F5          },
-    { XK_F6,            SA::Key_F6          },
-    { XK_F7,            SA::Key_F7          },
-    { XK_F8,            SA::Key_F8          },
-    { XK_F9,            SA::Key_F9          },
-    { XK_F10,           SA::Key_F10         },
-    { XK_F11,           SA::Key_F11         },
-    { XK_F12,           SA::Key_F12         },
-    { XK_F13,           SA::Key_F13         },
-    { XK_F14,           SA::Key_F14         },
-    { XK_F15,           SA::Key_F15         },
-    { XK_F16,           SA::Key_F16         },
-    { XK_F17,           SA::Key_F17         },
-    { XK_F18,           SA::Key_F18         },
-    { XK_F19,           SA::Key_F19         },
-    { XK_F20,           SA::Key_F20         },
-    { XK_F21,           SA::Key_F21         },
-    { XK_F22,           SA::Key_F22         },
-    { XK_F23,           SA::Key_F23         },
-    { XK_F24,           SA::Key_F24         },
-    { XK_Menu,          SA::Key_Menu        },
-    { XK_Help,          SA::Key_Help        },
-    { XK_space,         SA::Key_Space       },
-    { XK_quotedbl,      SA::Key_Quote       },
-    { XK_asterisk,      SA::Key_Asterisk    },
-    { XK_plus,          SA::Key_Plus        },
-    { XK_comma,         SA::Key_Comma       },
-    { XK_minus,         SA::Key_Minus       },
-    { XK_period,        SA::Key_Period      },
-    { XK_slash,         SA::Key_Slash       },
-    { XK_0,             SA::Key_0           },
-    { XK_1,             SA::Key_1           },
-    { XK_2,             SA::Key_2           },
-    { XK_3,             SA::Key_3           },
-    { XK_4,             SA::Key_4           },
-    { XK_5,             SA::Key_5           },
-    { XK_6,             SA::Key_6           },
-    { XK_7,             SA::Key_7           },
-    { XK_8,             SA::Key_8           },
-    { XK_9,             SA::Key_9           },
-    { XK_semicolon,     SA::Key_Semicolon   },
-    { XK_a,             SA::Key_A           },
-    { XK_b,             SA::Key_B           },
-    { XK_c,             SA::Key_C           },
-    { XK_d,             SA::Key_D           },
-    { XK_e,             SA::Key_E           },
-    { XK_f,             SA::Key_F           },
-    { XK_g,             SA::Key_G           },
-    { XK_h,             SA::Key_H           },
-    { XK_i,             SA::Key_I           },
-    { XK_j,             SA::Key_J           },
-    { XK_k,             SA::Key_K           },
-    { XK_l,             SA::Key_L           },
-    { XK_m,             SA::Key_M           },
-    { XK_n,             SA::Key_N           },
-    { XK_o,             SA::Key_O           },
-    { XK_p,             SA::Key_P           },
-    { XK_q,             SA::Key_Q           },
-    { XK_r,             SA::Key_R           },
-    { XK_s,             SA::Key_S           },
-    { XK_t,             SA::Key_T           },
-    { XK_u,             SA::Key_U           },
-    { XK_v,             SA::Key_V           },
-    { XK_w,             SA::Key_W           },
-    { XK_x,             SA::Key_X           },
-    { XK_y,             SA::Key_Y           },
-    { XK_z,             SA::Key_Z           },
-    { XK_braceleft,     SA::Key_BracketLeft },
-    { XK_backslash,     SA::Key_Backslash   },
-    { XK_braceright,    SA::Key_BracketRight},
-    { XK_asciitilde,    SA::Key_AsciiTilde  }
-//    { XK_Mute,       SA::Key_VolumeMute  },
-//    { XK_VOLUME_DOWN,       SA::Key_VolumeDown  },
-//    { XK_VOLUME_UP,         SA::Key_VolumeUp    },
-//    { XK_MEDIA_NEXT_TRACK,  SA::Key_MediaNext   },
-//    { XK_MEDIA_PREV_TRACK,  SA::Key_MediaPrev   },
-//    { XK_MEDIA_STOP,        SA::Key_MediaStop   },
-//    { XK_MEDIA_PLAY_PAUSE,  SA::Key_MediaPlay   }
-};
-
 namespace SA
 {
+    static const std::map<unsigned int, SA::Keys> KEYS_MAP = {
+        { XK_Escape,        SA::Key_Escape      },
+        { XK_Tab,           SA::Key_Tab         },
+        { XK_BackSpace,     SA::Key_Backspace   },
+        { XK_Return,        SA::Key_Return      },
+        { XK_Insert,        SA::Key_Insert      },
+        { XK_Delete,        SA::Key_Delete      },
+        { XK_Pause,         SA::Key_Pause       },
+        { XK_Print,         SA::Key_Print       },
+        { XK_Clear,         SA::Key_Clear       },
+        { XK_Home,          SA::Key_Home        },
+        { XK_End,           SA::Key_End         },
+        { XK_Left,          SA::Key_Left        },
+        { XK_Up,            SA::Key_Up          },
+        { XK_Right,         SA::Key_Right       },
+        { XK_Down,          SA::Key_Down        },
+        { XK_Page_Up,       SA::Key_PageUp      },
+        { XK_Page_Down,     SA::Key_PageDown    },
+        { XK_Shift_L,       SA::Key_LShift      },
+        { XK_Shift_R,       SA::Key_RShift      },
+        { XK_Control_R,     SA::Key_ControlR    },
+        { XK_Control_L,     SA::Key_ControlL    },
+        { XK_Alt_L,         SA::Key_AltL        },
+        { XK_Alt_R,         SA::Key_AltR        },
+        { XK_Caps_Lock,     SA::Key_CapsLock    },
+        { XK_Num_Lock,      SA::Key_NumLock     },
+        { XK_Scroll_Lock,   SA::Key_ScrollLock  },
+        { XK_F1,            SA::Key_F1          },
+        { XK_F2,            SA::Key_F2          },
+        { XK_F3,            SA::Key_F3          },
+        { XK_F4,            SA::Key_F4          },
+        { XK_F5,            SA::Key_F5          },
+        { XK_F6,            SA::Key_F6          },
+        { XK_F7,            SA::Key_F7          },
+        { XK_F8,            SA::Key_F8          },
+        { XK_F9,            SA::Key_F9          },
+        { XK_F10,           SA::Key_F10         },
+        { XK_F11,           SA::Key_F11         },
+        { XK_F12,           SA::Key_F12         },
+        { XK_F13,           SA::Key_F13         },
+        { XK_F14,           SA::Key_F14         },
+        { XK_F15,           SA::Key_F15         },
+        { XK_F16,           SA::Key_F16         },
+        { XK_F17,           SA::Key_F17         },
+        { XK_F18,           SA::Key_F18         },
+        { XK_F19,           SA::Key_F19         },
+        { XK_F20,           SA::Key_F20         },
+        { XK_F21,           SA::Key_F21         },
+        { XK_F22,           SA::Key_F22         },
+        { XK_F23,           SA::Key_F23         },
+        { XK_F24,           SA::Key_F24         },
+        { XK_Menu,          SA::Key_Menu        },
+        { XK_Help,          SA::Key_Help        },
+        { XK_space,         SA::Key_Space       },
+        { XK_quotedbl,      SA::Key_Quote       },
+        { XK_asterisk,      SA::Key_Asterisk    },
+        { XK_plus,          SA::Key_Plus        },
+        { XK_comma,         SA::Key_Comma       },
+        { XK_minus,         SA::Key_Minus       },
+        { XK_period,        SA::Key_Period      },
+        { XK_slash,         SA::Key_Slash       },
+        { XK_0,             SA::Key_0           },
+        { XK_1,             SA::Key_1           },
+        { XK_2,             SA::Key_2           },
+        { XK_3,             SA::Key_3           },
+        { XK_4,             SA::Key_4           },
+        { XK_5,             SA::Key_5           },
+        { XK_6,             SA::Key_6           },
+        { XK_7,             SA::Key_7           },
+        { XK_8,             SA::Key_8           },
+        { XK_9,             SA::Key_9           },
+        { XK_semicolon,     SA::Key_Semicolon   },
+        { XK_a,             SA::Key_A           },
+        { XK_b,             SA::Key_B           },
+        { XK_c,             SA::Key_C           },
+        { XK_d,             SA::Key_D           },
+        { XK_e,             SA::Key_E           },
+        { XK_f,             SA::Key_F           },
+        { XK_g,             SA::Key_G           },
+        { XK_h,             SA::Key_H           },
+        { XK_i,             SA::Key_I           },
+        { XK_j,             SA::Key_J           },
+        { XK_k,             SA::Key_K           },
+        { XK_l,             SA::Key_L           },
+        { XK_m,             SA::Key_M           },
+        { XK_n,             SA::Key_N           },
+        { XK_o,             SA::Key_O           },
+        { XK_p,             SA::Key_P           },
+        { XK_q,             SA::Key_Q           },
+        { XK_r,             SA::Key_R           },
+        { XK_s,             SA::Key_S           },
+        { XK_t,             SA::Key_T           },
+        { XK_u,             SA::Key_U           },
+        { XK_v,             SA::Key_V           },
+        { XK_w,             SA::Key_W           },
+        { XK_x,             SA::Key_X           },
+        { XK_y,             SA::Key_Y           },
+        { XK_z,             SA::Key_Z           },
+        { XK_braceleft,     SA::Key_BracketLeft },
+        { XK_backslash,     SA::Key_Backslash   },
+        { XK_braceright,    SA::Key_BracketRight},
+        { XK_asciitilde,    SA::Key_AsciiTilde  }
+    //    { XK_Mute,       SA::Key_VolumeMute  },
+    //    { XK_VOLUME_DOWN,       SA::Key_VolumeDown  },
+    //    { XK_VOLUME_UP,         SA::Key_VolumeUp    },
+    //    { XK_MEDIA_NEXT_TRACK,  SA::Key_MediaNext   },
+    //    { XK_MEDIA_PREV_TRACK,  SA::Key_MediaPrev   },
+    //    { XK_MEDIA_STOP,        SA::Key_MediaStop   },
+    //    { XK_MEDIA_PLAY_PAUSE,  SA::Key_MediaPlay   }
+    }; // KEYS_MAP
+
+    static std::map<Window, WidgetLinux*> WIDGETS_MAP;
+    static WidgetLinux* WIDGET_IN_FOCUS = nullptr;
+
     struct WidgetLinux::WidgetLinuxPrivate
     {
         friend class WidgetLinux;
@@ -509,11 +510,36 @@ namespace SA
         {
             switch (event->xbutton.button)
             {
-            case Button1: sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonLeft)); break;
-            case Button2: sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonMiddle)); break;
-            case Button3: sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonRight)); break;
-            case Button4: sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonX1)); break;
-            case Button5: sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonX2)); break;
+            case Button1:
+            {
+                sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonLeft));
+                focusEvent(true);
+                break;
+            }
+            case Button2:
+            {
+                sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonMiddle));
+                focusEvent(true);
+                break;
+            }
+            case Button3:
+            {
+                sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonRight));
+                focusEvent(true);
+                break;
+            }
+            case Button4:
+            {
+                sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonX1));
+                focusEvent(true);
+                break;
+            }
+            case Button5:
+            {
+                sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonX2));
+                focusEvent(true);
+                break;
+            }
             }
             break;
         }
@@ -529,8 +555,8 @@ namespace SA
             }
             break;
         }
-        case FocusIn: sendEvent(SA::EventTypes::FocusInEvent, true); break;
-        case FocusOut: sendEvent(SA::EventTypes::FocusOutEvent, false); break;
+        case FocusIn: if (WIDGET_IN_FOCUS) WIDGET_IN_FOCUS->sendEvent(SA::EventTypes::FocusInEvent, true); break;
+        case FocusOut: if (WIDGET_IN_FOCUS) WIDGET_IN_FOCUS->sendEvent(SA::EventTypes::FocusOutEvent, false); break;
         case MotionNotify: sendEvent(MouseMoveEvent, std::pair<int, int>(event->xmotion.x, event->xmotion.y)); break;
         case Expose: if (event->xexpose.count > 0) break; sendEvent(SA::EventTypes::PaintEvent, true); break;
         case ConfigureNotify: geometryUpdated(); break;
@@ -543,6 +569,23 @@ namespace SA
     {
         for (SA::Object *object: d->eventListners)
             object->event(type, value);
+    }
+
+    void WidgetLinux::focusEvent(bool state)
+    {
+        if (state)
+        {
+            if (WIDGET_IN_FOCUS && WIDGET_IN_FOCUS != this)
+                WIDGET_IN_FOCUS->focusEvent(false);
+
+            WIDGET_IN_FOCUS = this;
+            WIDGET_IN_FOCUS->sendEvent(FocusInEvent, true);
+        }
+        else if (WIDGET_IN_FOCUS)
+        {
+            WIDGET_IN_FOCUS->sendEvent(FocusOutEvent, false);
+            WIDGET_IN_FOCUS = nullptr;
+        }
     }
 
     void WidgetLinux::geometryUpdated()
