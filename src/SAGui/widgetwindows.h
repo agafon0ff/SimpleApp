@@ -52,6 +52,7 @@ namespace SA
     private:
 
         void sendEvent(SA::EventTypes type, const std::any &value);
+        void focusEvent(bool state);
         void geometryUpdated();
 
         struct WidgetWindowsPrivate;

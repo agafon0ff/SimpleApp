@@ -14,132 +14,133 @@
 
 using namespace std;
 
-static std::map<HWND, SA::WidgetWindows*> WIDGETS_MAP;
-
-static const std::map<unsigned int, SA::Keys> KEYS_MAP =
-{
-    { VK_ESCAPE,    SA::Key_Escape      },
-    { VK_TAB,       SA::Key_Tab         },
-    { VK_BACK,      SA::Key_Backspace   },
-    { VK_RETURN,    SA::Key_Return      },
-    { VK_INSERT,    SA::Key_Insert      },
-    { VK_DELETE,    SA::Key_Delete      },
-    { VK_PAUSE,     SA::Key_Pause       },
-    { VK_PRINT,     SA::Key_Print       },
-    { VK_MODECHANGE,SA::Key_SysReq      },
-    { VK_CLEAR,     SA::Key_Clear       },
-    { VK_HOME,      SA::Key_Home        },
-    { VK_END,       SA::Key_End         },
-    { VK_LEFT,      SA::Key_Left        },
-    { VK_UP,        SA::Key_Up          },
-    { VK_RIGHT,     SA::Key_Right       },
-    { VK_DOWN,      SA::Key_Down        },
-    { VK_PRIOR,     SA::Key_PageUp      },
-    { VK_NEXT,      SA::Key_PageDown    },
-    { VK_SHIFT,     SA::Key_Shift       },
-    { VK_CONTROL,   SA::Key_Control     },
-    { VK_LCONTROL,  SA::Key_ControlL    },
-    { VK_MENU,      SA::Key_Alt         },
-    { VK_CAPITAL,   SA::Key_CapsLock    },
-    { VK_NUMLOCK,   SA::Key_NumLock     },
-    { VK_SCROLL,    SA::Key_ScrollLock  },
-    { VK_F1,        SA::Key_F1          },
-    { VK_F2,        SA::Key_F2          },
-    { VK_F3,        SA::Key_F3          },
-    { VK_F4,        SA::Key_F4          },
-    { VK_F5,        SA::Key_F5          },
-    { VK_F6,        SA::Key_F6          },
-    { VK_F7,        SA::Key_F7          },
-    { VK_F8,        SA::Key_F8          },
-    { VK_F9,        SA::Key_F9          },
-    { VK_F10,       SA::Key_F10         },
-    { VK_F11,       SA::Key_F11         },
-    { VK_F12,       SA::Key_F12         },
-    { VK_F13,       SA::Key_F13         },
-    { VK_F14,       SA::Key_F14         },
-    { VK_F15,       SA::Key_F15         },
-    { VK_F16,       SA::Key_F16         },
-    { VK_F17,       SA::Key_F17         },
-    { VK_F18,       SA::Key_F18         },
-    { VK_F19,       SA::Key_F19         },
-    { VK_F20,       SA::Key_F20         },
-    { VK_F21,       SA::Key_F21         },
-    { VK_F22,       SA::Key_F22         },
-    { VK_F23,       SA::Key_F23         },
-    { VK_F24,       SA::Key_F24         },
-    { VK_LMENU,     SA::Key_LMenu       },
-    { VK_RMENU,     SA::Key_RMenu       },
-    { VK_HELP,      SA::Key_Help        },
-    { VK_SPACE,     SA::Key_Space       },
-    { VK_OEM_7,     SA::Key_Quote    },
-    { VK_MULTIPLY,  SA::Key_Asterisk    },
-    { VK_ADD,       SA::Key_Plus        },
-    { VK_DECIMAL,   SA::Key_Comma       },
-    { VK_SUBTRACT,  SA::Key_Minus       },
-    { VK_SEPARATOR, SA::Key_Period      },
-    { VK_DIVIDE,    SA::Key_Slash       },
-    { 0x30,         SA::Key_0           },
-    { 0x31,         SA::Key_1           },
-    { 0x32,         SA::Key_2           },
-    { 0x33,         SA::Key_3           },
-    { 0x34,         SA::Key_4           },
-    { 0x35,         SA::Key_5           },
-    { 0x36,         SA::Key_6           },
-    { 0x37,         SA::Key_7           },
-    { 0x38,         SA::Key_8           },
-    { 0x39,         SA::Key_9           },
-    { VK_OEM_1,     SA::Key_Semicolon   },
-    { 0x41,         SA::Key_A           },
-    { 0x42,         SA::Key_B           },
-    { 0x43,         SA::Key_C           },
-    { 0x44,         SA::Key_D           },
-    { 0x45,         SA::Key_E           },
-    { 0x46,         SA::Key_F           },
-    { 0x47,         SA::Key_G           },
-    { 0x48,         SA::Key_H           },
-    { 0x49,         SA::Key_I           },
-    { 0x4A,         SA::Key_J           },
-    { 0x4B,         SA::Key_K           },
-    { 0x4C,         SA::Key_L           },
-    { 0x4D,         SA::Key_M           },
-    { 0x4E,         SA::Key_N           },
-    { 0x4F,         SA::Key_O           },
-    { 0x50,         SA::Key_P           },
-    { 0x51,         SA::Key_Q           },
-    { 0x52,         SA::Key_R           },
-    { 0x53,         SA::Key_S           },
-    { 0x54,         SA::Key_T           },
-    { 0x55,         SA::Key_U           },
-    { 0x56,         SA::Key_V           },
-    { 0x57,         SA::Key_W           },
-    { 0x58,         SA::Key_X           },
-    { 0x59,         SA::Key_Y           },
-    { 0x5A,         SA::Key_Z           },
-    { VK_OEM_4,     SA::Key_BracketLeft },
-    { VK_OEM_5,     SA::Key_Backslash   },
-    { VK_OEM_6,     SA::Key_BracketRight},
-    { VK_OEM_3,     SA::Key_AsciiTilde  },
-    { VK_VOLUME_MUTE,       SA::Key_VolumeMute  },
-    { VK_VOLUME_DOWN,       SA::Key_VolumeDown  },
-    { VK_VOLUME_UP,         SA::Key_VolumeUp    },
-    { VK_MEDIA_NEXT_TRACK,  SA::Key_MediaNext   },
-    { VK_MEDIA_PREV_TRACK,  SA::Key_MediaPrev   },
-    { VK_MEDIA_STOP,        SA::Key_MediaStop   },
-    { VK_MEDIA_PLAY_PAUSE,  SA::Key_MediaPlay   }
-}; // KEYS_MAP
-
-LRESULT CALLBACK winproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-    auto it = WIDGETS_MAP.find(hwnd);
-
-    if (it != WIDGETS_MAP.end())
-        return it->second->windowProc(msg, wParam, lParam);
-    else
-        return DefWindowProc(hwnd, msg, wParam, lParam);
-}
-
 namespace SA
 {
+    static const std::map<unsigned int, SA::Keys> KEYS_MAP =
+    {
+        { VK_ESCAPE,    SA::Key_Escape      },
+        { VK_TAB,       SA::Key_Tab         },
+        { VK_BACK,      SA::Key_Backspace   },
+        { VK_RETURN,    SA::Key_Return      },
+        { VK_INSERT,    SA::Key_Insert      },
+        { VK_DELETE,    SA::Key_Delete      },
+        { VK_PAUSE,     SA::Key_Pause       },
+        { VK_PRINT,     SA::Key_Print       },
+        { VK_MODECHANGE,SA::Key_SysReq      },
+        { VK_CLEAR,     SA::Key_Clear       },
+        { VK_HOME,      SA::Key_Home        },
+        { VK_END,       SA::Key_End         },
+        { VK_LEFT,      SA::Key_Left        },
+        { VK_UP,        SA::Key_Up          },
+        { VK_RIGHT,     SA::Key_Right       },
+        { VK_DOWN,      SA::Key_Down        },
+        { VK_PRIOR,     SA::Key_PageUp      },
+        { VK_NEXT,      SA::Key_PageDown    },
+        { VK_SHIFT,     SA::Key_Shift       },
+        { VK_CONTROL,   SA::Key_Control     },
+        { VK_LCONTROL,  SA::Key_ControlL    },
+        { VK_MENU,      SA::Key_Alt         },
+        { VK_CAPITAL,   SA::Key_CapsLock    },
+        { VK_NUMLOCK,   SA::Key_NumLock     },
+        { VK_SCROLL,    SA::Key_ScrollLock  },
+        { VK_F1,        SA::Key_F1          },
+        { VK_F2,        SA::Key_F2          },
+        { VK_F3,        SA::Key_F3          },
+        { VK_F4,        SA::Key_F4          },
+        { VK_F5,        SA::Key_F5          },
+        { VK_F6,        SA::Key_F6          },
+        { VK_F7,        SA::Key_F7          },
+        { VK_F8,        SA::Key_F8          },
+        { VK_F9,        SA::Key_F9          },
+        { VK_F10,       SA::Key_F10         },
+        { VK_F11,       SA::Key_F11         },
+        { VK_F12,       SA::Key_F12         },
+        { VK_F13,       SA::Key_F13         },
+        { VK_F14,       SA::Key_F14         },
+        { VK_F15,       SA::Key_F15         },
+        { VK_F16,       SA::Key_F16         },
+        { VK_F17,       SA::Key_F17         },
+        { VK_F18,       SA::Key_F18         },
+        { VK_F19,       SA::Key_F19         },
+        { VK_F20,       SA::Key_F20         },
+        { VK_F21,       SA::Key_F21         },
+        { VK_F22,       SA::Key_F22         },
+        { VK_F23,       SA::Key_F23         },
+        { VK_F24,       SA::Key_F24         },
+        { VK_LMENU,     SA::Key_LMenu       },
+        { VK_RMENU,     SA::Key_RMenu       },
+        { VK_HELP,      SA::Key_Help        },
+        { VK_SPACE,     SA::Key_Space       },
+        { VK_OEM_7,     SA::Key_Quote    },
+        { VK_MULTIPLY,  SA::Key_Asterisk    },
+        { VK_ADD,       SA::Key_Plus        },
+        { VK_DECIMAL,   SA::Key_Comma       },
+        { VK_SUBTRACT,  SA::Key_Minus       },
+        { VK_SEPARATOR, SA::Key_Period      },
+        { VK_DIVIDE,    SA::Key_Slash       },
+        { 0x30,         SA::Key_0           },
+        { 0x31,         SA::Key_1           },
+        { 0x32,         SA::Key_2           },
+        { 0x33,         SA::Key_3           },
+        { 0x34,         SA::Key_4           },
+        { 0x35,         SA::Key_5           },
+        { 0x36,         SA::Key_6           },
+        { 0x37,         SA::Key_7           },
+        { 0x38,         SA::Key_8           },
+        { 0x39,         SA::Key_9           },
+        { VK_OEM_1,     SA::Key_Semicolon   },
+        { 0x41,         SA::Key_A           },
+        { 0x42,         SA::Key_B           },
+        { 0x43,         SA::Key_C           },
+        { 0x44,         SA::Key_D           },
+        { 0x45,         SA::Key_E           },
+        { 0x46,         SA::Key_F           },
+        { 0x47,         SA::Key_G           },
+        { 0x48,         SA::Key_H           },
+        { 0x49,         SA::Key_I           },
+        { 0x4A,         SA::Key_J           },
+        { 0x4B,         SA::Key_K           },
+        { 0x4C,         SA::Key_L           },
+        { 0x4D,         SA::Key_M           },
+        { 0x4E,         SA::Key_N           },
+        { 0x4F,         SA::Key_O           },
+        { 0x50,         SA::Key_P           },
+        { 0x51,         SA::Key_Q           },
+        { 0x52,         SA::Key_R           },
+        { 0x53,         SA::Key_S           },
+        { 0x54,         SA::Key_T           },
+        { 0x55,         SA::Key_U           },
+        { 0x56,         SA::Key_V           },
+        { 0x57,         SA::Key_W           },
+        { 0x58,         SA::Key_X           },
+        { 0x59,         SA::Key_Y           },
+        { 0x5A,         SA::Key_Z           },
+        { VK_OEM_4,     SA::Key_BracketLeft },
+        { VK_OEM_5,     SA::Key_Backslash   },
+        { VK_OEM_6,     SA::Key_BracketRight},
+        { VK_OEM_3,     SA::Key_AsciiTilde  },
+        { VK_VOLUME_MUTE,       SA::Key_VolumeMute  },
+        { VK_VOLUME_DOWN,       SA::Key_VolumeDown  },
+        { VK_VOLUME_UP,         SA::Key_VolumeUp    },
+        { VK_MEDIA_NEXT_TRACK,  SA::Key_MediaNext   },
+        { VK_MEDIA_PREV_TRACK,  SA::Key_MediaPrev   },
+        { VK_MEDIA_STOP,        SA::Key_MediaStop   },
+        { VK_MEDIA_PLAY_PAUSE,  SA::Key_MediaPlay   }
+    }; // KEYS_MAP
+
+    static std::map<HWND, WidgetWindows*> WIDGETS_MAP;
+    static WidgetWindows* WIDGET_IN_FOCUS = nullptr;
+
+    LRESULT CALLBACK winproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+    {
+        auto it = WIDGETS_MAP.find(hwnd);
+
+        if (it != WIDGETS_MAP.end())
+            return it->second->windowProc(msg, wParam, lParam);
+        else
+            return DefWindowProc(hwnd, msg, wParam, lParam);
+    }
+
     struct WidgetWindows::WidgetWindowsPrivate
     {
         friend class SA::WidgetWindows;
@@ -446,14 +447,50 @@ namespace SA
             else sendEvent(ButtonReleaseEvent, static_cast<unsigned int>(KEYS_MAP.at(wParam)));
             break;
         }
-        case WM_LBUTTONDOWN: sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonLeft)); break;
-        case WM_RBUTTONDOWN: sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonRight)); break;
-        case WM_MBUTTONDOWN: sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonMiddle)); break;
-        case WM_XBUTTONDOWN: sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonX1)); break;
-        case WM_LBUTTONUP: sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonLeft)); break;
-        case WM_RBUTTONUP: sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonRight)); break;
-        case WM_MBUTTONUP: sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonMiddle)); break;
-        case WM_XBUTTONUP: sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonX1)); break;
+        case WM_LBUTTONDOWN:
+        {
+            focusEvent(true);
+            sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonLeft));
+            break;
+        }
+        case WM_RBUTTONDOWN:
+        {
+            sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonRight));
+            focusEvent(true);
+            break;
+        }
+        case WM_MBUTTONDOWN:
+        {
+            sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonMiddle));
+            focusEvent(true);
+            break;
+        }
+        case WM_XBUTTONDOWN:
+        {
+            sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonX1));
+            focusEvent(true);
+            break;
+        }
+        case WM_LBUTTONUP:
+        {
+            sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonLeft));
+            break;
+        }
+        case WM_RBUTTONUP:
+        {
+            sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonRight));
+            break;
+        }
+        case WM_MBUTTONUP:
+        {
+            sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonMiddle));
+            break;
+        }
+        case WM_XBUTTONUP:
+        {
+            sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonX1));
+            break;
+        }
         case WM_MOUSEMOVE:
         {
             sendEvent(MouseMoveEvent,
@@ -478,8 +515,8 @@ namespace SA
             sendEvent(MouseHoverEvent, false);
             break;
         }
-        case WM_SETFOCUS: sendEvent(FocusInEvent, true); break;
-        case WM_KILLFOCUS: sendEvent(FocusOutEvent, false); break;
+        case WM_SETFOCUS: if (WIDGET_IN_FOCUS) WIDGET_IN_FOCUS->sendEvent(FocusInEvent, true); break;
+        case WM_KILLFOCUS: if (WIDGET_IN_FOCUS) WIDGET_IN_FOCUS->sendEvent(FocusOutEvent, false); break;
         case WM_PAINT:
         {
             HDC tmpDC = BeginPaint(d->hwnd, &d->paintStruct);
@@ -510,6 +547,23 @@ namespace SA
     {
         for (SA::Object *object: d->eventListners)
             object->event(type, value);
+    }
+
+    void WidgetWindows::focusEvent(bool state)
+    {
+        if (state)
+        {
+            if (WIDGET_IN_FOCUS && WIDGET_IN_FOCUS != this)
+                WIDGET_IN_FOCUS->focusEvent(false);
+
+            WIDGET_IN_FOCUS = this;
+            WIDGET_IN_FOCUS->sendEvent(FocusInEvent, true);
+        }
+        else if (WIDGET_IN_FOCUS)
+        {
+            WIDGET_IN_FOCUS->sendEvent(FocusOutEvent, false);
+            WIDGET_IN_FOCUS = nullptr;
+        }
     }
 
     void WidgetWindows::geometryUpdated()

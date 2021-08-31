@@ -14,6 +14,7 @@ namespace SA
         int cursorHeight = 10;
         bool blinkState = false;
         bool enable = true;
+        bool inFocus = false;
         StyleState styleState = EnableState;
         Pen borderPens[AllStates];
         Brush textColors[AllStates];
@@ -105,8 +106,16 @@ namespace SA
     {
         if (d->timerId != id) return;
 
-        d->blinkState = !d->blinkState;
-        update();
+        if (d->inFocus)
+        {
+            d->blinkState = !d->blinkState;
+            update();
+        }
+        else if(d->blinkState)
+        {
+            d->blinkState = false;
+            update();
+        }
     }
 
     void TextEdit::paintEvent()
@@ -151,6 +160,7 @@ namespace SA
     void TextEdit::focusEvent(bool state)
     {
         std::cout << __PRETTY_FUNCTION__ << " state:" << state << std::endl;
+        d->inFocus = state;
     }
 
     void TextEdit::calcTextColors(const Brush &brush)

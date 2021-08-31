@@ -16,6 +16,7 @@ public:
     SA::Button *m_button3 = nullptr;
     SA::Button *m_button4 = nullptr;
     SA::TextEdit *m_textEdit = nullptr;
+    SA::TextEdit *m_textEdit2 = nullptr;
 
     void btnPressed(bool state);
     void btnHovered(bool state);
