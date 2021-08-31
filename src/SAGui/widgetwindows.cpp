@@ -178,12 +178,12 @@ namespace SA
         const TCHAR CLSNAME_NAIN[] = TEXT("WidgetWindows");
         const TCHAR CLSNAME_CHILD[] = TEXT("Class");
 
-
         if (d->parent)
         {
             hwnd = d->parent->d->hwnd;
             style = WS_CHILD | WS_VISIBLE;
         }
+
         WNDCLASSEX wc = { };
         HINSTANCE hInst = GetModuleHandle(NULL);
 
@@ -200,11 +200,18 @@ namespace SA
         wc.lpszClassName = d->parent ? CLSNAME_NAIN : CLSNAME_CHILD;
         wc.hIconSm       = LoadIcon (NULL, IDI_APPLICATION);
 
-        if (!RegisterClassEx(&wc))
+        if (!GetClassInfoEx(hInst, wc.lpszClassName, &wc))
         {
-            MessageBox(NULL, TEXT("Could not register window class"),
-                       NULL, MB_ICONERROR);
-            return;
+            if (!RegisterClassEx(&wc))
+            {
+                DWORD errCode = GetLastError();
+
+                MessageBox(NULL, TEXT("Could not register window class"),
+                           NULL, MB_ICONERROR);
+
+                cout << __PRETTY_FUNCTION__ << errCode << endl;
+                return;
+            }
         }
 
         d->hwnd = CreateWindowEx(WS_EX_LEFT,
@@ -323,8 +330,8 @@ namespace SA
         return d->height;
     }
 
-    void WidgetWindows::setPen(unsigned int width, unsigned char red,
-                                unsigned char green, unsigned char blue)
+    void WidgetWindows::setPen(unsigned char red, unsigned char green,
+                               unsigned char blue, unsigned int width)
     {
         if (!d->paintingHandle) return;
 

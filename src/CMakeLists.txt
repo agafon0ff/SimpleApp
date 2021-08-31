@@ -14,6 +14,7 @@ set(SA_HEADERS
     SACore/application.h
     SACore/global.h
     SACore/object.h
+    SACore/structs.h
     SAGui/widget.h
     SAGui/widgetlinux.h
     SAGui/widgetwindows.h

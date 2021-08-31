@@ -317,8 +317,8 @@ namespace SA
         return d->height;
     }
 
-    void WidgetLinux::setPen(unsigned int width, unsigned char red,
-                                unsigned char green, unsigned char blue)
+    void WidgetLinux::setPen(unsigned char red, unsigned char green,
+                             unsigned char blue, unsigned int width)
     {
         d->widthPen = width;
         d->colorPen = 0L;

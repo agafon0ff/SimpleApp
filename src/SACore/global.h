@@ -24,7 +24,8 @@ namespace SA
         ButtonX2
     };
 
-    enum Keys {
+    enum Keys
+    {
         Key_Escape,
         Key_Tab,
         Key_Backspace,
@@ -159,5 +160,5 @@ namespace SA
         Key_MediaStop,
         Key_MediaPlay,
         Key_Unknown
-    };
-}
+    }; // enum Keys
+} // namespace SA
