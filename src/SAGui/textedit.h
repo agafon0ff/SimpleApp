@@ -43,6 +43,7 @@ namespace SA
         virtual void mouseHoverEvent(bool state);
         virtual void mousePressEvent(bool state, unsigned int button);
         virtual void focusEvent(bool state);
+        virtual void keyPressEvent(bool state, unsigned int keyCode);
 
         void calcTextColors(const Brush &brush);
         void calcBorders(const Pen &pen);

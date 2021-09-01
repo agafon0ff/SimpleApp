@@ -494,6 +494,11 @@ namespace SA
             if (KEYS_MAP.find(key) == KEYS_MAP.end())
                 sendEvent(SA::EventTypes::ButtonPressEvent, static_cast<unsigned int>(SA::Key_Unknown + key));
             else sendEvent(SA::EventTypes::ButtonPressEvent, static_cast<unsigned int>(KEYS_MAP.at(key)));
+
+            if (key != NoSymbol)
+                cout << " XKeysymToString: " << XKeysymToString(key)
+                     << " event->xkey.state: " << event->xkey.state << endl;
+
             break;
         }
         case KeyRelease:

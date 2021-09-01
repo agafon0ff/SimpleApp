@@ -163,6 +163,14 @@ namespace SA
         d->inFocus = state;
     }
 
+    void TextEdit::keyPressEvent(bool state, unsigned int keyCode)
+    {
+        std::cout << __PRETTY_FUNCTION__
+                  << " state:" << state
+                  << ", keyCode: " << keyCode
+                  << std::endl;
+    }
+
     void TextEdit::calcTextColors(const Brush &brush)
     {
         for (int i=static_cast<int>(DisableState); i<static_cast<int>(AllStates); ++i)
