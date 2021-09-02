@@ -208,42 +208,42 @@ namespace SA
         case ButtonPressEvent:
             keyPressEvent(true, std::any_cast<unsigned int>(value));
             break;
-        case EventTypes::ButtonReleaseEvent:
+        case ButtonReleaseEvent:
             keyPressEvent(false, std::any_cast<unsigned int>(value));
             break;
-        case EventTypes::MouseMoveEvent:
+        case MouseMoveEvent:
         {
             auto mousePair = std::any_cast<std::pair<int, int> >(value);
             mouseMoveEvent(mousePair.first, mousePair.second);
             break;
         }
-        case EventTypes::MouseHoverEvent:
+        case MouseHoverEvent:
         {
             mouseHoverEvent(std::any_cast<bool>(value));
             break;
         }
-        case EventTypes::MousePressEvent:
+        case MousePressEvent:
         {
             mousePressEvent(true, std::any_cast<unsigned int>(value));
             break;
         }
-        case EventTypes::MouseReleaseEvent:
+        case MouseReleaseEvent:
         {
             mousePressEvent(false, std::any_cast<unsigned int>(value));
             break;
         }
-        case EventTypes::PaintEvent:
+        case PaintEvent:
             paintEvent();
             break;
-        case EventTypes::MoveEvent:
+        case MoveEvent:
         {
             auto movePair = std::any_cast<std::pair<int, int> >(value);
             moveEvent(movePair.first, movePair.second);
             break;
         }
-        case EventTypes::FocusInEvent: focusEvent(true); break;
-        case EventTypes::FocusOutEvent: focusEvent(false); break;
-        case EventTypes::ResizeEvent:
+        case FocusInEvent: focusEvent(true); break;
+        case FocusOutEvent: focusEvent(false); break;
+        case ResizeEvent:
         {
             auto sizePair = std::any_cast<std::pair<int, int> >(value);
             resizeEvent(sizePair.first, sizePair.second);

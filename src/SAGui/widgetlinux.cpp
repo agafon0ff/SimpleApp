@@ -1,6 +1,8 @@
 #ifdef __linux__
 
 #include "SACore/application.h"
+#include "SACore/structs.h"
+
 #include "SAGui/widgetlinux.h"
 
 #include <X11/Xlib.h>
@@ -491,6 +493,7 @@ namespace SA
         case KeyPress:
         {
             KeySym key = XLookupKeysym(&event->xkey, 0);
+
             if (KEYS_MAP.find(key) == KEYS_MAP.end())
                 sendEvent(SA::EventTypes::ButtonPressEvent, static_cast<unsigned int>(SA::Key_Unknown + key));
             else sendEvent(SA::EventTypes::ButtonPressEvent, static_cast<unsigned int>(KEYS_MAP.at(key)));

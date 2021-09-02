@@ -19,7 +19,7 @@ Controls::Controls(SA::Widget *parent) : SA::Widget(parent),
     m_textEdit->setGeometry(5, 80, 300, 500);
     m_textEdit->setText("Hello World!");
 
-    m_textEdit2->setGeometry(305, 80, 300, 500);
+    m_textEdit2->setGeometry(310, 80, 300, 500);
     m_textEdit2->setText("Abra caddabra");
 
     m_button1->addCheckHandler(std::bind(&Controls::btnChecked, this, _1));

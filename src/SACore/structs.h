@@ -1,4 +1,5 @@
 #pragma once
+#include "SACore/global.h"
 
 namespace SA
 {
@@ -26,6 +27,22 @@ namespace SA
             red(red_), green(green_), blue(blue_), width(width_){}
 
         Pen(){}
+    };
+
+    struct KeyModifiers
+    {
+        bool shift = false;
+        bool alt = false;
+        bool ctrl = false;
+        bool super = false;
+        bool capsLock = false;
+        bool numLock = false;
+    };
+
+    struct KeyEvent
+    {
+        Keys keycode;
+        KeyModifiers modifier;
     };
 
 } // namespace SA

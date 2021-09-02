@@ -115,9 +115,7 @@ namespace SA
     int Button::addHoverHandler(const std::function<void (bool)> &func)
     {
         int id = 0;
-        for (auto const& it : d->hoverHanders)
-            if (it.first != ++id) break;
-
+        for (auto const& it : d->hoverHanders) if (it.first != ++id) break;
         d->hoverHanders.insert({id, func});
         return id;
     }
@@ -132,9 +130,7 @@ namespace SA
     int Button::addPressHandler(const std::function<void(bool)> &func)
     {
         int id = 0;
-        for (auto const& it : d->pressHanders)
-            if (it.first != ++id) break;
-
+        for (auto const& it : d->pressHanders) if (it.first != ++id) break;
         d->pressHanders.insert({id, func});
         return id;
     }
@@ -149,9 +145,7 @@ namespace SA
     int Button::addCheckHandler(const std::function<void (bool)> &func)
     {
         int id = 0;
-        for (auto const& it : d->checkHanders)
-            if (it.first != ++id) break;
-
+        for (auto const& it : d->checkHanders) if (it.first != ++id) break;
         d->checkHanders.insert({id, func});
         return id;
     }
