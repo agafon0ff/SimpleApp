@@ -183,16 +183,16 @@ namespace SA
         for (const auto &it: d->hoverHanders) it.second(state);
     }
 
-    void Button::mousePressEvent(bool state, unsigned int button)
+    void Button::mouseButtonEvent(const MouseEvent &event)
     {
         if (!d->enable) return;
-        if (button != ButtonLeft) return;
+        if (event.button != ButtonLeft) return;
 
-        d->pressed = state;
+        d->pressed = event.pressed;
 
         if (d->checkable)
         {
-            if (state)
+            if (event.pressed)
             {
                 d->checked = !d->checked;
                 d->styleState = d->checked ? CheckedState : HoveredState;
@@ -200,16 +200,16 @@ namespace SA
         }
         else
         {
-            d->checked = state;
+            d->checked = event.pressed;
             d->styleState = d->checked ? PressedState : HoveredState;
         }
 
         update();
 
-        for (const auto &it: d->pressHanders) it.second(state);
+        for (const auto &it: d->pressHanders) it.second(event.pressed);
 
         if (d->checkable)
-        { if(state) for (const auto &it: d->checkHanders) it.second(d->checked); }
+        { if(event.pressed) for (const auto &it: d->checkHanders) it.second(d->checked); }
         else for (const auto &it: d->checkHanders) it.second(d->checked);
     }
 

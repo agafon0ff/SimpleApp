@@ -7,6 +7,7 @@
 #include <X11/Xlib.h>
 
 #include "SACore/object.h"
+#include "SACore/structs.h"
 
 namespace SA
 {
@@ -56,6 +57,8 @@ namespace SA
         void procEvent(_XEvent *event);
         void sendEvent(SA::EventTypes type, const std::any &value);
         void focusEvent(bool state);
+        void keyEvent(XKeyEvent *event, bool pressed);
+        void mouseEvent(MouseButton btn, bool pressed);
         void geometryUpdated();
         void setWindowProperties();
 

@@ -40,10 +40,11 @@ namespace SA
     private:
         virtual void timerEvent(int id);
         virtual void paintEvent();
+        virtual void mouseMoveEvent(int x, int y);
         virtual void mouseHoverEvent(bool state);
-        virtual void mousePressEvent(bool state, unsigned int button);
+        virtual void keyboardEvent(const KeyEvent &event);
+        virtual void mouseButtonEvent(const MouseEvent &event);
         virtual void focusEvent(bool state);
-        virtual void keyPressEvent(bool state, unsigned int keyCode);
 
         void calcTextColors(const Brush &brush);
         void calcBorders(const Pen &pen);

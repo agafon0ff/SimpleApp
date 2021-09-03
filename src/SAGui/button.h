@@ -56,7 +56,7 @@ namespace SA
     private:
         virtual void paintEvent();
         virtual void mouseHoverEvent(bool state);
-        virtual void mousePressEvent(bool state, unsigned int button);
+        virtual void mouseButtonEvent(const MouseEvent &event);
 
         void calcTextColors(const Brush &brush);
         void calcBorders(const Pen &pen);

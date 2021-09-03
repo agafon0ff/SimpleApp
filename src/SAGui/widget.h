@@ -41,13 +41,14 @@ namespace SA
 
         bool isHovered();
 
-        virtual void keyPressEvent(bool state, unsigned int keyCode);
+    protected:
+        virtual void keyboardEvent(const KeyEvent &event);
         virtual void paintEvent();
         virtual void moveEvent(int x, int y);
         virtual void resizeEvent(int width, int height);
         virtual void mouseMoveEvent(int x, int y);
         virtual void mouseHoverEvent(bool state);
-        virtual void mousePressEvent(bool state, unsigned int button);
+        virtual void mouseButtonEvent(const MouseEvent &event);
         virtual void focusEvent(bool state);
 
     private:

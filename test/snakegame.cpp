@@ -58,7 +58,7 @@ SnakeGame::~SnakeGame()
     delete d;
 }
 
-void SnakeGame::keyPressEvent(bool state, unsigned int keyCode)
+void SnakeGame::keyboardEvent(bool state, unsigned int keyCode)
 {
     if (!state) return;
 

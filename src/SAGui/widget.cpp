@@ -152,10 +152,9 @@ namespace SA
         return d->widget->isHovered();
     }
 
-    void Widget::keyPressEvent(bool state, unsigned int keyCode)
+    void Widget::keyboardEvent(const KeyEvent &event)
     {
-        std::ignore = state;
-        std::ignore = keyCode;
+        std::ignore = event;
     }
 
     void Widget::paintEvent()
@@ -185,10 +184,9 @@ namespace SA
         std::ignore = state;
     }
 
-    void Widget::mousePressEvent(bool state, unsigned int button)
+    void Widget::mouseButtonEvent(const MouseEvent &event)
     {
-        std::ignore = state;
-        std::ignore = button;
+        std::ignore = event;
     }
 
     void Widget::focusEvent(bool state)
@@ -205,11 +203,8 @@ namespace SA
     {
         switch (type)
         {
-        case ButtonPressEvent:
-            keyPressEvent(true, std::any_cast<unsigned int>(value));
-            break;
-        case ButtonReleaseEvent:
-            keyPressEvent(false, std::any_cast<unsigned int>(value));
+        case KeyboardEvent:
+            keyboardEvent(std::any_cast<KeyEvent>(value));
             break;
         case MouseMoveEvent:
         {
@@ -222,14 +217,9 @@ namespace SA
             mouseHoverEvent(std::any_cast<bool>(value));
             break;
         }
-        case MousePressEvent:
+        case MouseButtonEvent:
         {
-            mousePressEvent(true, std::any_cast<unsigned int>(value));
-            break;
-        }
-        case MouseReleaseEvent:
-        {
-            mousePressEvent(false, std::any_cast<unsigned int>(value));
+            mouseButtonEvent(std::any_cast<MouseEvent>(value));
             break;
         }
         case PaintEvent:

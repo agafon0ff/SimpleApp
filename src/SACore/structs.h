@@ -42,7 +42,20 @@ namespace SA
     struct KeyEvent
     {
         Keys keycode;
-        KeyModifiers modifier;
+        KeyModifiers modifiers;
+        bool pressed = false;
+
+        KeyEvent(Keys keycode_, KeyModifiers modifiers_, bool pressed_) :
+            keycode(keycode_), modifiers(modifiers_), pressed(pressed_){}
+    };
+
+    struct MouseEvent
+    {
+        MouseButton button;
+        bool pressed = false;
+
+        MouseEvent(MouseButton button_, bool pressed_) :
+            button(button_), pressed(pressed_){}
     };
 
 } // namespace SA

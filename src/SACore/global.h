@@ -4,12 +4,10 @@ namespace SA
 {
     enum EventTypes
     {
-        ButtonPressEvent,
-        ButtonReleaseEvent,
+        KeyboardEvent,
         MouseMoveEvent,
         MouseHoverEvent,
-        MousePressEvent,
-        MouseReleaseEvent,
+        MouseButtonEvent,
         FocusInEvent,
         FocusOutEvent,
         PaintEvent,

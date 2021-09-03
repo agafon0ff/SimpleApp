@@ -142,6 +142,14 @@ namespace SA
         }
     }
 
+    void TextEdit::mouseMoveEvent(int x, int y)
+    {
+//        std::cout << __PRETTY_FUNCTION__
+//                  << ", x: " << x
+//                  << ", y: " << y
+//                  << std::endl;
+    }
+
     void TextEdit::mouseHoverEvent(bool state)
     {
         if (!d->enable) return;
@@ -151,24 +159,30 @@ namespace SA
         for (const auto &it: d->hoverHanders) it.second(state);
     }
 
-    void TextEdit::mousePressEvent(bool state, unsigned int button)
+    void TextEdit::keyboardEvent(const KeyEvent &event)
+    {
+        std::cout << __PRETTY_FUNCTION__
+                  << " pressed:" << event.pressed
+                  << ", key: " << event.keycode
+                  << ", alt: " << event.modifiers.alt
+                  << ", shift: " << event.modifiers.shift
+                  << ", ctrl: " << event.modifiers.ctrl
+                  << ", capsLock: " << event.modifiers.capsLock
+                  << ", numLock: " << event.modifiers.numLock
+                  << ", super: " << event.modifiers.super
+                  << std::endl;
+    }
+
+    void TextEdit::mouseButtonEvent(const MouseEvent &event)
     {
         if (!d->enable) return;
-        if (button != ButtonLeft) return;
+        if (event.button != ButtonLeft) return;
     }
 
     void TextEdit::focusEvent(bool state)
     {
         std::cout << __PRETTY_FUNCTION__ << " state:" << state << std::endl;
         d->inFocus = state;
-    }
-
-    void TextEdit::keyPressEvent(bool state, unsigned int keyCode)
-    {
-        std::cout << __PRETTY_FUNCTION__
-                  << " state:" << state
-                  << ", keyCode: " << keyCode
-                  << std::endl;
     }
 
     void TextEdit::calcTextColors(const Brush &brush)

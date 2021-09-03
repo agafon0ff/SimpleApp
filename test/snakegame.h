@@ -8,7 +8,7 @@ public:
     SnakeGame(SA::Widget *parent = nullptr);
     ~SnakeGame();
 
-    void keyPressEvent(bool state, unsigned int keyCode);
+    void keyboardEvent(bool state, unsigned int keyCode);
 
     void timerEvent(int id);
     void paintEvent();

@@ -5,6 +5,7 @@
 #include <windows.h>
 #include <map>
 #include "SACore/object.h"
+#include "SACore/structs.h"
 
 namespace SA
 {
@@ -53,6 +54,8 @@ namespace SA
 
         void sendEvent(SA::EventTypes type, const std::any &value);
         void focusEvent(bool state);
+        void keyEvent(unsigned int param, bool pressed);
+        void mouseEvent(MouseButton btn, bool pressed);
         void geometryUpdated();
 
         struct WidgetWindowsPrivate;

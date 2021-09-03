@@ -1,8 +1,6 @@
 #ifdef __linux__
 
 #include "SACore/application.h"
-#include "SACore/structs.h"
-
 #include "SAGui/widgetlinux.h"
 
 #include <X11/Xlib.h>
@@ -490,76 +488,29 @@ namespace SA
     {
         switch (event->type)
         {
-        case KeyPress:
-        {
-            KeySym key = XLookupKeysym(&event->xkey, 0);
-
-            if (KEYS_MAP.find(key) == KEYS_MAP.end())
-                sendEvent(SA::EventTypes::ButtonPressEvent, static_cast<unsigned int>(SA::Key_Unknown + key));
-            else sendEvent(SA::EventTypes::ButtonPressEvent, static_cast<unsigned int>(KEYS_MAP.at(key)));
-
-            if (key != NoSymbol)
-                cout << " XKeysymToString: " << XKeysymToString(key)
-                     << " event->xkey.state: " << event->xkey.state << endl;
-
-            break;
-        }
-        case KeyRelease:
-        {
-            KeySym key = XLookupKeysym(&event->xkey, 0);
-            if (KEYS_MAP.find(key) == KEYS_MAP.end())
-                sendEvent(SA::EventTypes::ButtonReleaseEvent, static_cast<unsigned int>(SA::Key_Unknown + key));
-            else sendEvent(SA::EventTypes::ButtonReleaseEvent, static_cast<unsigned int>(KEYS_MAP.at(key)));
-            break;
-        }
+        case KeyPress: keyEvent(&event->xkey, true); break;
+        case KeyRelease: keyEvent(&event->xkey, false); break;
         case EnterNotify: sendEvent(SA::EventTypes::MouseHoverEvent, true); d->isHovered = true; break;
         case LeaveNotify: sendEvent(SA::EventTypes::MouseHoverEvent, false); d->isHovered = false; break;
         case ButtonPress:
         {
-            switch (event->xbutton.button)
-            {
-            case Button1:
-            {
-                sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonLeft));
-                focusEvent(true);
-                break;
-            }
-            case Button2:
-            {
-                sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonMiddle));
-                focusEvent(true);
-                break;
-            }
-            case Button3:
-            {
-                sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonRight));
-                focusEvent(true);
-                break;
-            }
-            case Button4:
-            {
-                sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonX1));
-                focusEvent(true);
-                break;
-            }
-            case Button5:
-            {
-                sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonX2));
-                focusEvent(true);
-                break;
-            }
+            switch (event->xbutton.button) {
+            case Button1: mouseEvent(ButtonLeft, true); break;
+            case Button2: mouseEvent(ButtonMiddle, true); break;
+            case Button3: mouseEvent(ButtonRight, true); break;
+            case Button4: mouseEvent(ButtonX1, true); break;
+            case Button5: mouseEvent(ButtonX2, true); break;
             }
             break;
         }
         case ButtonRelease:
         {
-            switch (event->xbutton.button)
-            {
-            case Button1: sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonLeft)); break;
-            case Button2: sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonMiddle)); break;
-            case Button3: sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonRight)); break;
-            case Button4: sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonX1)); break;
-            case Button5: sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonX2)); break;
+            switch (event->xbutton.button) {
+            case Button1: mouseEvent(ButtonLeft, false); break;
+            case Button2: mouseEvent(ButtonMiddle, false); break;
+            case Button3: mouseEvent(ButtonRight, false); break;
+            case Button4: mouseEvent(ButtonX1, false); break;
+            case Button5: mouseEvent(ButtonX2, false); break;
             }
             break;
         }
@@ -594,6 +545,31 @@ namespace SA
             WIDGET_IN_FOCUS->sendEvent(FocusOutEvent, false);
             WIDGET_IN_FOCUS = nullptr;
         }
+    }
+
+    void WidgetLinux::keyEvent(XKeyEvent *event, bool pressed)
+    {
+        KeySym key = XLookupKeysym(event, 0);
+        Keys keycode = Key_Unknown;
+
+        if (KEYS_MAP.find(key) != KEYS_MAP.end())
+            keycode = KEYS_MAP.at(key);
+
+        KeyModifiers modifiers;
+        modifiers.shift     = (event->state & ShiftMask);
+        modifiers.alt       = (event->state & Mod1Mask);
+        modifiers.ctrl      = (event->state & ControlMask);
+        modifiers.super     = (event->state & Mod4Mask);
+        modifiers.capsLock  = (event->state & LockMask);
+        modifiers.numLock   = (event->state & Mod2Mask);
+
+        sendEvent(SA::EventTypes::KeyboardEvent, KeyEvent(keycode, modifiers, pressed));
+    }
+
+    void WidgetLinux::mouseEvent(MouseButton btn, bool pressed)
+    {
+        sendEvent(SA::EventTypes::MouseButtonEvent, MouseEvent(btn, pressed));
+        if (pressed) focusEvent(true);
     }
 
     void WidgetLinux::geometryUpdated()

@@ -433,64 +433,16 @@ namespace SA
         case WM_QUIT:    SA::Application::instance().quit(); break;
         case WM_SIZE: geometryUpdated(); break;
         case WM_MOVE: geometryUpdated(); break;
-        case WM_KEYDOWN:
-        {
-            if (KEYS_MAP.find(wParam) == KEYS_MAP.end())
-                sendEvent(ButtonPressEvent, static_cast<unsigned int>(SA::Key_Unknown + wParam));
-            else sendEvent(ButtonPressEvent, static_cast<unsigned int>(KEYS_MAP.at(wParam)));
-            break;
-        }
-        case WM_KEYUP:
-        {
-            if (KEYS_MAP.find(wParam) == KEYS_MAP.end())
-                sendEvent(ButtonReleaseEvent, static_cast<unsigned int>(SA::Key_Unknown + wParam));
-            else sendEvent(ButtonReleaseEvent, static_cast<unsigned int>(KEYS_MAP.at(wParam)));
-            break;
-        }
-        case WM_LBUTTONDOWN:
-        {
-            focusEvent(true);
-            sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonLeft));
-            break;
-        }
-        case WM_RBUTTONDOWN:
-        {
-            sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonRight));
-            focusEvent(true);
-            break;
-        }
-        case WM_MBUTTONDOWN:
-        {
-            sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonMiddle));
-            focusEvent(true);
-            break;
-        }
-        case WM_XBUTTONDOWN:
-        {
-            sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonX1));
-            focusEvent(true);
-            break;
-        }
-        case WM_LBUTTONUP:
-        {
-            sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonLeft));
-            break;
-        }
-        case WM_RBUTTONUP:
-        {
-            sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonRight));
-            break;
-        }
-        case WM_MBUTTONUP:
-        {
-            sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonMiddle));
-            break;
-        }
-        case WM_XBUTTONUP:
-        {
-            sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonX1));
-            break;
-        }
+        case WM_KEYDOWN: keyEvent(wParam, true); break;
+        case WM_KEYUP: keyEvent(wParam, false); break;
+        case WM_LBUTTONDOWN: mouseEvent(ButtonLeft, true); break;
+        case WM_RBUTTONDOWN: mouseEvent(ButtonRight, true); break;
+        case WM_MBUTTONDOWN: mouseEvent(ButtonMiddle, true); break;
+        case WM_XBUTTONDOWN: mouseEvent(ButtonX1, true); break;
+        case WM_LBUTTONUP: mouseEvent(ButtonLeft, false); break;
+        case WM_RBUTTONUP: mouseEvent(ButtonRight, false); break;
+        case WM_MBUTTONUP: mouseEvent(ButtonMiddle, false); break;
+        case WM_XBUTTONUP: mouseEvent(ButtonX1, false); break;
         case WM_MOUSEMOVE:
         {
             sendEvent(MouseMoveEvent,
@@ -564,6 +516,39 @@ namespace SA
             WIDGET_IN_FOCUS->sendEvent(FocusOutEvent, false);
             WIDGET_IN_FOCUS = nullptr;
         }
+    }
+
+    void WidgetWindows::keyEvent(unsigned int param, bool pressed)
+    {
+        Keys keycode = Key_Unknown;
+
+        if (KEYS_MAP.find(param) != KEYS_MAP.end())
+            keycode = KEYS_MAP.at(param);
+
+        KeyModifiers modifiers;
+        modifiers.shift = (GetKeyState(VK_SHIFT) & 0x8000);
+        modifiers.ctrl = (GetKeyState(VK_CONTROL) & 0x8000);
+        modifiers.alt = (GetKeyState(VK_MENU) & 0x8000);
+        modifiers.capsLock = (GetKeyState(VK_CAPITAL) & 0x0001);
+        modifiers.numLock = (GetKeyState(VK_NUMLOCK) & 0x0001);
+
+        sendEvent(SA::EventTypes::KeyboardEvent, KeyEvent(keycode, modifiers, pressed));
+
+//        std::cout << __PRETTY_FUNCTION__
+//                  << " pressed:" << pressed
+//                  << ", key: " << keycode
+//                  << ", shift: " << modifiers.shift
+//                  << ", ctrl: " << modifiers.ctrl
+//                  << ", alt: " << modifiers.alt
+//                  << ", capsLock: " << modifiers.capsLock
+//                  << ", numLock: " << modifiers.numLock
+//                  << std::endl;
+    }
+
+    void WidgetWindows::mouseEvent(MouseButton btn, bool pressed)
+    {
+        sendEvent(SA::EventTypes::MouseButtonEvent, MouseEvent(btn, pressed));
+        if (pressed) focusEvent(true);
     }
 
     void WidgetWindows::geometryUpdated()
