@@ -37,7 +37,7 @@ namespace SA
         int addHoverHandler(const std::function<void (bool)> &func);
         void removeHoverHandler(int id);
 
-    private:
+    protected:
         virtual void timerEvent(int id);
         virtual void paintEvent();
         virtual void mouseMoveEvent(int x, int y);
@@ -46,6 +46,7 @@ namespace SA
         virtual void mouseButtonEvent(const MouseEvent &event);
         virtual void focusEvent(bool state);
 
+    private:
         void calcTextColors(const Brush &brush);
         void calcBorders(const Pen &pen);
         void calcBackgrounds(const Brush &brush);

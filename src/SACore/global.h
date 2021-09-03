@@ -1,4 +1,5 @@
 #pragma once
+#include <map>
 
 namespace SA
 {
@@ -160,5 +161,7 @@ namespace SA
         Key_MediaStop,
         Key_MediaPlay,
         Key_Unknown
+
     }; // enum Keys
+
 } // namespace SA

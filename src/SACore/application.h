@@ -4,8 +4,8 @@
 #include <string>
 #include "SACore/object.h"
 
-namespace SA {
-
+namespace SA
+{
     class Application
     {
     public:
@@ -34,7 +34,8 @@ namespace SA {
 
         struct ApplicationPrivate;
         ApplicationPrivate * const d;
-    };
 
-}
+    }; // class Application
+
+} // namespace SA
 

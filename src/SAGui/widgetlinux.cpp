@@ -563,7 +563,7 @@ namespace SA
         modifiers.capsLock  = (event->state & LockMask);
         modifiers.numLock   = (event->state & Mod2Mask);
 
-        sendEvent(SA::EventTypes::KeyboardEvent, KeyEvent(keycode, modifiers, pressed));
+        sendEvent(EventTypes::KeyboardEvent, KeyEvent(keycode, modifiers, pressed));
     }
 
     void WidgetLinux::mouseEvent(MouseButton btn, bool pressed)

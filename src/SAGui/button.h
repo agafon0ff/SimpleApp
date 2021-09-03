@@ -1,5 +1,6 @@
 #pragma once
 #include <functional>
+#include <iostream>
 #include "SAGui/widget.h"
 
 namespace SA
@@ -53,11 +54,12 @@ namespace SA
         int addCheckHandler(const std::function<void (bool)> &func);
         void removeCheckHandler(int id);
 
-    private:
+    protected:
         virtual void paintEvent();
         virtual void mouseHoverEvent(bool state);
         virtual void mouseButtonEvent(const MouseEvent &event);
 
+    private:
         void calcTextColors(const Brush &brush);
         void calcBorders(const Pen &pen);
         void calcBackgrounds(const Brush &brush);

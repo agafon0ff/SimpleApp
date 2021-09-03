@@ -497,7 +497,7 @@ namespace SA
 
     void WidgetWindows::sendEvent(EventTypes type, const any &value)
     {
-        for (SA::Object *object: d->eventListners)
+        for (Object *object: d->eventListners)
             object->event(type, value);
     }
 
@@ -532,17 +532,8 @@ namespace SA
         modifiers.capsLock = (GetKeyState(VK_CAPITAL) & 0x0001);
         modifiers.numLock = (GetKeyState(VK_NUMLOCK) & 0x0001);
 
-        sendEvent(SA::EventTypes::KeyboardEvent, KeyEvent(keycode, modifiers, pressed));
-
-//        std::cout << __PRETTY_FUNCTION__
-//                  << " pressed:" << pressed
-//                  << ", key: " << keycode
-//                  << ", shift: " << modifiers.shift
-//                  << ", ctrl: " << modifiers.ctrl
-//                  << ", alt: " << modifiers.alt
-//                  << ", capsLock: " << modifiers.capsLock
-//                  << ", numLock: " << modifiers.numLock
-//                  << std::endl;
+        if (WIDGET_IN_FOCUS)
+            WIDGET_IN_FOCUS->sendEvent(EventTypes::KeyboardEvent, KeyEvent(keycode, modifiers, pressed));
     }
 
     void WidgetWindows::mouseEvent(MouseButton btn, bool pressed)
