@@ -526,11 +526,11 @@ namespace SA
             keycode = KEYS_MAP.at(param);
 
         KeyModifiers modifiers;
-        modifiers.shift = (GetKeyState(VK_SHIFT) & 0x8000);
-        modifiers.ctrl = (GetKeyState(VK_CONTROL) & 0x8000);
-        modifiers.alt = (GetKeyState(VK_MENU) & 0x8000);
-        modifiers.capsLock = (GetKeyState(VK_CAPITAL) & 0x0001);
-        modifiers.numLock = (GetKeyState(VK_NUMLOCK) & 0x0001);
+        modifiers.shift     = (GetKeyState(VK_SHIFT) & 0x8000);
+        modifiers.ctrl      = (GetKeyState(VK_CONTROL) & 0x8000);
+        modifiers.alt       = (GetKeyState(VK_MENU) & 0x8000);
+        modifiers.capsLock  = (GetKeyState(VK_CAPITAL) & 0x0001);
+        modifiers.numLock   = (GetKeyState(VK_NUMLOCK) & 0x0001);
 
         if (WIDGET_IN_FOCUS)
             WIDGET_IN_FOCUS->sendEvent(EventTypes::KeyboardEvent, KeyEvent(keycode, modifiers, pressed));

@@ -77,6 +77,7 @@ namespace SA
         { XK_plus,          SA::Key_Plus        },
         { XK_comma,         SA::Key_Comma       },
         { XK_minus,         SA::Key_Minus       },
+        { XK_equal,         SA::Key_Equal       },
         { XK_period,        SA::Key_Period      },
         { XK_slash,         SA::Key_Slash       },
         { XK_0,             SA::Key_0           },
@@ -116,10 +117,12 @@ namespace SA
         { XK_x,             SA::Key_X           },
         { XK_y,             SA::Key_Y           },
         { XK_z,             SA::Key_Z           },
-        { XK_braceleft,     SA::Key_BracketLeft },
+        { XK_bracketleft,   SA::Key_BracketLeft },
         { XK_backslash,     SA::Key_Backslash   },
-        { XK_braceright,    SA::Key_BracketRight},
-        { XK_asciitilde,    SA::Key_AsciiTilde  }
+        { XK_bracketright,  SA::Key_BracketRight},
+        { XK_asciitilde,    SA::Key_AsciiTilde  },
+        { XK_quoteleft,     SA::Key_QuoteLeft   },
+        { XK_quoteright,    SA::Key_QuoteRight  }
     //    { XK_Mute,       SA::Key_VolumeMute  },
     //    { XK_VOLUME_DOWN,       SA::Key_VolumeDown  },
     //    { XK_VOLUME_UP,         SA::Key_VolumeUp    },
@@ -554,6 +557,7 @@ namespace SA
 
         if (KEYS_MAP.find(key) != KEYS_MAP.end())
             keycode = KEYS_MAP.at(key);
+        else cout << "keycode: " << std::hex << key << endl;
 
         KeyModifiers modifiers;
         modifiers.shift     = (event->state & ShiftMask);
@@ -563,7 +567,8 @@ namespace SA
         modifiers.capsLock  = (event->state & LockMask);
         modifiers.numLock   = (event->state & Mod2Mask);
 
-        sendEvent(EventTypes::KeyboardEvent, KeyEvent(keycode, modifiers, pressed));
+        if (WIDGET_IN_FOCUS)
+            WIDGET_IN_FOCUS->sendEvent(EventTypes::KeyboardEvent, KeyEvent(keycode, modifiers, pressed));
     }
 
     void WidgetLinux::mouseEvent(MouseButton btn, bool pressed)

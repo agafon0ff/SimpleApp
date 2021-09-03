@@ -1,92 +1,12 @@
 #include <iostream>
 #include <algorithm>
 #include <map>
-#include "textedit.h"
+
+#include "SACore/utility.h"
+#include "SAGui/textedit.h"
 
 namespace SA
 {
-    std::map<Keys, char> SYMBOLS_LOWERCASE =
-    {
-        { Key_0, '0' },
-        { Key_1, '1' },
-        { Key_2, '2' },
-        { Key_3, '3' },
-        { Key_4, '4' },
-        { Key_5, '5' },
-        { Key_6, '6' },
-        { Key_7, '7' },
-        { Key_8, '8' },
-        { Key_9, '9' },
-        { Key_A, 'a' },
-
-        { Key_B, 'b' },
-        { Key_C, 'c' },
-        { Key_D, 'd' },
-        { Key_E, 'e' },
-        { Key_F, 'f' },
-        { Key_G, 'g' },
-        { Key_H, 'h' },
-        { Key_I, 'i' },
-        { Key_J, 'j' },
-        { Key_K, 'k' },
-        { Key_L, 'l' },
-        { Key_M, 'm' },
-        { Key_N, 'n' },
-        { Key_O, 'o' },
-        { Key_P, 'p' },
-        { Key_Q, 'q' },
-        { Key_R, 'r' },
-        { Key_S, 's' },
-        { Key_T, 't' },
-        { Key_U, 'u' },
-        { Key_V, 'v' },
-        { Key_W, 'w' },
-        { Key_X, 'x' },
-        { Key_Y, 'y' },
-        { Key_Z, 'z' }
-    }; // SYMBOLS_MAP_US
-
-    std::map<Keys, char> SYMBOLS_UPPERCASE =
-    {
-        { Key_0, '!' },
-        { Key_1, '@' },
-        { Key_2, '#' },
-        { Key_3, '$' },
-        { Key_4, '%' },
-        { Key_5, '^' },
-        { Key_6, '&' },
-        { Key_7, '7' },
-        { Key_8, '8' },
-        { Key_9, '9' },
-        { Key_A, 'a' },
-
-        { Key_B, 'b' },
-        { Key_C, 'c' },
-        { Key_D, 'd' },
-        { Key_E, 'e' },
-        { Key_F, 'f' },
-        { Key_G, 'g' },
-        { Key_H, 'h' },
-        { Key_I, 'i' },
-        { Key_J, 'j' },
-        { Key_K, 'k' },
-        { Key_L, 'l' },
-        { Key_M, 'm' },
-        { Key_N, 'n' },
-        { Key_O, 'o' },
-        { Key_P, 'p' },
-        { Key_Q, 'q' },
-        { Key_R, 'r' },
-        { Key_S, 's' },
-        { Key_T, 't' },
-        { Key_U, 'u' },
-        { Key_V, 'v' },
-        { Key_W, 'w' },
-        { Key_X, 'x' },
-        { Key_Y, 'y' },
-        { Key_Z, 'z' }
-    }; // SYMBOLS_MAP_US
-
     struct TextEdit::TextEditPrivate
     {
         std::string text;
@@ -243,21 +163,22 @@ namespace SA
 
     void TextEdit::keyboardEvent(const KeyEvent &event)
     {
-//        std::cout << __PRETTY_FUNCTION__
+        if (!event.pressed) return;
+
+        std::cout << __PRETTY_FUNCTION__
 //                  << " pressed:" << event.pressed
-//                  << ", key: " << event.keycode
+                  << ", key: " << event.keycode
 //                  << ", alt: " << event.modifiers.alt
 //                  << ", shift: " << event.modifiers.shift
 //                  << ", ctrl: " << event.modifiers.ctrl
 //                  << ", capsLock: " << event.modifiers.capsLock
 //                  << ", numLock: " << event.modifiers.numLock
 //                  << ", super: " << event.modifiers.super
-//                  << std::endl;
+                  << std::endl;
 
-        if (!event.pressed) return;
-        if (SYMBOLS_LOWERCASE.find(event.keycode) == SYMBOLS_LOWERCASE.end()) return;
+        char symbol = getCharacter(event);
+        if (symbol != 0) d->text.push_back(symbol);
 
-        d->text.push_back(SYMBOLS_LOWERCASE[event.keycode]);
         update();
     }
 
