@@ -4,30 +4,29 @@
 
 Controls::Controls(SA::Widget *parent) : SA::Widget(parent),
     m_button1(new SA::Button("Button 1", this)),
-    m_button2(new SA::Button("Button 2", this)),
-    m_button3(new SA::Button("Button 3", this)),
-    m_button4(new SA::Button("Button 4", this)),
-    m_textEdit(new SA::TextEdit(this)),
-    m_textEdit2(new SA::TextEdit(this))
+    m_textEdit(new SA::TextEdit(this))
 {
     using namespace std::placeholders;
     m_button1->setGeometry(5, 5, 120, 30);
-    m_button2->setGeometry(130, 5, 120, 30);
-    m_button3->setGeometry(5, 40, 120, 30);
-    m_button4->setGeometry(130, 40, 120, 30);
+    m_button1->addPressHandler(std::bind(&Controls::btnPressed, this, _1));
 
     m_textEdit->setGeometry(5, 80, 300, 500);
-    m_textEdit->setText("Hello World!");
-
-    m_textEdit2->setGeometry(310, 80, 300, 500);
-    m_textEdit2->setText("Abra caddabra");
-
-    m_button1->addCheckHandler(std::bind(&Controls::btnChecked, this, _1));
-    m_button2->addPressHandler(std::bind(&Controls::btnPressed, this, _1));
-    m_button3->addHoverHandler(std::bind(&Controls::btnHovered, this, _1));
-
-    m_button1->setCheckable(true);
-    m_button4->setEnabled(false);
+    m_textEdit->setText("Lorem Ipsum is simply dummy\n"
+                        "text of the printing and typesetting\n"
+                        "industry. Lorem Ipsum has been the\n"
+                        "industry's standard dummy text ever\n"
+                        "since the 1500s, when an unknown printer\n"
+                        "took a galley of type and scrambled\n"
+                        "it to make a type specimen book.\n"
+                        "It has survived not only five centuries,\n"
+                        "but also the leap into electronic\n"
+                        "typesetting, remaining essentially\n"
+                        "unchanged. It was popularised in\n"
+                        "the 1960s with the release of Letraset\n"
+                        "sheets containing Lorem Ipsum passages,\n"
+                        "and more recently with desktop publishing\n"
+                        "software like Aldus PageMaker including\n"
+                        "versions of Lorem Ipsum.");
 
     std::cout << __PRETTY_FUNCTION__ << std::endl;
 }
@@ -35,11 +34,7 @@ Controls::Controls(SA::Widget *parent) : SA::Widget(parent),
 Controls::~Controls()
 {
     delete m_button1;
-    delete m_button2;
-    delete m_button3;
-    delete m_button4;
     delete m_textEdit;
-    delete m_textEdit2;
     std::cout << __PRETTY_FUNCTION__ << std::endl;
 }
 
@@ -50,16 +45,8 @@ void Controls::btnPressed(bool state)
               << std::endl;
 }
 
-void Controls::btnHovered(bool state)
+void Controls::resizeEvent(int width, int height)
 {
-    std::cout << __PRETTY_FUNCTION__
-              << " state: " << state
-              << std::endl;
-}
-
-void Controls::btnChecked(bool state)
-{
-    std::cout << __PRETTY_FUNCTION__
-              << " state: " << state
-              << std::endl;
+    m_textEdit->setGeometry(5, 5, width - 10, height - 45);
+    m_button1->setGeometry(width - 125, height - 35, 120, 30);
 }

@@ -443,12 +443,17 @@ namespace SA
         XFlush(d->display);
     }
 
-    int WidgetLinux::textWidth(const std::string &text)
+    size_t WidgetLinux::textWidth(const std::string &text)
     {
-        return XTextWidth(d->font, text.c_str(), text.size());
+        return textWidth(text.c_str(), text.size());
     }
 
-    int WidgetLinux::textHeight()
+    size_t WidgetLinux::textWidth(const char* text, size_t len)
+    {
+        return XTextWidth(d->font, text, len);
+    }
+
+    size_t WidgetLinux::textHeight()
     {
         return d->font->ascent;// - d->font->descent;
     }
@@ -540,8 +545,11 @@ namespace SA
             if (WIDGET_IN_FOCUS && WIDGET_IN_FOCUS != this)
                 WIDGET_IN_FOCUS->focusEvent(false);
 
-            WIDGET_IN_FOCUS = this;
-            WIDGET_IN_FOCUS->sendEvent(FocusInEvent, true);
+            if (WIDGET_IN_FOCUS != this)
+            {
+                WIDGET_IN_FOCUS = this;
+                WIDGET_IN_FOCUS->sendEvent(FocusInEvent, true);
+            }
         }
         else if (WIDGET_IN_FOCUS)
         {

@@ -44,8 +44,9 @@ namespace SA
         void drawText(int x, int y, const std::string &text);
         void drawImage(int x, int y, int width, int height, const std::string &path);
 
-        int textWidth(const std::string &text);
-        int textHeight();
+        size_t textWidth(const std::string &text);
+        size_t textWidth(const char* text, size_t len);
+        size_t textHeight();
 
         bool isHovered();
 

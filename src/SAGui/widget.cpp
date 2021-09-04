@@ -137,12 +137,17 @@ namespace SA
         d->widget->drawText(x, y, text);
     }
 
-    int Widget::textWidth(const std::string &text)
+    size_t Widget::textWidth(const std::string &text)
     {
         return d->widget->textWidth(text);
     }
 
-    int Widget::textHeight()
+    size_t Widget::textWidth(const char *text, size_t len)
+    {
+        return d->widget->textWidth(text, len);
+    }
+
+    size_t Widget::textHeight()
     {
         return d->widget->textHeight();
     }

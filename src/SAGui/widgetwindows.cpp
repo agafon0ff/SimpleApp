@@ -391,18 +391,23 @@ namespace SA
         }
     }
 
-    int WidgetWindows::textWidth(const std::string &text)
+    size_t WidgetWindows::textWidth(const std::string &text)
+    {
+        return textWidth(text.c_str(), text.size());
+    }
+
+    size_t WidgetWindows::textWidth(const char *text, size_t len)
     {
         SIZE textSize;
-        GetTextExtentPoint32(d->dc, text.c_str(), text.size(), &textSize);
+        GetTextExtentPoint32(d->dc, text, len, &textSize);
         return static_cast<int>(textSize.cx);
     }
 
-    int WidgetWindows::textHeight()
+    size_t WidgetWindows::textHeight()
     {
         SIZE textSize;
         GetTextExtentPoint32(d->dc, " ", 1, &textSize);
-        return static_cast<int>(textSize.cy);
+        return static_cast<size_t>(textSize.cy);
     }
 
     bool WidgetWindows::isHovered()

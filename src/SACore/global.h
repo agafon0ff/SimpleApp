@@ -94,8 +94,8 @@ namespace SA
 
         { Key_QuoteLeft, '`' },   { Key_Minus, '-'},         { Key_Equal, '='},
         { Key_BracketLeft, '[' }, { Key_BracketRight, ']' }, { Key_Backslash, '\\'},
-        { Key_Semicolon, ';' },   { Key_QuoteRight, '\'' },   { Key_Comma, ',' },
-        { Key_Period, '.' },      { Key_Slash, '/' }
+        { Key_Semicolon, ';' },   { Key_QuoteRight, '\'' },  { Key_Comma, ',' },
+        { Key_Period, '.' },      { Key_Slash, '/' },        {Key_Space, ' '}
     }; // SYMBOLS_LOWERCASE
 
     static std::map<Keys, char> SYMBOLS_UPPERCASE =
@@ -105,8 +105,8 @@ namespace SA
 
         { Key_QuoteLeft, '~' },   { Key_Minus, '_'},         { Key_Equal, '+'},
         { Key_BracketLeft, '{' }, { Key_BracketRight, '}' }, { Key_Backslash, '|'},
-        { Key_Semicolon, ':' },   { Key_QuoteRight, '\"' },   { Key_Comma, '<' },
-        { Key_Period, '>' },      { Key_Slash, '?' }
+        { Key_Semicolon, ':' },   { Key_QuoteRight, '\"' },  { Key_Comma, '<' },
+        { Key_Period, '>' },      { Key_Slash, '?' },        {Key_Space, ' '}
     }; // SYMBOLS_UPPERCASE
 
 } // namespace SA

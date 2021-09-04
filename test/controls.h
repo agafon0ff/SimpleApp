@@ -11,16 +11,12 @@ public:
     Controls(SA::Widget *parent = nullptr);
     ~Controls();
 
+private:
     SA::Button *m_button1 = nullptr;
-    SA::Button *m_button2 = nullptr;
-    SA::Button *m_button3 = nullptr;
-    SA::Button *m_button4 = nullptr;
     SA::TextEdit *m_textEdit = nullptr;
-    SA::TextEdit *m_textEdit2 = nullptr;
 
     void btnPressed(bool state);
-    void btnHovered(bool state);
-    void btnChecked(bool state);
+    void resizeEvent(int width, int height);
 };
 
 

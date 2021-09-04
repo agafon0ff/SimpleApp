@@ -9,15 +9,23 @@ namespace SA
 {
     struct TextEdit::TextEditPrivate
     {
-        std::string text;
+        std::vector<std::string> strings;
+
         int timerId = 0;
+
         int cursorX = 0;
         int cursorY = 0;
+        int cursorRow = 0;
+        int cursorColumn = 0;
         int cursorHeight = 10;
+        int rowHeight = 10;
+
         bool blinkState = false;
         bool enable = true;
         bool inFocus = false;
+
         StyleState styleState = EnableState;
+
         Pen borderPens[AllStates];
         Brush textColors[AllStates];
         Brush backgrounds[AllStates];
@@ -33,8 +41,10 @@ namespace SA
         calcBorders({90, 90, 90, 1});
         calcBackgrounds({250, 250, 250});
 
-        d->cursorHeight = textHeight() + 2;
+        d->strings.push_back(std::string());
         d->timerId = startTimer(500);
+        d->cursorHeight = textHeight() + 2;
+        d->rowHeight = textHeight() + 5;
     }
 
     TextEdit::~TextEdit()
@@ -45,13 +55,25 @@ namespace SA
 
     void TextEdit::setText(const std::string &text)
     {
-        d->text = text;
+        int row = 0;
+        for (const char &c: text)
+        {
+            if (c != '\n') d->strings[row].push_back(c);
+            else { d->strings.push_back(std::string()); ++row; }
+        }
+
         update();
     }
 
     std::string TextEdit::text()
     {
-        return std::move(d->text);
+        std::string result;
+        result.reserve(d->strings.size() * 50);
+
+        for (const std::string &text: d->strings)
+        { result += text; result += "\n"; }
+
+        return std::move(result);
     }
 
     void TextEdit::setEnabled(bool state)
@@ -129,27 +151,37 @@ namespace SA
         setPen(pen.red, pen.green, pen.blue, pen.width);
         drawRect(0, 0, width() - 1, height() - 1);
 
+
+        int posX = textWidth(d->strings.at(d->cursorRow)) + 1;
+        int posY = d->cursorRow * d->rowHeight;
+//        drawRect(1, posY, posX, d->cursorHeight);
+
+
+
+
         brush = d->textColors[d->styleState];
         setBrush(brush.red, brush.green, brush.blue);
 
-        drawText(1, 1, d->text);
+        int row = -1;
+        for (const std::string &text: d->strings)
+            drawText(pen.width + 1, ++row * d->rowHeight, text);
+
+
 
         if (d->blinkState)
         {
             brush = d->textColors[d->styleState];
             setPen(brush.red, brush.green, brush.blue, 2);
 
-            int posX = textWidth(d->text) + 2;
-            drawLine(posX, 2, posX, d->cursorHeight);
+            drawLine(posX, posY,
+                     posX, posY + d->cursorHeight);
         }
     }
 
     void TextEdit::mouseMoveEvent(int x, int y)
     {
-//        std::cout << __PRETTY_FUNCTION__
-//                  << ", x: " << x
-//                  << ", y: " << y
-//                  << std::endl;
+        d->cursorX = x;
+        d->cursorY = y;
     }
 
     void TextEdit::mouseHoverEvent(bool state)
@@ -165,19 +197,21 @@ namespace SA
     {
         if (!event.pressed) return;
 
-        std::cout << __PRETTY_FUNCTION__
-//                  << " pressed:" << event.pressed
-                  << ", key: " << event.keycode
-//                  << ", alt: " << event.modifiers.alt
-//                  << ", shift: " << event.modifiers.shift
-//                  << ", ctrl: " << event.modifiers.ctrl
-//                  << ", capsLock: " << event.modifiers.capsLock
-//                  << ", numLock: " << event.modifiers.numLock
-//                  << ", super: " << event.modifiers.super
-                  << std::endl;
-
         char symbol = getCharacter(event);
-        if (symbol != 0) d->text.push_back(symbol);
+
+        if (symbol != 0) d->strings[d->cursorRow].push_back(symbol);
+        else
+        {
+            if (event.keycode == Key_Backspace)
+            {
+                if(!d->strings[d->cursorRow].empty())
+                    d->strings[d->cursorRow].pop_back();
+            }
+            else if (event.keycode == Key_Return)
+            {
+
+            }
+        }
 
         update();
     }
@@ -186,12 +220,54 @@ namespace SA
     {
         if (!d->enable) return;
         if (event.button != ButtonLeft) return;
+        if (!event.pressed) return;
+
+        d->cursorRow = d->cursorY / d->rowHeight;
+
+        if (d->cursorRow >= d->strings.size())
+            d->cursorRow = d->strings.size() - 1;
+
+        // Get char position
+
+        update();
     }
 
     void TextEdit::focusEvent(bool state)
     {
-        std::cout << __PRETTY_FUNCTION__ << " state:" << state << std::endl;
         d->inFocus = state;
+    }
+
+    int TextEdit::calcCharPos()
+    {
+        if (d->cursorX <= 1) return 1;
+
+        const std::string &text = d->strings.at(d->cursorRow);
+        size_t size = textWidth(text);
+
+        if (d->cursorX > size) return size + 1;
+
+        int result = 0;
+        int shift = size / 2;
+        int length = text.size() - shift;
+        for (size_t i=0; i<text.size(); ++i)
+        {
+            size = textWidth(text.data() + shift, length);
+
+            if (d->cursorX > size)
+            {
+
+            }
+            else
+            {
+
+            }
+
+
+
+            if (size < 2) break;
+        }
+
+        return result;
     }
 
     void TextEdit::calcTextColors(const Brush &brush)
