@@ -15,8 +15,8 @@ namespace SA
 
         int cursorX = 0;
         int cursorY = 0;
-        int cursorRow = 0;
-        int cursorColumn = 0;
+        int currentRow = 0;
+        int textCursorX = 0;
         int cursorHeight = 10;
         int rowHeight = 10;
 
@@ -151,30 +151,22 @@ namespace SA
         setPen(pen.red, pen.green, pen.blue, pen.width);
         drawRect(0, 0, width() - 1, height() - 1);
 
-
-        int posX = textWidth(d->strings.at(d->cursorRow)) + 1;
-        int posY = d->cursorRow * d->rowHeight;
-//        drawRect(1, posY, posX, d->cursorHeight);
-
-
-
-
         brush = d->textColors[d->styleState];
         setBrush(brush.red, brush.green, brush.blue);
 
         int row = -1;
         for (const std::string &text: d->strings)
-            drawText(pen.width + 1, ++row * d->rowHeight, text);
-
-
+//            drawText(pen.width + 1, ++row * d->rowHeight, text);
+            drawText(0, ++row * d->rowHeight, text);
 
         if (d->blinkState)
         {
             brush = d->textColors[d->styleState];
             setPen(brush.red, brush.green, brush.blue, 2);
 
-            drawLine(posX, posY,
-                     posX, posY + d->cursorHeight);
+            int posY = d->currentRow * d->rowHeight;
+            drawLine(d->textCursorX, posY,
+                     d->textCursorX, posY + d->cursorHeight);
         }
     }
 
@@ -199,13 +191,13 @@ namespace SA
 
         char symbol = getCharacter(event);
 
-        if (symbol != 0) d->strings[d->cursorRow].push_back(symbol);
+        if (symbol != 0) d->strings[d->currentRow].push_back(symbol);
         else
         {
             if (event.keycode == Key_Backspace)
             {
-                if(!d->strings[d->cursorRow].empty())
-                    d->strings[d->cursorRow].pop_back();
+                if(!d->strings[d->currentRow].empty())
+                    d->strings[d->currentRow].pop_back();
             }
             else if (event.keycode == Key_Return)
             {
@@ -222,12 +214,12 @@ namespace SA
         if (event.button != ButtonLeft) return;
         if (!event.pressed) return;
 
-        d->cursorRow = d->cursorY / d->rowHeight;
+        d->currentRow = d->cursorY / d->rowHeight;
 
-        if (d->cursorRow >= d->strings.size())
-            d->cursorRow = d->strings.size() - 1;
+        if (d->currentRow >= d->strings.size())
+            d->currentRow = d->strings.size() - 1;
 
-        // Get char position
+        d->textCursorX = calcCharPos();
 
         update();
     }
@@ -239,35 +231,43 @@ namespace SA
 
     int TextEdit::calcCharPos()
     {
-        if (d->cursorX <= 1) return 1;
+        std::cout << __PRETTY_FUNCTION__ << std::endl;
 
-        const std::string &text = d->strings.at(d->cursorRow);
+        int delta = 2;
+        if (d->cursorX <= delta) return 0;
+
+        const std::string &text = d->strings.at(d->currentRow);
         size_t size = textWidth(text);
-
-        if (d->cursorX > size) return size + 1;
+        if (d->cursorX > size) return size;
 
         int result = 0;
-        int shift = size / 2;
-        int length = text.size() - shift;
+        int length = text.size();
+        int half = text.size() / 2;
+
         for (size_t i=0; i<text.size(); ++i)
         {
-            size = textWidth(text.data() + shift, length);
-
-            if (d->cursorX > size)
+            if (d->cursorX > (size + delta))
             {
-
+                length += half;
+                std::cout << "half+: " << half << ", size: " << size << std::endl;
             }
-            else
+            else if (d->cursorX < (size + delta))
             {
-
+                length -= half;
+                std::cout << "half-: " << half << ", size: " << size << std::endl;
             }
 
+            size = textWidth(text.data(), length);
 
-
-            if (size < 2) break;
+            half = half / 2;
+            if (half < 1) break;
         }
 
-        return result;
+        std::cout << "d->cursorX: " << d->cursorX
+                  << ", size: " << size
+                  << std::endl;
+
+        return size;
     }
 
     void TextEdit::calcTextColors(const Brush &brush)
