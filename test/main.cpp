@@ -24,7 +24,7 @@ int main()
 
     Controls tt;
     tt.setTitle("Controls");
-    tt.setGeometry(500, 200 , 600, 600);
+    tt.setGeometry(1550, 650 , 400, 400);
     tt.show();
 
     return SA::Application::instance().exec();

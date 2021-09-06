@@ -5,6 +5,9 @@
 #include "SACore/utility.h"
 #include "SAGui/textedit.h"
 
+using std::cout;
+using std::endl;
+
 namespace SA
 {
     struct TextEdit::TextEditPrivate
@@ -231,43 +234,29 @@ namespace SA
 
     int TextEdit::calcCharPos()
     {
-        std::cout << __PRETTY_FUNCTION__ << std::endl;
-
-        int delta = 2;
-        if (d->cursorX <= delta) return 0;
+        int delta = 3;
+        if (d->cursorX <= delta) return 1;
 
         const std::string &text = d->strings.at(d->currentRow);
-        size_t size = textWidth(text);
-        if (d->cursorX > size) return size;
+        size_t result = textWidth(text);
+        if (d->cursorX > result) return result;
 
-        int result = 0;
         int length = text.size();
         int half = text.size() / 2;
 
         for (size_t i=0; i<text.size(); ++i)
         {
-            if (d->cursorX > (size + delta))
-            {
-                length += half;
-                std::cout << "half+: " << half << ", size: " << size << std::endl;
-            }
-            else if (d->cursorX < (size + delta))
-            {
-                length -= half;
-                std::cout << "half-: " << half << ", size: " << size << std::endl;
-            }
+            result = textWidth(text.data(), length);
 
-            size = textWidth(text.data(), length);
+            if (d->cursorX > (result + delta)) length += half;
+            else length -= half;
 
-            half = half / 2;
-            if (half < 1) break;
+            if (half > 1) half = half / 2;
+
+            if (abs(d->cursorX - result) <= delta) break;
         }
 
-        std::cout << "d->cursorX: " << d->cursorX
-                  << ", size: " << size
-                  << std::endl;
-
-        return size;
+        return result;
     }
 
     void TextEdit::calcTextColors(const Brush &brush)
