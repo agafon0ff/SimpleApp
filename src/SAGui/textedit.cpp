@@ -47,7 +47,7 @@ namespace SA
 
         d->strings.push_back(std::string());
         d->timerId = startTimer(500);
-        d->cursorHeight = textHeight() + 2;
+        d->cursorHeight = textHeight() + 6;
         d->rowHeight = textHeight() + 5;
     }
 
@@ -167,7 +167,7 @@ namespace SA
             brush = d->textColors[d->styleState];
             setPen(brush.red, brush.green, brush.blue, 2);
 
-            int posY = d->currentRow * d->rowHeight;
+            int posY = d->currentRow * d->rowHeight - 2;
             drawLine(d->textCursorX, posY,
                      d->textCursorX, posY + d->cursorHeight);
         }
@@ -273,7 +273,12 @@ namespace SA
                 d->blinkState = true;
                 break;
             }
-
+            case Key_Tab:
+            {
+                d->strings[d->currentRow].insert(d->currentColumn, 4, ' ');
+                d->currentColumn += 3;
+                moveTextCursor(Right);
+            }
             default: break;
             }
         }
