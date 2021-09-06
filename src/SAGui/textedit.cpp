@@ -205,10 +205,17 @@ namespace SA
             {
             case Key_Backspace:
             {
-                if(!d->strings.at(d->currentRow).empty() && d->currentColumn > 0)
+                if(d->currentColumn > 0)
                 {
                     moveTextCursor(Left);
                     d->strings[d->currentRow].erase(d->currentColumn, 1);
+                }
+                else if(d->currentRow > 0)
+                {
+                    const std::string &text = d->strings.at(d->currentRow);
+                    moveTextCursor(Left);
+                    d->strings[d->currentRow].append(text);
+                    d->strings.erase(d->strings.begin() + d->currentRow + 1);
                 }
                 break;
             }
@@ -227,7 +234,7 @@ namespace SA
                 }
                 else
                 {
-                    const std::string &text = d->strings[d->currentRow];
+                    const std::string &text = d->strings.at(d->currentRow);
                     ++d->currentRow;
                     d->strings.insert(d->strings.begin() + d->currentRow, text.substr(d->currentColumn));
                     d->strings[d->currentRow - 1].erase(d->currentColumn, text.size() - d->currentColumn);
