@@ -19,6 +19,7 @@ namespace SA
         int cursorX = 0;
         int cursorY = 0;
         int currentRow = 0;
+        int currentColumn = 0;
         int textCursorX = 0;
         int cursorHeight = 10;
         int rowHeight = 10;
@@ -159,7 +160,6 @@ namespace SA
 
         int row = -1;
         for (const std::string &text: d->strings)
-//            drawText(pen.width + 1, ++row * d->rowHeight, text);
             drawText(0, ++row * d->rowHeight, text);
 
         if (d->blinkState)
@@ -194,17 +194,70 @@ namespace SA
 
         char symbol = getCharacter(event);
 
-        if (symbol != 0) d->strings[d->currentRow].push_back(symbol);
+        if (symbol != 0)
+        {
+            d->strings[d->currentRow].insert(d->currentColumn, 1, symbol);
+            moveTextCursor(Right);
+        }
         else
         {
-            if (event.keycode == Key_Backspace)
+            switch (event.keycode)
             {
-                if(!d->strings[d->currentRow].empty())
-                    d->strings[d->currentRow].pop_back();
+            case Key_Backspace:
+            {
+                if(!d->strings.at(d->currentRow).empty() && d->currentColumn > 0)
+                {
+                    moveTextCursor(Left);
+                    d->strings[d->currentRow].erase(d->currentColumn, 1);
+                }
+                break;
             }
-            else if (event.keycode == Key_Return)
+            case Key_Delete:
             {
+                if(!d->strings.at(d->currentRow).empty())
+                    d->strings[d->currentRow].erase(d->currentColumn, 1);
+                break;
+            }
+            case Key_Return:
+            {
+                if (d->currentColumn >= d->strings.at(d->currentRow).size())
+                {
+                    ++d->currentRow;
+                    d->strings.insert(d->strings.begin() + d->currentRow, std::string());
+                }
+                else
+                {
+                    const std::string &text = d->strings[d->currentRow];
+                    ++d->currentRow;
+                    d->strings.insert(d->strings.begin() + d->currentRow, text.substr(d->currentColumn));
+                    d->strings[d->currentRow - 1].erase(d->currentColumn, text.size() - d->currentColumn);
 
+                }
+                d->currentColumn = 0;
+                d->textCursorX = 1;
+
+                break;
+            }
+            case Key_Left: moveTextCursor(Left); break;
+            case Key_Right: moveTextCursor(Right); break;
+            case Key_Up: moveTextCursor(Up); break;
+            case Key_Down: moveTextCursor(Down); break;
+            case Key_Home:
+            {
+                d->currentColumn = 0;
+                d->textCursorX = 1;
+                d->blinkState = true;
+                break;
+            }
+            case Key_End:
+            {
+                d->currentColumn = d->strings.at(d->currentRow).size();
+                d->textCursorX = textWidth(d->strings.at(d->currentRow));
+                d->blinkState = true;
+                break;
+            }
+
+            default: break;
             }
         }
 
@@ -222,8 +275,7 @@ namespace SA
         if (d->currentRow >= d->strings.size())
             d->currentRow = d->strings.size() - 1;
 
-        d->textCursorX = calcCharPos();
-
+        calcTextCursorPos();
         update();
     }
 
@@ -232,31 +284,111 @@ namespace SA
         d->inFocus = state;
     }
 
-    int TextEdit::calcCharPos()
+    void TextEdit::moveTextCursor(Direction dir)
+    {
+        switch (dir)
+        {
+        case Left:
+        {
+            --d->currentColumn;
+
+            if (d->currentColumn < 0)
+            {
+                if (d->currentRow > 0)
+                {
+                    --d->currentRow;
+                    d->currentColumn = d->strings.at(d->currentRow).size();
+                }
+                else d->currentColumn = 0;
+            }
+
+            break;
+        }
+        case Right:
+        {
+            ++d->currentColumn;
+
+            const std::string &text = d->strings.at(d->currentRow);
+
+            if (d->currentColumn > text.size())
+            {
+                if (d->strings.size() - 1 > d->currentRow)
+                {
+                    ++d->currentRow;
+                    d->currentColumn = 0;
+                }
+                else d->currentColumn = text.size();
+            }
+
+            break;
+        }
+        case Up:
+        {
+            --d->currentRow;
+            const std::string &text = d->strings.at(d->currentRow);
+
+            if (d->currentRow < 0) d->currentRow = 0;
+            else if (d->currentColumn > text.size())
+                    d->currentColumn = text.size();
+
+            break;
+        }
+        case Down:
+        {
+            ++d->currentRow;
+            const std::string &text = d->strings.at(d->currentRow);
+
+            if (d->currentRow >= d->strings.size())
+                d->currentRow = d->strings.size() - 1;
+            else if (d->currentColumn > text.size())
+                    d->currentColumn = text.size();
+            break;
+        }
+        default: break;
+        }
+
+        d->textCursorX = textWidth(d->strings.at(d->currentRow).data(), d->currentColumn);
+        d->blinkState = true;
+        update();
+    }
+
+    void TextEdit::calcTextCursorPos()
     {
         int delta = 3;
-        if (d->cursorX <= delta) return 1;
+
+        if (d->cursorX <= delta)
+        {
+            d->currentColumn = 0;
+            d->textCursorX = 1;
+            return;
+        }
 
         const std::string &text = d->strings.at(d->currentRow);
         size_t result = textWidth(text);
-        if (d->cursorX > result) return result;
+
+        if (d->cursorX > result)
+        {
+            d->currentColumn = text.size();
+            d->textCursorX = result;
+            return;
+        }
 
         int length = text.size();
         int half = text.size() / 2;
 
         for (size_t i=0; i<text.size(); ++i)
         {
-            result = textWidth(text.data(), length);
-
             if (d->cursorX > (result + delta)) length += half;
             else length -= half;
 
             if (half > 1) half = half / 2;
 
+            result = textWidth(text.data(), length);
             if (abs(d->cursorX - result) <= delta) break;
         }
 
-        return result;
+        d->currentColumn = length;
+        d->textCursorX = result;
     }
 
     void TextEdit::calcTextColors(const Brush &brush)

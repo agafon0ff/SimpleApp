@@ -25,6 +25,14 @@ namespace SA
         ButtonX2
     };
 
+    enum Direction
+    {
+        Left,
+        Right,
+        Up,
+        Down
+    };
+
     enum Keys
     {
         Key_Escape,     Key_Tab,         Key_Backspace,  Key_Return,    Key_Enter,

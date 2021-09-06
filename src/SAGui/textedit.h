@@ -47,7 +47,8 @@ namespace SA
         virtual void focusEvent(bool state);
 
     private:
-        int calcCharPos();
+        void moveTextCursor(Direction dir);
+        void calcTextCursorPos();
         void calcTextColors(const Brush &brush);
         void calcBorders(const Pen &pen);
         void calcBackgrounds(const Brush &brush);
