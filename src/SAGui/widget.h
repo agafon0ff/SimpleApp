@@ -17,8 +17,13 @@ namespace SA
 
         void setTitle(const std::string &title);
 
+        void move(const Point &pos);
         void move(int x, int y);
+
+        void resize(const Size &size);
         void resize(int width, int height);
+
+        void setGeometry(const Rect &rect);
         void setGeometry(int x, int y, int w, int h);
 
         int x();
@@ -26,14 +31,25 @@ namespace SA
         int width();
         int height();
 
+        Point pos();
+        Size size();
+        Rect geometry();
+
+        void setPen(const Pen &pen);
         void setPen(unsigned char red, unsigned char green,
                     unsigned char blue, unsigned int width);
 
+        void setBrush(const Brush &brush);
         void setBrush(unsigned char red, unsigned char green,
                       unsigned char blue);
 
+        void drawLine(const Point &p1, const Point &p2);
         void drawLine(int x1, int y1, int x2, int y2);
+
+        void drawRect(const Rect &rect);
         void drawRect(int x, int y, int width, int height);
+
+        void drawText(const Point &pos, const std::string &text);
         void drawText(int x, int y, const std::string &text);
 
         size_t textWidth(const std::string &text);
@@ -45,9 +61,9 @@ namespace SA
     protected:
         virtual void keyboardEvent(const KeyEvent &event);
         virtual void paintEvent();
-        virtual void moveEvent(int x, int y);
-        virtual void resizeEvent(int width, int height);
-        virtual void mouseMoveEvent(int x, int y);
+        virtual void moveEvent(const Point &pos);
+        virtual void resizeEvent(const Size &size);
+        virtual void mouseMoveEvent(const Point &pos);
         virtual void mouseHoverEvent(bool state);
         virtual void mouseButtonEvent(const MouseEvent &event);
         virtual void focusEvent(bool state);

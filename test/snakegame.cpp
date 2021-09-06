@@ -58,19 +58,19 @@ SnakeGame::~SnakeGame()
     delete d;
 }
 
-void SnakeGame::keyboardEvent(bool state, unsigned int keyCode)
+void SnakeGame::keyboardEvent(const SA::KeyEvent &event)
 {
-    if (!state) return;
+    if (!event.pressed) return;
 
     if (d->dirCurrent == Direction::Left || d->dirCurrent == Direction::Right)
     {
-        if (keyCode == SA::Key_Up || keyCode == SA::Key_W) d->dirNext = Direction::Up;
-        if (keyCode == SA::Key_Down || keyCode == SA::Key_S) d->dirNext = Direction::Down;
+        if (event.keycode == SA::Key_Up || event.keycode == SA::Key_W) d->dirNext = Direction::Up;
+        if (event.keycode == SA::Key_Down || event.keycode == SA::Key_S) d->dirNext = Direction::Down;
     }
     else if (d->dirCurrent == Direction::Up || d->dirCurrent == Direction::Down)
     {
-        if (keyCode == SA::Key_Left || keyCode == SA::Key_A) d->dirNext = Direction::Left;
-        if (keyCode == SA::Key_Right || keyCode == SA::Key_D) d->dirNext = Direction::Right;
+        if (event.keycode == SA::Key_Left || event.keycode == SA::Key_A) d->dirNext = Direction::Left;
+        if (event.keycode == SA::Key_Right || event.keycode == SA::Key_D) d->dirNext = Direction::Right;
     }
 
 //    std::cout << __PRETTY_FUNCTION__ << " keyCode: " << std::hex << keyCode << std::endl;
@@ -123,10 +123,9 @@ void SnakeGame::paintEvent()
              "Score: " + std::to_string(d->snake.size() - 4));
 }
 
-void SnakeGame::resizeEvent(int width, int height)
+void SnakeGame::resizeEvent(const SA::Size &size)
 {
-    std::ignore = width;
-    std::ignore = height;
+    std::ignore = size;
     updateGeometry();
 }
 

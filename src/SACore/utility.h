@@ -5,6 +5,12 @@
 
 namespace SA
 {
+    inline bool operator==(const Point &p1, const Point &p2) { return (p1.x == p2.x && p1.y == p2.y); }
+    inline bool operator!=(const Point &p1, const Point &p2){ return (p1.x != p2.x || p1.y != p2.y); }
+    inline const Point operator-(const Point &p1, const Point &p2){ return Point(p1.x - p2.x, p1.y - p2.y); }
+    inline const Point operator+(const Point &p1, const Point &p2){ return Point(p1.x + p2.x, p1.y + p2.y); }
+    inline const Point operator*(const Point &p, double c){ return Point(p.x * c, p.y * c); }
+
     inline char getCharacter(const KeyEvent &event)
     {
         char result = 0;

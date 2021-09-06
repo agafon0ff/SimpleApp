@@ -16,10 +16,12 @@ namespace SA
 
         int timerId = 0;
 
-        int cursorX = 0;
-        int cursorY = 0;
+        Point cursorPos;
+        Point pressPos;
+
         int currentRow = 0;
         int currentColumn = 0;
+
         int textCursorX = 0;
         int cursorHeight = 10;
         int rowHeight = 10;
@@ -29,12 +31,16 @@ namespace SA
         bool inFocus = false;
         bool pressed = false;
 
-        StyleState styleState = EnableState;
+        // Text selection
+        Rect selectionRect;
 
+        // Text style
+        StyleState styleState = EnableState;
         Pen borderPens[AllStates];
         Brush textColors[AllStates];
         Brush backgrounds[AllStates];
 
+        // Events listeners
         std::map<int, std::function<void (bool)> > hoverHanders;
     };
 
@@ -149,35 +155,10 @@ namespace SA
 
     void TextEdit::paintEvent()
     {
-        Brush brush = d->backgrounds[d->styleState];
-        setBrush(brush.red, brush.green, brush.blue);
-
-        Pen pen = d->borderPens[d->styleState];
-        setPen(pen.red, pen.green, pen.blue, pen.width);
-        drawRect(0, 0, width() - 1, height() - 1);
-
-        brush = d->textColors[d->styleState];
-        setBrush(brush.red, brush.green, brush.blue);
-
-        int row = -1;
-        for (const std::string &text: d->strings)
-            drawText(0, ++row * d->rowHeight, text);
-
-        if (d->blinkState)
-        {
-            brush = d->textColors[d->styleState];
-            setPen(brush.red, brush.green, brush.blue, 2);
-
-            int posY = d->currentRow * d->rowHeight - 2;
-            drawLine(d->textCursorX, posY,
-                     d->textCursorX, posY + d->cursorHeight);
-        }
-    }
-
-    void TextEdit::mouseMoveEvent(int x, int y)
-    {
-        d->cursorX = x;
-        d->cursorY = y;
+        drawBackground();
+        drawTextSelection();
+        drawTextStrings();
+        drawTextCursor();
     }
 
     void TextEdit::mouseHoverEvent(bool state)
@@ -187,6 +168,46 @@ namespace SA
         d->styleState = state ? HoveredState : EnableState;
         update();
         for (const auto &it: d->hoverHanders) it.second(state);
+    }
+
+    void TextEdit::mouseMoveEvent(const Point &pos)
+    {
+        d->cursorPos = pos;
+
+        if (d->pressed)
+        {
+            calcTextCursorPos();
+            d->selectionRect.y = d->textCursorX;
+            d->selectionRect.height = d->currentRow;
+        }
+    }
+
+    void TextEdit::mouseButtonEvent(const MouseEvent &event)
+    {
+        if (!d->enable) return;
+        if (event.button != ButtonLeft) return;
+
+        d->pressed = event.pressed;
+
+        if (event.pressed)
+        {
+            d->pressPos = d->cursorPos;
+            d->currentRow = d->cursorPos.y / d->rowHeight;
+
+            if (d->currentRow >= d->strings.size())
+                d->currentRow = d->strings.size() - 1;
+
+            calcTextCursorPos();
+            d->selectionRect.x = d->textCursorX;
+            d->selectionRect.width = d->currentRow;
+
+            update();
+        }
+        else
+        {
+            if (d->pressPos == d->cursorPos)
+                d->selectionRect = {};
+        }
     }
 
     void TextEdit::keyboardEvent(const KeyEvent &event)
@@ -287,23 +308,6 @@ namespace SA
         update();
     }
 
-    void TextEdit::mouseButtonEvent(const MouseEvent &event)
-    {
-        if (!d->enable) return;
-        if (event.button != ButtonLeft) return;
-
-        d->pressed = event.pressed;
-        if (!event.pressed) return;
-
-        d->currentRow = d->cursorY / d->rowHeight;
-
-        if (d->currentRow >= d->strings.size())
-            d->currentRow = d->strings.size() - 1;
-
-        calcTextCursorPos();
-        update();
-    }
-
     void TextEdit::focusEvent(bool state)
     {
         d->inFocus = state;
@@ -386,7 +390,7 @@ namespace SA
     {
         int delta = 3;
 
-        if (d->cursorX <= delta)
+        if (d->cursorPos.x <= delta)
         {
             d->currentColumn = 0;
             d->textCursorX = 1;
@@ -396,7 +400,7 @@ namespace SA
         const std::string &text = d->strings.at(d->currentRow);
         size_t result = textWidth(text);
 
-        if (d->cursorX > result)
+        if (d->cursorPos.x > result)
         {
             d->currentColumn = text.size();
             d->textCursorX = result;
@@ -408,13 +412,13 @@ namespace SA
 
         for (size_t i=0; i<text.size(); ++i)
         {
-            if (d->cursorX > (result + delta)) length += half;
+            if (d->cursorPos.x > (result + delta)) length += half;
             else length -= half;
 
             if (half > 1) half = half / 2;
 
             result = textWidth(text.data(), length);
-            if (abs(d->cursorX - result) <= delta) break;
+            if (abs(d->cursorPos.x - result) <= delta) break;
         }
 
         d->currentColumn = length;
@@ -456,6 +460,44 @@ namespace SA
                     static_cast<unsigned char>(std::clamp((brush.blue - 2 * i), 0, 255))
                 };
         }
+    }
+
+    void TextEdit::drawBackground()
+    {
+        Brush brush = d->backgrounds[d->styleState];
+        setBrush(brush.red, brush.green, brush.blue);
+
+        Pen pen = d->borderPens[d->styleState];
+        setPen(pen.red, pen.green, pen.blue, pen.width);
+
+        drawRect(0, 0, width() - 1, height() - 1);
+    }
+
+    void TextEdit::drawTextSelection()
+    {
+
+    }
+
+    void TextEdit::drawTextStrings()
+    {
+        Brush brush = d->textColors[d->styleState];
+        setBrush(brush.red, brush.green, brush.blue);
+
+        int row = -1;
+        for (const std::string &text: d->strings)
+            drawText(0, ++row * d->rowHeight, text);
+    }
+
+    void TextEdit::drawTextCursor()
+    {
+        if (!d->blinkState) return;
+
+        Brush brush = d->textColors[d->styleState];
+        setPen(brush.red, brush.green, brush.blue, 2);
+
+        int posY = d->currentRow * d->rowHeight - 2;
+        drawLine(d->textCursorX, posY,
+                 d->textCursorX, posY + d->cursorHeight);
     }
 
 } // namespace SA

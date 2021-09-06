@@ -1,8 +1,9 @@
 #pragma once
 
-#include "widget.h"
-#include "button.h"
-#include "textedit.h"
+#include "SACore/structs.h"
+#include "SAGui/widget.h"
+#include "SAGui/button.h"
+#include "SAGui/textedit.h"
 #include "snakegame.h"
 
 class Controls : public SA::Widget
@@ -16,7 +17,7 @@ private:
     SA::TextEdit *m_textEdit = nullptr;
 
     void btnPressed(bool state);
-    void resizeEvent(int width, int height);
+    void resizeEvent(const SA::Size &size);
 };
 
 

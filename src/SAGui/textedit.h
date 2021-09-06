@@ -40,18 +40,24 @@ namespace SA
     protected:
         virtual void timerEvent(int id);
         virtual void paintEvent();
-        virtual void mouseMoveEvent(int x, int y);
         virtual void mouseHoverEvent(bool state);
-        virtual void keyboardEvent(const KeyEvent &event);
+        virtual void mouseMoveEvent(const Point &pos);
         virtual void mouseButtonEvent(const MouseEvent &event);
+        virtual void keyboardEvent(const KeyEvent &event);
         virtual void focusEvent(bool state);
 
     private:
         void moveTextCursor(Direction dir);
+
         void calcTextCursorPos();
         void calcTextColors(const Brush &brush);
         void calcBorders(const Pen &pen);
         void calcBackgrounds(const Brush &brush);
+
+        void drawBackground();
+        void drawTextSelection();
+        void drawTextStrings();
+        void drawTextCursor();
 
         struct TextEditPrivate;
         TextEditPrivate * const d;

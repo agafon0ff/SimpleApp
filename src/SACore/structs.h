@@ -29,6 +29,39 @@ namespace SA
         Pen(){}
     };
 
+    struct Point
+    {
+        int x = 0;
+        int y = 0;
+
+        Point(int x_, int y_): x(x_), y(y_) {}
+        Point(){}
+    };
+
+    struct Size
+    {
+        unsigned int width = 0;
+        unsigned int height = 0;
+
+        Size(int width_, int height_):
+            width(width_), height(height_) {}
+
+        Size(){}
+    };
+
+    struct Rect
+    {
+        int x = 0;
+        int y = 0;
+        unsigned int width = 0;
+        unsigned int height = 0;
+
+        Rect(int x_, int y_, unsigned int width_, unsigned int height_):
+            x(x_), y(y_), width(width_), height(height_) {}
+
+        Rect(){}
+    };
+
     struct KeyModifiers
     {
         bool shift = false;

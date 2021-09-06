@@ -75,14 +75,29 @@ namespace SA
         d->widget->setTitle(title);
     }
 
+    void Widget::move(const Point &pos)
+    {
+        d->widget->move(pos.x, pos.y);
+    }
+
     void Widget::move(int x, int y)
     {
         d->widget->move(x, y);
     }
 
+    void Widget::resize(const Size &size)
+    {
+        d->widget->resize(size.width, size.height);
+    }
+
     void Widget::resize(int width, int height)
     {
         d->widget->resize(width, height);
+    }
+
+    void Widget::setGeometry(const Rect &rect)
+    {
+        d->widget->setGeometry(rect.x, rect.y, rect.width, rect.height);
     }
 
     void Widget::setGeometry(int x, int y, int w, int h)
@@ -110,10 +125,36 @@ namespace SA
         return d->widget->height();
     }
 
+    Point Widget::pos()
+    {
+        return Point(d->widget->x(), d->widget->y());
+    }
+
+    Size Widget::size()
+    {
+        return Size(d->widget->width(), d->widget->height());
+    }
+
+    Rect Widget::geometry()
+    {
+        return Rect(d->widget->x(), d->widget->y(),
+                    d->widget->width(), d->widget->height());
+    }
+
+    void Widget::setPen(const Pen &pen)
+    {
+        d->widget->setPen(pen.red, pen.green, pen.blue, pen.width);
+    }
+
     void Widget::setPen(unsigned char red, unsigned char green,
                            unsigned char blue, unsigned int width)
     {
         d->widget->setPen(red, green, blue, width);
+    }
+
+    void Widget::setBrush(const Brush &brush)
+    {
+        d->widget->setBrush(brush.red, brush.green, brush.blue);
     }
 
     void Widget::setBrush(unsigned char red, unsigned char green,
@@ -122,14 +163,29 @@ namespace SA
         d->widget->setBrush(red, green, blue);
     }
 
+    void Widget::drawLine(const Point &p1, const Point &p2)
+    {
+        d->widget->drawLine(p1.x, p1.y, p2.x, p2.y);
+    }
+
     void Widget::drawLine(int x1, int y1, int x2, int y2)
     {
         d->widget->drawLine(x1, y1, x2, y2);
     }
 
+    void Widget::drawRect(const Rect &rect)
+    {
+        d->widget->drawRect(rect.x, rect.y, rect.width, rect.height);
+    }
+
     void Widget::drawRect(int x, int y, int width, int height)
     {
         d->widget->drawRect(x, y, width, height);
+    }
+
+    void Widget::drawText(const Point &pos, const std::string &text)
+    {
+        d->widget->drawText(pos.x, pos.y, text);
     }
 
     void Widget::drawText(int x, int y, const std::string &text)
@@ -166,22 +222,19 @@ namespace SA
     {
     }
 
-    void Widget::moveEvent(int x, int y)
+    void Widget::moveEvent(const Point &pos)
     {
-        std::ignore = x;
-        std::ignore = y;
+        std::ignore = pos;
     }
 
-    void Widget::resizeEvent(int width, int height)
+    void Widget::resizeEvent(const Size &size)
     {
-        std::ignore = width;
-        std::ignore = height;
+        std::ignore = size;
     }
 
-    void Widget::mouseMoveEvent(int x, int y)
+    void Widget::mouseMoveEvent(const Point &pos)
     {
-        std::ignore = x;
-        std::ignore = y;
+        std::ignore = pos;
     }
 
     void Widget::mouseHoverEvent(bool state)
@@ -214,7 +267,7 @@ namespace SA
         case MouseMoveEvent:
         {
             auto mousePair = std::any_cast<std::pair<int, int> >(value);
-            mouseMoveEvent(mousePair.first, mousePair.second);
+            mouseMoveEvent({mousePair.first, mousePair.second});
             break;
         }
         case MouseHoverEvent:
@@ -233,7 +286,7 @@ namespace SA
         case MoveEvent:
         {
             auto movePair = std::any_cast<std::pair<int, int> >(value);
-            moveEvent(movePair.first, movePair.second);
+            moveEvent({movePair.first, movePair.second});
             break;
         }
         case FocusInEvent: focusEvent(true); break;
@@ -241,7 +294,7 @@ namespace SA
         case ResizeEvent:
         {
             auto sizePair = std::any_cast<std::pair<int, int> >(value);
-            resizeEvent(sizePair.first, sizePair.second);
+            resizeEvent({sizePair.first, sizePair.second});
             break;
         }
         default:

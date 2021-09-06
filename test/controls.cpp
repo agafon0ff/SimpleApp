@@ -44,8 +44,8 @@ void Controls::btnPressed(bool state)
               << std::endl;
 }
 
-void Controls::resizeEvent(int width, int height)
+void Controls::resizeEvent(const SA::Size &size)
 {
-    m_textEdit->setGeometry(5, 5, width - 10, height - 40);
-    m_button1->setGeometry(width - 105, height - 30, 100, 25);
+    m_textEdit->setGeometry(5, 5, size.width - 10, size.height - 40);
+    m_button1->setGeometry(size.width - 105, size.height - 30, 100, 25);
 }
