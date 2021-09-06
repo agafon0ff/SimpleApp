@@ -324,24 +324,29 @@ namespace SA
         }
         case Up:
         {
+
             --d->currentRow;
-            const std::string &text = d->strings.at(d->currentRow);
 
             if (d->currentRow < 0) d->currentRow = 0;
-            else if (d->currentColumn > text.size())
-                    d->currentColumn = text.size();
+            else
+            {
+                const std::string &text = d->strings.at(d->currentRow);
+                if (d->currentColumn > text.size()) d->currentColumn = text.size();
+            }
 
             break;
         }
         case Down:
         {
             ++d->currentRow;
-            const std::string &text = d->strings.at(d->currentRow);
 
             if (d->currentRow >= d->strings.size())
                 d->currentRow = d->strings.size() - 1;
-            else if (d->currentColumn > text.size())
-                    d->currentColumn = text.size();
+            else
+            {
+                const std::string &text = d->strings.at(d->currentRow);
+                if (d->currentColumn > text.size()) d->currentColumn = text.size();
+            }
             break;
         }
         default: break;
