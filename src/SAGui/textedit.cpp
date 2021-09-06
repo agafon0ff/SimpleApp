@@ -27,6 +27,7 @@ namespace SA
         bool blinkState = false;
         bool enable = true;
         bool inFocus = false;
+        bool pressed = false;
 
         StyleState styleState = EnableState;
 
@@ -290,6 +291,8 @@ namespace SA
     {
         if (!d->enable) return;
         if (event.button != ButtonLeft) return;
+
+        d->pressed = event.pressed;
         if (!event.pressed) return;
 
         d->currentRow = d->cursorY / d->rowHeight;
