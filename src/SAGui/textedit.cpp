@@ -221,8 +221,18 @@ namespace SA
             }
             case Key_Delete:
             {
-                if(!d->strings.at(d->currentRow).empty())
+                const std::string &text = d->strings.at(d->currentRow);
+
+                if ((text.size() - d->currentColumn) > 0)
+                {
                     d->strings[d->currentRow].erase(d->currentColumn, 1);
+                }
+                else if(d->strings.size() > d->currentRow + 1)
+                {
+                    d->strings[d->currentRow].append(d->strings.at(d->currentRow + 1));
+                    d->strings.erase(d->strings.begin() + d->currentRow + 1);
+                }
+
                 break;
             }
             case Key_Return:
