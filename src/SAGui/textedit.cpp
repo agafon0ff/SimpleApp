@@ -176,9 +176,11 @@ namespace SA
 
         if (d->pressed)
         {
+            calcCurrentRow();
             calcTextCursorPos();
             d->selectionRect.y = d->textCursorX;
             d->selectionRect.height = d->currentRow;
+            update();
         }
     }
 
@@ -192,15 +194,14 @@ namespace SA
         if (event.pressed)
         {
             d->pressPos = d->cursorPos;
-            d->currentRow = d->cursorPos.y / d->rowHeight;
 
-            if (d->currentRow >= d->strings.size())
-                d->currentRow = d->strings.size() - 1;
-
+            calcCurrentRow();
             calcTextCursorPos();
-            d->selectionRect.x = d->textCursorX;
-            d->selectionRect.width = d->currentRow;
 
+            d->selectionRect.x = d->textCursorX;
+            d->selectionRect.y = d->textCursorX;
+            d->selectionRect.width = d->currentRow;
+            d->selectionRect.height = d->currentRow;
             update();
         }
         else
@@ -386,6 +387,14 @@ namespace SA
         update();
     }
 
+    void TextEdit::calcCurrentRow()
+    {
+        d->currentRow = d->cursorPos.y / d->rowHeight;
+
+        if (d->currentRow >= d->strings.size())
+            d->currentRow = d->strings.size() - 1;
+    }
+
     void TextEdit::calcTextCursorPos()
     {
         int delta = 3;
@@ -418,7 +427,7 @@ namespace SA
             if (half > 1) half = half / 2;
 
             result = textWidth(text.data(), length);
-            if (abs(d->cursorPos.x - result) <= delta) break;
+            if (std::abs(d->cursorPos.x - static_cast<int>(result)) <= delta) break;
         }
 
         d->currentColumn = length;
@@ -475,6 +484,36 @@ namespace SA
 
     void TextEdit::drawTextSelection()
     {
+        if (d->selectionRect.x == d->selectionRect.y &&
+            d->selectionRect.width == d->selectionRect.height)
+            return;
+
+        setBrush(180, 180, 180);
+        setPen(180, 180, 180, 1);
+
+        if (d->selectionRect.width == d->selectionRect.height) // one line
+        {
+            int posX = std::min(d->selectionRect.x, d->selectionRect.y);
+            int posY = std::max(d->selectionRect.x, d->selectionRect.y) - posX;
+            drawRect(posX, d->selectionRect.width * d->rowHeight, posY, d->rowHeight);
+        }
+        else
+        {
+            Rect selection = d->selectionRect;
+            if (d->selectionRect.width > d->selectionRect.height)
+                selection = {d->selectionRect.y, d->selectionRect.x, d->selectionRect.height, d->selectionRect.width};
+
+            drawRect(0, selection.height * d->rowHeight, selection.y, d->rowHeight);
+
+            drawRect(selection.x, selection.width * d->rowHeight,
+                     textWidth(d->strings.at(selection.width)) - selection.x, d->rowHeight);
+
+            int rowMin = std::min(d->selectionRect.width, d->selectionRect.height) + 1;
+            int rowMax = std::max(d->selectionRect.width, d->selectionRect.height);
+
+            for (int i=rowMin; i<rowMax; ++i)
+                drawRect(0, i*d->rowHeight, textWidth(d->strings.at(i)), d->rowHeight);
+        }
 
     }
 
@@ -482,6 +521,7 @@ namespace SA
     {
         Brush brush = d->textColors[d->styleState];
         setBrush(brush.red, brush.green, brush.blue);
+        setPen(brush.red, brush.green, brush.blue, 2);
 
         int row = -1;
         for (const std::string &text: d->strings)

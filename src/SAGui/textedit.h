@@ -49,6 +49,7 @@ namespace SA
     private:
         void moveTextCursor(Direction dir);
 
+        void calcCurrentRow();
         void calcTextCursorPos();
         void calcTextColors(const Brush &brush);
         void calcBorders(const Pen &pen);
