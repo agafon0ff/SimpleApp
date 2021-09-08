@@ -42,7 +42,7 @@ namespace SA
         void drawText(int x, int y, const std::string &text);
 
         size_t textWidth(const std::string &text);
-        size_t textWidth(onst char *text, size_t len);
+        size_t textWidth(const char *text, size_t len);
         size_t textHeight();
 
         bool isHovered();
