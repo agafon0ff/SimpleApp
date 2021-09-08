@@ -25,6 +25,12 @@ namespace SA
         ButtonX2
     };
 
+    enum CursorShapes
+    {
+        Arrow,
+        Text
+    };
+
     enum Direction
     {
         Left,

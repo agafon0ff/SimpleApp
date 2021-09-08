@@ -56,6 +56,8 @@ namespace SA
         d->timerId = startTimer(500);
         d->cursorHeight = textHeight() + 6;
         d->rowHeight = textHeight() + 5;
+
+        setCursorShape(Text);
     }
 
     TextEdit::~TextEdit()

@@ -2,6 +2,7 @@
 
 #include "SACore/application.h"
 #include "SAGui/widgetlinux.h"
+#include <X11/cursorfont.h>
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -341,6 +342,18 @@ namespace SA
         d->colorBrush += green;
         d->colorBrush <<= 8;
         d->colorBrush += blue;
+    }
+
+    void WidgetLinux::setCursorShape(CursorShapes shape)
+    {
+        int shapeType = XC_arrow;
+        switch (shape)
+        {
+        case Arrow: shapeType = XC_arrow; break;
+        case Text: shapeType = XC_xterm; break;
+        }
+
+        XDefineCursor(d->display, d->window, XCreateFontCursor(d->display, shapeType));
     }
 
     void WidgetLinux::setFont()

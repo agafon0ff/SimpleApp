@@ -37,6 +37,7 @@ namespace SA
 
         void setBrush(unsigned char red, unsigned char green, unsigned char blue);
 
+        void setCursorShape(CursorShapes shape);
         void setFont();
 
         void drawLine(int x1, int y1, int x2, int y2);

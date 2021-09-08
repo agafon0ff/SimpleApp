@@ -43,6 +43,8 @@ namespace SA
         void setBrush(unsigned char red, unsigned char green,
                       unsigned char blue);
 
+        void setCursorShape(CursorShapes shape);
+
         void drawLine(const Point &p1, const Point &p2);
         void drawLine(int x1, int y1, int x2, int y2);
 

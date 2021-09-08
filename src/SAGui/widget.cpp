@@ -2,6 +2,7 @@
 #include <iostream>
 
 #include "SAGui/widget.h"
+#include "SACore/global.h"
 #include "SACore/application.h"
 
 #ifdef __linux__
@@ -161,6 +162,11 @@ namespace SA
                           unsigned char blue)
     {
         d->widget->setBrush(red, green, blue);
+    }
+
+    void Widget::setCursorShape(CursorShapes shape)
+    {
+        d->widget->setCursorShape(shape);
     }
 
     void Widget::drawLine(const Point &p1, const Point &p2)
