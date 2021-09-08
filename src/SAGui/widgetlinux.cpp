@@ -151,10 +151,10 @@ namespace SA
         fd_set inFileDescriptor;
         int x11FileDescriptor;
 
-        int x = 0;
-        int y = 0;
-        int width = 200;
-        int height = 200;
+        int32_t x = 0;
+        int32_t y = 0;
+        uint32_t width = 200;
+        uint32_t height = 200;
         bool isHidden = false;
         bool isPosChanged = false;
         bool isHovered = false;
@@ -277,7 +277,7 @@ namespace SA
         XStoreName(d->display, d->window, title.c_str());
     }
 
-    void WidgetLinux::move(int x, int y)
+    void WidgetLinux::move(int32_t x, int32_t y)
     {
         d->x = x;
         d->y = y;
@@ -285,14 +285,14 @@ namespace SA
         XMoveWindow(d->display, d->window, d->x, d->y);
     }
 
-    void WidgetLinux::resize(int width, int height)
+    void WidgetLinux::resize(uint32_t width, uint32_t height)
     {
         d->width = width;
         d->height = height;
         XResizeWindow(d->display, d->window, d->width, d->height);
     }
 
-    void WidgetLinux::setGeometry(int x, int y, int w, int h)
+    void WidgetLinux::setGeometry(int32_t x, int32_t y, uint32_t w, uint32_t h)
     {
         d->x = x;
         d->y = y;
@@ -302,28 +302,27 @@ namespace SA
         XMoveResizeWindow(d->display, d->window, d->x, d->y, d->width, d->height);
     }
 
-    int WidgetLinux::x()
+    int32_t WidgetLinux::x()
     {
         return d->x;
     }
 
-    int WidgetLinux::y()
+    int32_t WidgetLinux::y()
     {
         return d->y;
     }
 
-    int WidgetLinux::width()
+    uint32_t WidgetLinux::width()
     {
         return d->width;
     }
 
-    int WidgetLinux::height()
+    uint32_t WidgetLinux::height()
     {
         return d->height;
     }
 
-    void WidgetLinux::setPen(unsigned char red, unsigned char green,
-                             unsigned char blue, unsigned int width)
+    void WidgetLinux::setPen(uint8_t red, uint8_t green, uint8_t blue, uint32_t width)
     {
         d->widthPen = width;
         d->colorPen = 0L;
@@ -334,7 +333,7 @@ namespace SA
         d->colorPen += blue;
     }
 
-    void WidgetLinux::setBrush(unsigned char red, unsigned char green, unsigned char blue)
+    void WidgetLinux::setBrush(uint8_t red, uint8_t green, uint8_t blue)
     {
         d->colorBrush = 0L;
         d->colorBrush += red;
@@ -378,7 +377,7 @@ namespace SA
         XSetFont(d->display, d->gc, d->font->fid);
     }
 
-    void WidgetLinux::drawLine(int x1, int y1, int x2, int y2)
+    void WidgetLinux::drawLine(int32_t x1, int32_t y1, int32_t x2, int32_t y2)
     {
         XGCValues gcv = {0};
         gcv.line_width = d->widthPen;
@@ -391,7 +390,7 @@ namespace SA
                   x1, y1, x2, y2);
     }
 
-    void WidgetLinux::drawRect(int x, int y, int width, int height)
+    void WidgetLinux::drawRect(int32_t x, int32_t y, uint32_t width, uint32_t height)
     {
         XSetForeground(d->display, d->gc, d->colorBrush);
 
@@ -413,7 +412,7 @@ namespace SA
 //        GXcopyInverted();
     }
 
-    void WidgetLinux::drawText(int x, int y, const std::string &text)
+    void WidgetLinux::drawText(int32_t x, int32_t y, const std::string &text)
     {
         XSetForeground(d->display, d->gc, d->colorPen);
 
@@ -429,7 +428,7 @@ namespace SA
            0xe0, 0x09, 0xc0, 0x05, 0xc0, 0x02, 0x40, 0x07, 0x20, 0x0f, 0x20, 0x1e,
            0x10, 0x1e, 0x08, 0x3c, 0x04, 0x78, 0x02, 0xf0};
 
-    void WidgetLinux::drawImage(int x, int y, int width, int height, const std::string &path)
+    void WidgetLinux::drawImage(int32_t x, int32_t y, uint32_t width, uint32_t height, const std::string &path)
     {
         Pixmap bitmap = XCreateBitmapFromData(d->display, d->window,
                                               reinterpret_cast<const char*>(xlogo16_bits),
@@ -539,7 +538,7 @@ namespace SA
         }
         case FocusIn: if (WIDGET_IN_FOCUS) WIDGET_IN_FOCUS->sendEvent(SA::EventTypes::FocusInEvent, true); break;
         case FocusOut: if (WIDGET_IN_FOCUS) WIDGET_IN_FOCUS->sendEvent(SA::EventTypes::FocusOutEvent, false); break;
-        case MotionNotify: sendEvent(MouseMoveEvent, std::pair<int, int>(event->xmotion.x, event->xmotion.y)); break;
+        case MotionNotify: sendEvent(MouseMoveEvent, std::pair<int32_t, int32_t>(event->xmotion.x, event->xmotion.y)); break;
         case Expose: if (event->xexpose.count > 0) break; sendEvent(SA::EventTypes::PaintEvent, true); break;
         case ConfigureNotify: geometryUpdated(); break;
         case ClientMessage: SA::Application::instance().quit(); break;
@@ -603,8 +602,8 @@ namespace SA
     void WidgetLinux::geometryUpdated()
     {
         Window window;
-        int x, y;
-        unsigned int width, height, border, depth;
+        int32_t x, y;
+        uint32_t width, height, border, depth;
         XGetGeometry(d->display, d->window, &window,
                      &x, &y, &width, &height,
                      &border, &depth);
@@ -621,16 +620,16 @@ namespace SA
             d->y = y;
             for (SA::Object *object: d->eventListners)
                 object->event(SA::EventTypes::MoveEvent,
-                              std::pair<int, int>(d->x, d->y));
+                              std::pair<int32_t, int32_t>(d->x, d->y));
         }
 
         if (width != d->width || height != d->height)
         {
-            d->width = static_cast<int>(width);
-            d->height = static_cast<int>(height);
+            d->width = width;
+            d->height = height;
             for (SA::Object *object: d->eventListners)
                 object->event(SA::EventTypes::ResizeEvent,
-                              std::pair<int, int>(d->width, d->height));
+                              std::pair<uint32_t, uint32_t>(d->width, d->height));
         }
     }
 

@@ -22,17 +22,17 @@ namespace SA
         void setText(const std::string &text);
         std::string text();
 
+        bool isTextSelected();
+        std::string selectedText();
+        void removeSelectedText();
+
         void setEnabled(bool state);
         bool isEnabled();
 
-        void setTextColor(unsigned char red, unsigned char green,
-                          unsigned char blue, StyleState state = AllStates);
-
-        void setBorder(unsigned char red, unsigned char green, unsigned char blue,
-                       unsigned int width, StyleState state = AllStates);
-
-        void setBackground(unsigned char red, unsigned char green,
-                           unsigned char blue, StyleState state = AllStates);
+        void setTextColor(const Color &color, StyleState state = AllStates);
+        void setBorder(const Pen &pen, StyleState state = AllStates);
+        void setBackground(const Color &color, StyleState state = AllStates);
+        void setSelectionColor(const Color &color);
 
         int addHoverHandler(const std::function<void (bool)> &func);
         void removeHoverHandler(int id);
@@ -48,12 +48,20 @@ namespace SA
 
     private:
         void moveTextCursor(Direction dir);
+        void updateTextSelection(bool justPressed = false);
+
+        void keyReactionBackspace();
+        void keyReactionDelete();
+        void keyReactionReturn();
+        void keyReactionHome();
+        void keyReactionEnd();
+        void keyReactionTab();
 
         void calcCurrentRow();
         void calcTextCursorPos();
-        void calcTextColors(const Brush &brush);
+        void calcTextColors(const Color &color);
         void calcBorders(const Pen &pen);
-        void calcBackgrounds(const Brush &brush);
+        void calcBackgrounds(const Color &color);
 
         void drawBackground();
         void drawTextSelection();

@@ -2,14 +2,29 @@
 #include <algorithm>
 #include <map>
 
-#include "SACore/utility.h"
 #include "SAGui/textedit.h"
+#include "SACore/utility.h"
 
 using std::cout;
 using std::endl;
 
 namespace SA
 {
+
+    struct TextSelection
+    {
+        bool selected = false;
+
+        uint32_t posStart = 0;
+        uint32_t posEnd = 0;
+
+        uint32_t rowStart = 0;
+        uint32_t rowEnd = 0;
+
+        uint32_t columnStart = 0;
+        uint32_t columnEnd = 0;
+    };
+
     struct TextEdit::TextEditPrivate
     {
         std::vector<std::string> strings;
@@ -19,12 +34,12 @@ namespace SA
         Point cursorPos;
         Point pressPos;
 
-        int currentRow = 0;
-        int currentColumn = 0;
+        uint32_t currentRow = 0;
+        uint32_t currentColumn = 0;
 
-        int textCursorX = 0;
-        int cursorHeight = 10;
-        int rowHeight = 10;
+        uint32_t textCursorX = 0;
+        uint32_t cursorHeight = 10;
+        uint32_t rowHeight = 10;
 
         bool blinkState = false;
         bool enable = true;
@@ -32,13 +47,14 @@ namespace SA
         bool pressed = false;
 
         // Text selection
-        Rect selectionRect;
+        TextSelection selection;
 
         // Text style
         StyleState styleState = EnableState;
         Pen borderPens[AllStates];
-        Brush textColors[AllStates];
-        Brush backgrounds[AllStates];
+        Color textColors[AllStates];
+        Color backgrounds[AllStates];
+        Color selectionColor = {180, 180, 180};
 
         // Events listeners
         std::map<int, std::function<void (bool)> > hoverHanders;
@@ -89,6 +105,59 @@ namespace SA
         return std::move(result);
     }
 
+    bool TextEdit::isTextSelected()
+    {
+        return d->selection.selected;
+    }
+
+    std::string TextEdit::selectedText()
+    {
+        return std::string();
+    }
+
+    void TextEdit::removeSelectedText()
+    {
+        if (!d->selection.selected) return;
+
+        if (d->selection.rowStart == d->selection.rowEnd)
+        {
+            const int posX = std::min(d->selection.columnStart, d->selection.columnEnd);
+            const int posY = std::max(d->selection.columnStart, d->selection.columnEnd) - posX;
+            d->strings[d->currentRow].erase(posX, posY);
+            d->textCursorX = std::min(d->selection.posStart, d->selection.posEnd);
+            d->currentColumn = posX;
+            update();
+        }
+        else
+        {
+            TextSelection selection = d->selection;
+
+            if (d->selection.rowStart > d->selection.rowEnd)
+            {
+                std::swap(selection.columnStart, selection.columnEnd);
+                std::swap(selection.posStart, selection.posEnd);
+                std::swap(selection.rowStart, selection.rowEnd);
+            }
+
+            const int eraseSize = d->strings.at(selection.rowStart).size() - selection.columnStart;
+            d->strings[selection.rowStart].erase(selection.columnStart, eraseSize);
+            d->strings[selection.rowEnd].erase(0, selection.columnEnd);
+            d->strings[selection.rowStart].append(d->strings.at(selection.rowEnd));
+
+            const int rowMin = std::min(d->selection.rowStart, d->selection.rowEnd) + 1;
+            const int rowMax = std::max(d->selection.rowStart, d->selection.rowEnd) + 1;
+            for (int i=rowMin; i<rowMax; ++i) d->strings.erase(d->strings.begin() + i);
+
+            d->textCursorX = selection.posStart;
+            d->currentRow = selection.rowStart;
+            d->currentColumn = selection.columnStart;
+
+            update();
+        }
+
+        d->selection.selected = false;
+    }
+
     void TextEdit::setEnabled(bool state)
     {
         d->enable = state;
@@ -101,25 +170,27 @@ namespace SA
         return d->enable;
     }
 
-    void TextEdit::setTextColor(unsigned char red, unsigned char green,
-                              unsigned char blue, StyleState state)
+    void TextEdit::setTextColor(const Color &color, StyleState state)
     {
-        if (state == AllStates) calcTextColors({red, green, blue});
-        else d->textColors[state] = {red, green, blue};
+        if (state == AllStates) calcTextColors(color);
+        else d->textColors[state] = color;
     }
 
-    void TextEdit::setBorder(unsigned char red, unsigned char green,
-                           unsigned char blue, unsigned int width, StyleState state)
+    void TextEdit::setBorder(const Pen &pen, StyleState state)
     {
-        if (state == AllStates) calcBorders({red, green, blue, width});
-        else d->borderPens[state] = {red, green, blue, width};
+        if (state == AllStates) calcBorders(pen);
+        else d->borderPens[state] = pen;
     }
 
-    void TextEdit::setBackground(unsigned char red, unsigned char green,
-                               unsigned char blue, StyleState state)
+    void TextEdit::setBackground(const Color &color, StyleState state)
     {
-        if (state == AllStates) calcBackgrounds({red, green, blue});
-        else d->backgrounds[state] = {red, green, blue};
+        if (state == AllStates) calcBackgrounds(color);
+        else d->backgrounds[state] = color;
+    }
+
+    void TextEdit::setSelectionColor(const Color &color)
+    {
+        d->selectionColor = color;
     }
 
     int TextEdit::addHoverHandler(const std::function<void (bool)> &func)
@@ -180,8 +251,7 @@ namespace SA
         {
             calcCurrentRow();
             calcTextCursorPos();
-            d->selectionRect.y = d->textCursorX;
-            d->selectionRect.height = d->currentRow;
+            updateTextSelection();
             update();
         }
     }
@@ -199,17 +269,13 @@ namespace SA
 
             calcCurrentRow();
             calcTextCursorPos();
-
-            d->selectionRect.x = d->textCursorX;
-            d->selectionRect.y = d->textCursorX;
-            d->selectionRect.width = d->currentRow;
-            d->selectionRect.height = d->currentRow;
+            updateTextSelection(true);
             update();
         }
         else
         {
             if (d->pressPos == d->cursorPos)
-                d->selectionRect = {};
+                d->selection.selected = false;
         }
     }
 
@@ -228,82 +294,16 @@ namespace SA
         {
             switch (event.keycode)
             {
-            case Key_Backspace:
-            {
-                if(d->currentColumn > 0)
-                {
-                    moveTextCursor(Left);
-                    d->strings[d->currentRow].erase(d->currentColumn, 1);
-                }
-                else if(d->currentRow > 0)
-                {
-                    const std::string &text = d->strings.at(d->currentRow);
-                    moveTextCursor(Left);
-                    d->strings[d->currentRow].append(text);
-                    d->strings.erase(d->strings.begin() + d->currentRow + 1);
-                }
-                break;
-            }
-            case Key_Delete:
-            {
-                const std::string &text = d->strings.at(d->currentRow);
-
-                if ((text.size() - d->currentColumn) > 0)
-                {
-                    d->strings[d->currentRow].erase(d->currentColumn, 1);
-                }
-                else if(d->strings.size() > d->currentRow + 1)
-                {
-                    d->strings[d->currentRow].append(d->strings.at(d->currentRow + 1));
-                    d->strings.erase(d->strings.begin() + d->currentRow + 1);
-                }
-
-                break;
-            }
-            case Key_Return:
-            {
-                if (d->currentColumn >= d->strings.at(d->currentRow).size())
-                {
-                    ++d->currentRow;
-                    d->strings.insert(d->strings.begin() + d->currentRow, std::string());
-                }
-                else
-                {
-                    const std::string &text = d->strings.at(d->currentRow);
-                    ++d->currentRow;
-                    d->strings.insert(d->strings.begin() + d->currentRow, text.substr(d->currentColumn));
-                    d->strings[d->currentRow - 1].erase(d->currentColumn, text.size() - d->currentColumn);
-
-                }
-                d->currentColumn = 0;
-                d->textCursorX = 1;
-
-                break;
-            }
-            case Key_Left: moveTextCursor(Left); break;
-            case Key_Right: moveTextCursor(Right); break;
-            case Key_Up: moveTextCursor(Up); break;
-            case Key_Down: moveTextCursor(Down); break;
-            case Key_Home:
-            {
-                d->currentColumn = 0;
-                d->textCursorX = 1;
-                d->blinkState = true;
-                break;
-            }
-            case Key_End:
-            {
-                d->currentColumn = d->strings.at(d->currentRow).size();
-                d->textCursorX = textWidth(d->strings.at(d->currentRow));
-                d->blinkState = true;
-                break;
-            }
-            case Key_Tab:
-            {
-                d->strings[d->currentRow].insert(d->currentColumn, 4, ' ');
-                d->currentColumn += 3;
-                moveTextCursor(Right);
-            }
+            case Key_Backspace: keyReactionBackspace(); break;
+            case Key_Delete:    keyReactionDelete(); break;
+            case Key_Return:    keyReactionReturn(); break;
+            case Key_Left:      moveTextCursor(Left); break;
+            case Key_Right:     moveTextCursor(Right); break;
+            case Key_Up:        moveTextCursor(Up); break;
+            case Key_Down:      moveTextCursor(Down); break;
+            case Key_Home:      keyReactionHome(); break;
+            case Key_End:       keyReactionEnd(); break;
+            case Key_Tab:       keyReactionTab(); break;
             default: break;
             }
         }
@@ -389,9 +389,111 @@ namespace SA
         update();
     }
 
+    void TextEdit::updateTextSelection(bool justPressed)
+    {
+        if (justPressed)
+        {
+            d->selection.posStart = d->textCursorX;
+            d->selection.rowStart = d->currentRow;
+            d->selection.columnStart = d->currentColumn;
+        }
+
+        d->selection.posEnd = d->textCursorX;
+        d->selection.rowEnd = d->currentRow;
+        d->selection.columnEnd = d->currentColumn;
+
+
+        d->selection.selected = (d->selection.posStart != d->selection.posEnd ||  d->selection.rowStart != d->selection.rowEnd);
+    }
+
+    void TextEdit::keyReactionBackspace()
+    {
+        if (isTextSelected())
+        {
+            removeSelectedText();
+        }
+        else
+        {
+            if(d->currentColumn > 0)
+            {
+                moveTextCursor(Left);
+                d->strings[d->currentRow].erase(d->currentColumn, 1);
+            }
+            else if(d->currentRow > 0)
+            {
+                const std::string &text = d->strings.at(d->currentRow);
+                moveTextCursor(Left);
+                d->strings[d->currentRow].append(text);
+                d->strings.erase(d->strings.begin() + d->currentRow + 1);
+            }
+        }
+    }
+
+    void TextEdit::keyReactionDelete()
+    {
+        if (isTextSelected())
+        {
+            removeSelectedText();
+        }
+        else
+        {
+            const std::string &text = d->strings.at(d->currentRow);
+
+            if ((text.size() - d->currentColumn) > 0)
+            {
+                d->strings[d->currentRow].erase(d->currentColumn, 1);
+            }
+            else if(d->strings.size() > d->currentRow + 1)
+            {
+                d->strings[d->currentRow].append(d->strings.at(d->currentRow + 1));
+                d->strings.erase(d->strings.begin() + d->currentRow + 1);
+            }
+        }
+    }
+
+    void TextEdit::keyReactionReturn()
+    {
+        if (d->currentColumn >= d->strings.at(d->currentRow).size())
+        {
+            ++d->currentRow;
+            d->strings.insert(d->strings.begin() + d->currentRow, std::string());
+        }
+        else
+        {
+            const std::string &text = d->strings.at(d->currentRow);
+            ++d->currentRow;
+            d->strings.insert(d->strings.begin() + d->currentRow, text.substr(d->currentColumn));
+            d->strings[d->currentRow - 1].erase(d->currentColumn, text.size() - d->currentColumn);
+
+        }
+        d->currentColumn = 0;
+        d->textCursorX = 1;
+    }
+
+    void TextEdit::keyReactionHome()
+    {
+        d->currentColumn = 0;
+        d->textCursorX = 1;
+        d->blinkState = true;
+    }
+
+    void TextEdit::keyReactionEnd()
+    {
+        d->currentColumn = d->strings.at(d->currentRow).size();
+        d->textCursorX = textWidth(d->strings.at(d->currentRow));
+        d->blinkState = true;
+    }
+
+    void TextEdit::keyReactionTab()
+    {
+        d->strings[d->currentRow].insert(d->currentColumn, 4, ' ');
+        d->currentColumn += 3;
+        moveTextCursor(Right);
+    }
+
     void TextEdit::calcCurrentRow()
     {
-        d->currentRow = d->cursorPos.y / d->rowHeight;
+        d->currentRow = std::max(d->cursorPos.y, 0) / d->rowHeight;
 
         if (d->currentRow >= d->strings.size())
             d->currentRow = d->strings.size() - 1;
@@ -436,94 +538,66 @@ namespace SA
         d->textCursorX = result;
     }
 
-    void TextEdit::calcTextColors(const Brush &brush)
+    void TextEdit::calcTextColors(const Color &color)
     {
         for (int i=static_cast<int>(DisableState); i<static_cast<int>(AllStates); ++i)
-        {
-            d->textColors[static_cast<StyleState>(i)] = {
-                    static_cast<unsigned char>(std::clamp((brush.red - 6 * i), 0, 255)),
-                    static_cast<unsigned char>(std::clamp((brush.green - 6 * i), 0, 255)),
-                    static_cast<unsigned char>(std::clamp((brush.blue - 6 * i), 0, 255))
-                };
-        }
+            darker(color, d->textColors[static_cast<StyleState>(i)], 6 * i);
     }
 
     void TextEdit::calcBorders(const Pen &pen)
     {
         for (int i=static_cast<int>(DisableState); i<static_cast<int>(AllStates); ++i)
-        {
-            d->borderPens[static_cast<StyleState>(i)] = {
-                    static_cast<unsigned char>(std::clamp((pen.red - 6 * i), 0, 255)),
-                    static_cast<unsigned char>(std::clamp((pen.green - 6 * i), 0, 255)),
-                    static_cast<unsigned char>(std::clamp((pen.blue - 6 * i), 0, 255)),
-                    pen.width
-                };
-        }
+            darker(pen.color, d->borderPens[static_cast<StyleState>(i)].color, 6 * i);
     }
 
-    void TextEdit::calcBackgrounds(const Brush &brush)
+    void TextEdit::calcBackgrounds(const Color &color)
     {
         for (int i=static_cast<int>(DisableState); i<static_cast<int>(AllStates); ++i)
-        {
-            d->backgrounds[static_cast<StyleState>(i)] = {
-                    static_cast<unsigned char>(std::clamp((brush.red - 2 * i), 0, 255)),
-                    static_cast<unsigned char>(std::clamp((brush.green - 2 * i), 0, 255)),
-                    static_cast<unsigned char>(std::clamp((brush.blue - 2 * i), 0, 255))
-                };
-        }
+            darker(color, d->backgrounds[static_cast<StyleState>(i)], 2 * i);
     }
 
     void TextEdit::drawBackground()
     {
-        Brush brush = d->backgrounds[d->styleState];
-        setBrush(brush.red, brush.green, brush.blue);
-
-        Pen pen = d->borderPens[d->styleState];
-        setPen(pen.red, pen.green, pen.blue, pen.width);
-
+        setBrush(d->backgrounds[d->styleState]);
+        setPen(d->borderPens[d->styleState]);
         drawRect(0, 0, width() - 1, height() - 1);
     }
 
     void TextEdit::drawTextSelection()
     {
-        if (d->selectionRect.x == d->selectionRect.y &&
-            d->selectionRect.width == d->selectionRect.height)
-            return;
+        if (!d->selection.selected) return;
 
-        setBrush(180, 180, 180);
-        setPen(180, 180, 180, 1);
+        setBrush(d->selectionColor);
+        setPen(d->selectionColor, 1);
 
-        if (d->selectionRect.width == d->selectionRect.height) // one line
+        if (d->selection.rowStart == d->selection.rowEnd) // one line
         {
-            int posX = std::min(d->selectionRect.x, d->selectionRect.y);
-            int posY = std::max(d->selectionRect.x, d->selectionRect.y) - posX;
-            drawRect(posX, d->selectionRect.width * d->rowHeight, posY, d->rowHeight);
+            const int posX = std::min(d->selection.posStart, d->selection.posEnd);
+            const int posY = std::max(d->selection.posStart, d->selection.posEnd) - posX;
+            drawRect(posX, d->selection.rowStart * d->rowHeight, posY, d->rowHeight);
         }
         else
         {
-            Rect selection = d->selectionRect;
-            if (d->selectionRect.width > d->selectionRect.height)
-                selection = {d->selectionRect.y, d->selectionRect.x, d->selectionRect.height, d->selectionRect.width};
+            uint32_t posStart = d->selection.posStart;
+            uint32_t posEnd = d->selection.posEnd;
+            uint32_t rowStart = d->selection.rowStart;
+            uint32_t rowEnd = d->selection.rowEnd;
 
-            drawRect(0, selection.height * d->rowHeight, selection.y, d->rowHeight);
+            if (d->selection.rowStart > d->selection.rowEnd){ std::swap(posStart, posEnd); std::swap(rowStart, rowEnd);}
+            drawRect(0, rowEnd * d->rowHeight, posEnd, d->rowHeight);
+            drawRect(posStart, rowStart * d->rowHeight, textWidth(d->strings.at(rowStart)) - posStart, d->rowHeight);
 
-            drawRect(selection.x, selection.width * d->rowHeight,
-                     textWidth(d->strings.at(selection.width)) - selection.x, d->rowHeight);
-
-            int rowMin = std::min(d->selectionRect.width, d->selectionRect.height) + 1;
-            int rowMax = std::max(d->selectionRect.width, d->selectionRect.height);
-
-            for (int i=rowMin; i<rowMax; ++i)
-                drawRect(0, i*d->rowHeight, textWidth(d->strings.at(i)), d->rowHeight);
+            const int rowMin = std::min(d->selection.rowStart, d->selection.rowEnd) + 1;
+            const int rowMax = std::max(d->selection.rowStart, d->selection.rowEnd);
+            for (int i=rowMin; i<rowMax; ++i) drawRect(0, i*d->rowHeight, textWidth(d->strings.at(i)), d->rowHeight);
         }
 
     }
 
     void TextEdit::drawTextStrings()
     {
-        Brush brush = d->textColors[d->styleState];
-        setBrush(brush.red, brush.green, brush.blue);
-        setPen(brush.red, brush.green, brush.blue, 2);
+        setBrush(d->textColors[d->styleState]);
+        setPen(d->textColors[d->styleState], 2);
 
         int row = -1;
         for (const std::string &text: d->strings)
@@ -534,10 +608,8 @@ namespace SA
     {
         if (!d->blinkState) return;
 
-        Brush brush = d->textColors[d->styleState];
-        setPen(brush.red, brush.green, brush.blue, 2);
-
-        int posY = d->currentRow * d->rowHeight - 2;
+        setPen(d->textColors[d->styleState], 2);
+        const int posY = d->currentRow * d->rowHeight - 2;
         drawLine(d->textCursorX, posY,
                  d->textCursorX, posY + d->cursorHeight);
     }

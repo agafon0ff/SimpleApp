@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+
 #include "SACore/global.h"
 #include "SACore/structs.h"
 
@@ -45,5 +47,14 @@ namespace SA
 
         return result;
     }
+
+    inline void darker(const Color &src, Color &dst, unsigned char subtract)
+    {
+        dst.red   = std::clamp((src.red - subtract), 0, 255);
+        dst.green = std::clamp((src.green - subtract), 0, 255);
+        dst.blue  = std::clamp((src.blue - subtract), 0, 255);
+    }
+
+    inline void darker(Color &color, unsigned char subtract){ darker(color, color, subtract); }
 
 } // namespace SA

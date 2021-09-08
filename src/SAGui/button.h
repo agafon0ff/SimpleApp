@@ -36,14 +36,9 @@ namespace SA
         bool isChecked();
         bool isPressed();
 
-        void setTextColor(unsigned char red, unsigned char green,
-                          unsigned char blue, StyleState state = AllStates);
-
-        void setBorder(unsigned char red, unsigned char green, unsigned char blue,
-                       unsigned int width, StyleState state = AllStates);
-
-        void setBackground(unsigned char red, unsigned char green,
-                           unsigned char blue, StyleState state = AllStates);
+        void setTextColor(const Color &color, StyleState state = AllStates);
+        void setBorder(const Pen &pen, StyleState state = AllStates);
+        void setBackground(const Color &color, StyleState state = AllStates);
 
         int addHoverHandler(const std::function<void (bool)> &func);
         void removeHoverHandler(int id);
@@ -60,9 +55,9 @@ namespace SA
         virtual void mouseButtonEvent(const MouseEvent &event);
 
     private:
-        void calcTextColors(const Brush &brush);
+        void calcTextColors(const Color &brush);
         void calcBorders(const Pen &pen);
-        void calcBackgrounds(const Brush &brush);
+        void calcBackgrounds(const Color &brush);
 
         struct ButtonPrivate;
         ButtonPrivate * const d;

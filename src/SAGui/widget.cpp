@@ -144,7 +144,12 @@ namespace SA
 
     void Widget::setPen(const Pen &pen)
     {
-        d->widget->setPen(pen.red, pen.green, pen.blue, pen.width);
+        d->widget->setPen(pen.color.red, pen.color.green, pen.color.blue, pen.width);
+    }
+
+    void Widget::setPen(const Color &color, unsigned int width)
+    {
+        d->widget->setPen(color.red, color.green, color.blue, width);
     }
 
     void Widget::setPen(unsigned char red, unsigned char green,
@@ -153,7 +158,7 @@ namespace SA
         d->widget->setPen(red, green, blue, width);
     }
 
-    void Widget::setBrush(const Brush &brush)
+    void Widget::setBrush(const Color &brush)
     {
         d->widget->setBrush(brush.red, brush.green, brush.blue);
     }
@@ -272,7 +277,7 @@ namespace SA
             break;
         case MouseMoveEvent:
         {
-            auto mousePair = std::any_cast<std::pair<int, int> >(value);
+            auto mousePair = std::any_cast<std::pair<int32_t, int32_t> >(value);
             mouseMoveEvent({mousePair.first, mousePair.second});
             break;
         }
@@ -291,7 +296,7 @@ namespace SA
             break;
         case MoveEvent:
         {
-            auto movePair = std::any_cast<std::pair<int, int> >(value);
+            auto movePair = std::any_cast<std::pair<int32_t, int32_t> >(value);
             moveEvent({movePair.first, movePair.second});
             break;
         }
@@ -299,7 +304,7 @@ namespace SA
         case FocusOutEvent: focusEvent(false); break;
         case ResizeEvent:
         {
-            auto sizePair = std::any_cast<std::pair<int, int> >(value);
+            auto sizePair = std::any_cast<std::pair<uint32_t, uint32_t> >(value);
             resizeEvent({sizePair.first, sizePair.second});
             break;
         }

@@ -36,10 +36,11 @@ namespace SA
         Rect geometry();
 
         void setPen(const Pen &pen);
+        void setPen(const Color &color, unsigned int width);
         void setPen(unsigned char red, unsigned char green,
                     unsigned char blue, unsigned int width);
 
-        void setBrush(const Brush &brush);
+        void setBrush(const Color &brush);
         void setBrush(unsigned char red, unsigned char green,
                       unsigned char blue);
 

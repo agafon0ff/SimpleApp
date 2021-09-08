@@ -159,10 +159,10 @@ namespace SA
 
         // geometry
         RECT rect;
-        int x = 0;
-        int y = 0;
-        int width = 200;
-        int height = 200;
+        int32_t x = 0;
+        int32_t y = 0;
+        uint32_t width = 200;
+        uint32_t height = 200;
         bool isHidden = false;
         bool isPosChanged = false;
         bool isHovered = false;
@@ -286,7 +286,7 @@ namespace SA
         SetWindowText(d->hwnd, title.c_str());
     }
 
-    void WidgetWindows::move(int x, int y)
+    void WidgetWindows::move(int32_t x, int32_t y)
     {
         d->x = x;
         d->y = y;
@@ -294,7 +294,7 @@ namespace SA
         update();
     }
 
-    void WidgetWindows::resize(int w, int h)
+    void WidgetWindows::resize(uint32_t w, uint32_t h)
     {
         d->width = w;
         d->height = h;
@@ -302,7 +302,7 @@ namespace SA
         update();
     }
 
-    void WidgetWindows::setGeometry(int x, int y, int w, int h)
+    void WidgetWindows::setGeometry(int32_t x, int32_t y, uint32_t w, uint32_t h)
     {
         d->x = x;
         d->y = y;
@@ -312,28 +312,27 @@ namespace SA
         update();
     }
 
-    int WidgetWindows::x()
+    int32_t WidgetWindows::x()
     {
         return d->x;
     }
 
-    int WidgetWindows::y()
+    int32_t WidgetWindows::y()
     {
         return d->y;
     }
 
-    int WidgetWindows::width()
+    uint32_t WidgetWindows::width()
     {
         return d->width;
     }
 
-    int WidgetWindows::height()
+    uint32_t WidgetWindows::height()
     {
         return d->height;
     }
 
-    void WidgetWindows::setPen(unsigned char red, unsigned char green,
-                               unsigned char blue, unsigned int width)
+    void WidgetWindows::setPen(uint8_t red, uint8_t green, uint8_t blue, uint32_t width)
     {
         if (!d->paintingHandle) return;
 
@@ -344,7 +343,7 @@ namespace SA
         d->pen = CreatePen(PS_SOLID, width, RGB(red, green, blue));
     }
 
-    void WidgetWindows::setBrush(unsigned char red, unsigned char green, unsigned char blue)
+    void WidgetWindows::setBrush(uint8_t red, uint8_t green, uint8_t blue)
     {
         if (!d->paintingHandle) return;
 
@@ -360,7 +359,7 @@ namespace SA
         d->font = (HFONT)GetStockObject(ANSI_VAR_FONT);
     }
 
-    void WidgetWindows::drawLine(int x1, int y1, int x2, int y2)
+    void WidgetWindows::drawLine(int32_t x1, int32_t y1, int32_t x2, int32_t y2)
     {
         if (!d->paintingHandle) return;
 
@@ -369,7 +368,7 @@ namespace SA
         LineTo(d->paintingHandle, x2, y2);
     }
 
-    void WidgetWindows::drawRect(int x, int y, int width, int height)
+    void WidgetWindows::drawRect(int32_t x, int32_t y, uint32_t width, uint32_t height)
     {
         if (!d->paintingHandle) return;
 
@@ -379,7 +378,7 @@ namespace SA
         Rectangle(d->paintingHandle, x, y, x + width, y + height);
     }
 
-    void WidgetWindows::drawText(int x, int y, const std::string &text)
+    void WidgetWindows::drawText(int32_t x, int32_t y, const std::string &text)
     {
         if (!d->paintingHandle) return;
 
@@ -451,7 +450,7 @@ namespace SA
         case WM_MOUSEMOVE:
         {
             sendEvent(MouseMoveEvent,
-                      std::pair<int, int>(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
+                      std::pair<int32_t, int32_t>(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
 
             if (!d->isHovered)
             {
@@ -562,7 +561,7 @@ namespace SA
             d->x = x;
             d->y = y;
             sendEvent(MoveEvent,
-                      std::pair<int, int>(d->x, d->y));
+                      std::pair<int32_t, int32_t>(d->x, d->y));
         }
 
         if (width != d->width || height != d->height)
@@ -570,7 +569,7 @@ namespace SA
             d->width = static_cast<int>(width);
             d->height = static_cast<int>(height);
             sendEvent(ResizeEvent,
-                      std::pair<int, int>(d->width, d->height));
+                      std::pair<uint32_t, uint32_t>(d->width, d->height));
         }
     }
 }
