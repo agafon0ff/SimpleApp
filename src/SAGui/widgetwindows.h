@@ -33,7 +33,7 @@ namespace SA
 
         void setPen(uint8_t red, uint8_t green, uint8_t blue, uint32_t width);
         void setBrush(uint8_t red, uint8_t green, uint8_t blue);
-
+        void setCursorShape(CursorShapes shape);
         void setFont();
 
         void drawLine(int32_t x1, int32_t y1, int32_t x2, int32_t y2);

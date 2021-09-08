@@ -156,6 +156,7 @@ namespace SA
         HPEN pen = nullptr;
         HBRUSH brush = nullptr;
         HFONT font = nullptr;
+        HCURSOR cursor = nullptr;
 
         // geometry
         RECT rect;
@@ -250,6 +251,7 @@ namespace SA
         d->paintStruct.hdc = d->dc;
 
         setFont();
+        setCursorShape(Arrow);
         update();
     }
 
@@ -349,6 +351,15 @@ namespace SA
 
         if (d->brush) DeleteObject(d->brush);
         d->brush = CreateSolidBrush(RGB(red,green,blue));
+    }
+
+    void WidgetWindows::setCursorShape(CursorShapes shape)
+    {
+        switch (shape)
+        {
+        case Arrow: d->cursor = LoadCursor( NULL, IDC_ARROW ); break;
+        case Text: d->cursor = LoadCursor( NULL, IDC_IBEAM ); break;
+        }
     }
 
     void WidgetWindows::setFont()
@@ -489,6 +500,15 @@ namespace SA
             EndPaint(d->hwnd, &d->paintStruct);
             DeleteDC(d->paintingHandle);
             DeleteObject(memBM);
+            break;
+        }
+        case WM_SETCURSOR:
+        {
+            if (LOWORD(lParam) == HTCLIENT)
+            {
+                SetCursor(d->cursor);
+                return 1;
+            }
             break;
         }
         case WM_ERASEBKGND: return 1;

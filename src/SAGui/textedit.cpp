@@ -287,6 +287,7 @@ namespace SA
 
         if (symbol != 0)
         {
+            if (d->selection.selected) removeSelectedText();
             d->strings[d->currentRow].insert(d->currentColumn, 1, symbol);
             moveTextCursor(Right);
         }
