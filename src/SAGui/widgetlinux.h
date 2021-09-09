@@ -56,7 +56,7 @@ namespace SA
 
     private:
 
-        void procEvent(_XEvent *event);
+        void procEvent(XEvent *event);
         void sendEvent(SA::EventTypes type, const std::any &value);
         void focusEvent(bool state);
         void keyEvent(XKeyEvent *event, bool pressed);

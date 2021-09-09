@@ -20,7 +20,10 @@ namespace SA
         virtual ~TextEdit();
 
         void setText(const std::string &text);
+        void append(const std::string &text);
+        void insert(const std::string &text, uint32_t row, uint32_t column);
         std::string text();
+        void clear();
 
         bool isTextSelected();
         std::string selectedText();

@@ -3,6 +3,7 @@
 #include <map>
 
 #include "SAGui/textedit.h"
+#include "SAGui/clipboard.h"
 #include "SACore/utility.h"
 
 using std::cout;
@@ -40,6 +41,7 @@ namespace SA
         uint32_t textCursorX = 0;
         uint32_t cursorHeight = 10;
         uint32_t rowHeight = 10;
+        size_t textSize = 0;
 
         bool blinkState = false;
         bool enable = true;
@@ -84,12 +86,61 @@ namespace SA
 
     void TextEdit::setText(const std::string &text)
     {
-        int row = 0;
+        clear();
+        append(text);
+    }
+
+    void TextEdit::append(const std::string &text)
+    {
+        size_t pos = 0, step = 0, size = 0;
         for (const char &c: text)
         {
-            if (c != '\n') d->strings[row].push_back(c);
-            else { d->strings.push_back(std::string()); ++row; }
+            ++step;
+            if (c == '\n')
+            {
+                d->strings.push_back(text.substr(pos, size));
+                pos = step;
+                size = 0;
+            }
+            else ++size;
         }
+
+        d->strings.push_back(text.substr(pos, size));
+        d->textSize += text.size();
+
+        update();
+    }
+
+    void TextEdit::insert(const std::string &text, uint32_t row, uint32_t column)
+    {
+        if (row >= d->strings.size()) { append(text); return; }
+
+        size_t size = d->strings.at(row).size();
+        if (column > size) column = size;
+
+        std::string remainder = d->strings.at(row).substr(column, size - column);
+        d->strings[row].erase(column, size - column);
+
+        size_t pos = 0, step = 0; size = 0;
+        for (const char &c: text)
+        {
+            ++step;
+            if (c == '\n')
+            {
+                if (pos == 0) d->strings[row].append(text.substr(pos, size));
+                else d->strings.insert(d->strings.begin() + row, text.substr(pos, size));
+                pos = step;
+                size = 0;
+                ++row;
+            }
+            else ++size;
+        }
+
+        if (pos == 0) d->strings[row].append(text.substr(pos, size));
+        else d->strings.insert(d->strings.begin() + row, text.substr(pos, size));
+
+        d->strings[row].append(remainder);
+        d->textSize += text.size();
 
         update();
     }
@@ -97,12 +148,19 @@ namespace SA
     std::string TextEdit::text()
     {
         std::string result;
-        result.reserve(d->strings.size() * 50);
+        result.reserve(d->textSize);
 
         for (const std::string &text: d->strings)
         { result += text; result += "\n"; }
 
         return std::move(result);
+    }
+
+    void TextEdit::clear()
+    {
+        d->strings.clear();
+        d->textSize = 0;
+        update();
     }
 
     bool TextEdit::isTextSelected()
@@ -112,7 +170,35 @@ namespace SA
 
     std::string TextEdit::selectedText()
     {
-        return std::string();
+        if (!d->selection.selected) return std::string();
+
+        std::string result;
+
+        if (d->selection.rowStart == d->selection.rowEnd)
+        {
+            const int posX = std::min(d->selection.columnStart, d->selection.columnEnd);
+            const int posY = std::max(d->selection.columnStart, d->selection.columnEnd) - posX;
+            result = d->strings.at(d->currentRow).substr(posX, posY);
+        }
+        else
+        {
+            uint32_t columnStart = d->selection.columnStart;
+            uint32_t columnEnd = d->selection.columnEnd;
+            uint32_t rowStart = d->selection.rowStart;
+            uint32_t rowEnd = d->selection.rowEnd;
+
+            if (d->selection.rowStart > d->selection.rowEnd){ std::swap(columnStart, columnEnd); std::swap(rowStart, rowEnd);}
+            result.reserve((rowEnd - rowStart) * 50);
+            result += d->strings.at(rowStart).substr(columnStart, d->strings.at(rowStart).size() - columnStart);
+
+            const int rowMin = std::min(d->selection.rowStart, d->selection.rowEnd) + 1;
+            const int rowMax = std::max(d->selection.rowStart, d->selection.rowEnd);
+            for (int i=rowMin; i<rowMax; ++i) { result += d->strings.at(i);  result += "\n"; }
+
+            result += d->strings.at(rowEnd).substr(0, columnEnd);
+        }
+
+        return result;
     }
 
     void TextEdit::removeSelectedText()
@@ -122,10 +208,11 @@ namespace SA
         if (d->selection.rowStart == d->selection.rowEnd)
         {
             const int posX = std::min(d->selection.columnStart, d->selection.columnEnd);
-            const int posY = std::max(d->selection.columnStart, d->selection.columnEnd) - posX;
-            d->strings[d->currentRow].erase(posX, posY);
+            const int size = std::max(d->selection.columnStart, d->selection.columnEnd) - posX;
+            d->strings[d->currentRow].erase(posX, size);
             d->textCursorX = std::min(d->selection.posStart, d->selection.posEnd);
             d->currentColumn = posX;
+            d->textSize -= size;
             update();
         }
         else
@@ -143,10 +230,13 @@ namespace SA
             d->strings[selection.rowStart].erase(selection.columnStart, eraseSize);
             d->strings[selection.rowEnd].erase(0, selection.columnEnd);
             d->strings[selection.rowStart].append(d->strings.at(selection.rowEnd));
+            d->textSize -= eraseSize;
+            d->textSize -= selection.columnEnd;
 
             const int rowMin = std::min(d->selection.rowStart, d->selection.rowEnd) + 1;
             const int rowMax = std::max(d->selection.rowStart, d->selection.rowEnd) + 1;
-            for (int i=rowMin; i<rowMax; ++i) d->strings.erase(d->strings.begin() + i);
+            for (int i=rowMin; i<rowMax; ++i) d->textSize -= d->strings.at(i).size() + 1;
+            d->strings.erase(d->strings.begin() + rowMin, d->strings.begin() + rowMax);
 
             d->textCursorX = selection.posStart;
             d->currentRow = selection.rowStart;
@@ -283,12 +373,30 @@ namespace SA
     {
         if (!event.pressed) return;
 
+        if (event.modifiers.ctrl)
+        {
+            switch (event.keycode)
+            {
+            case Key_C:
+                cout << "selected: " << selectedText() << endl;
+                Clipboard::instance().setText(selectedText());
+                break;
+            case Key_V:
+                insert(Clipboard::instance().getText(), d->currentRow, d->currentColumn);
+                break;
+            default: break;
+            }
+
+            return;
+        }
+
         char symbol = getCharacter(event);
 
         if (symbol != 0)
         {
             if (d->selection.selected) removeSelectedText();
             d->strings[d->currentRow].insert(d->currentColumn, 1, symbol);
+            ++d->textSize;
             moveTextCursor(Right);
         }
         else
@@ -427,6 +535,8 @@ namespace SA
                 d->strings[d->currentRow].append(text);
                 d->strings.erase(d->strings.begin() + d->currentRow + 1);
             }
+
+            --d->textSize;
         }
     }
 
@@ -449,6 +559,8 @@ namespace SA
                 d->strings[d->currentRow].append(d->strings.at(d->currentRow + 1));
                 d->strings.erase(d->strings.begin() + d->currentRow + 1);
             }
+
+            --d->textSize;
         }
     }
 
@@ -469,6 +581,7 @@ namespace SA
         }
         d->currentColumn = 0;
         d->textCursorX = 1;
+        ++d->textSize;
     }
 
     void TextEdit::keyReactionHome()
@@ -489,6 +602,7 @@ namespace SA
     {
         d->strings[d->currentRow].insert(d->currentColumn, 4, ' ');
         d->currentColumn += 3;
+        d->textSize += 4;
         moveTextCursor(Right);
     }
 

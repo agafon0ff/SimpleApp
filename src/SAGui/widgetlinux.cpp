@@ -2,8 +2,9 @@
 
 #include "SACore/application.h"
 #include "SAGui/widgetlinux.h"
-#include <X11/cursorfont.h>
+#include "SAGui/clipboard.h"
 
+#include <X11/cursorfont.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xos.h>
@@ -15,7 +16,8 @@
 #include <map>
 
 extern int errno;
-using namespace std;
+using std::cout;
+using std::endl;
 
 namespace SA
 {
@@ -224,7 +226,17 @@ namespace SA
         d->x11FileDescriptor = ConnectionNumber(d->display);
 
         setFont();
+
+        if (WIDGETS_MAP.empty())
+        {
+            Clipboard &clipboard = Clipboard::instance();
+            clipboard.setNativePointers(d->display, d->window);
+//            cout << "clipboard: " << clipboard.getText() << endl;
+        }
+
         WIDGETS_MAP.insert({d->window, this});
+
+
     }
 
     WidgetLinux::~WidgetLinux()
@@ -506,7 +518,7 @@ namespace SA
         d->eventListners.push_back(object);
     }
 
-    void WidgetLinux::procEvent(_XEvent *event)
+    void WidgetLinux::procEvent(XEvent *event)
     {
         switch (event->type)
         {
@@ -541,6 +553,8 @@ namespace SA
         case MotionNotify: sendEvent(MouseMoveEvent, std::pair<int32_t, int32_t>(event->xmotion.x, event->xmotion.y)); break;
         case Expose: if (event->xexpose.count > 0) break; sendEvent(SA::EventTypes::PaintEvent, true); break;
         case ConfigureNotify: geometryUpdated(); break;
+        case SelectionRequest: Clipboard::instance().onSelectionRequestEvent(event); break;
+        case SelectionClear: break;
         case ClientMessage: SA::Application::instance().quit(); break;
         default: break;
         }
