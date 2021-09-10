@@ -190,6 +190,7 @@ namespace SA
             if (d->selection.rowStart > d->selection.rowEnd){ std::swap(columnStart, columnEnd); std::swap(rowStart, rowEnd);}
             result.reserve((rowEnd - rowStart) * 50);
             result += d->strings.at(rowStart).substr(columnStart, d->strings.at(rowStart).size() - columnStart);
+            result += "\n";
 
             const int rowMin = std::min(d->selection.rowStart, d->selection.rowEnd) + 1;
             const int rowMax = std::max(d->selection.rowStart, d->selection.rowEnd);
@@ -430,9 +431,9 @@ namespace SA
         {
         case Left:
         {
-            --d->currentColumn;
-
-            if (d->currentColumn < 0)
+            if (d->currentColumn > 0)
+                --d->currentColumn;
+            else
             {
                 if (d->currentRow > 0)
                 {
@@ -464,10 +465,8 @@ namespace SA
         }
         case Up:
         {
-
-            --d->currentRow;
-
-            if (d->currentRow < 0) d->currentRow = 0;
+            if (d->currentRow > 0)
+                --d->currentRow;
             else
             {
                 const std::string &text = d->strings.at(d->currentRow);

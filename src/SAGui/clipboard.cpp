@@ -23,7 +23,6 @@ namespace SA
     {
         if (!d->display) return std::string();
 
-        std::string result;
         XEvent event;
         int format;
         unsigned long N, size;
@@ -40,8 +39,6 @@ namespace SA
         XSync(d->display, 0);
         XNextEvent(d->display, &event);
 
-        std::cout << __PRETTY_FUNCTION__ << FMT_NAME << std::endl;
-
         switch(event.type)
         {
             case SelectionNotify:
@@ -55,19 +52,18 @@ namespace SA
                                    &target, &format, &size, &N,
                                    (unsigned char**)&data);
 
-                std::cout << __PRETTY_FUNCTION__ << " target: " << target << ", have: " << FMT_NAME << std::endl;
-
                 if(target == FMT_NAME)
                 {
-                    result = std::string(data, size);
+                    d->text = std::string(data, size);
                     XFree(data);
                 }
 
                 XDeleteProperty(event.xselection.display, event.xselection.requestor, event.xselection.property);
             }
-        }
+        case SelectionRequest: return d->text;  // copying own data
+       }
 
-        return result;
+        return d->text;
     }
 
     void Clipboard::setText(const std::string &text)
@@ -118,14 +114,12 @@ namespace SA
 
         if (ev.target == targets_atom)
         {
-            std::cout << __PRETTY_FUNCTION__ << " TARGETS" << std::endl;
             R = XChangeProperty (ev.display, ev.requestor, ev.property,
                                  XA_ATOM, 32, PropModeReplace,
                                  (unsigned char*)&UTF8, 1);
         }
         else if (ev.target == XA_STRING || ev.target == text_atom)
         {
-            std::cout << __PRETTY_FUNCTION__ << " STRING" << std::endl;
             R = XChangeProperty(ev.display, ev.requestor, ev.property,
                                 XA_STRING, 8, PropModeReplace,
                                 reinterpret_cast<const unsigned char *>(d->text.data()),
@@ -133,7 +127,6 @@ namespace SA
         }
         else if (ev.target == UTF8)
         {
-            std::cout << __PRETTY_FUNCTION__ << " UTF8_STRING" << std::endl;
             R = XChangeProperty(ev.display, ev.requestor, ev.property,
                                 UTF8, 8, PropModeReplace,
                                 reinterpret_cast<const unsigned char *>(d->text.data()),
