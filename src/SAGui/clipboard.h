@@ -10,6 +10,7 @@ namespace SA
     public:
         static Clipboard &instance();
 
+        std::string XPasteType(Atom atom);
         std::string getText();
         void setText(const std::string &text);
 

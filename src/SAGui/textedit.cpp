@@ -378,7 +378,7 @@ namespace SA
             switch (event.keycode)
             {
             case Key_C:
-                cout << "selected: " << selectedText() << endl;
+//                cout << "selected: " << selectedText() << endl;
                 Clipboard::instance().setText(selectedText());
                 break;
             case Key_V:
@@ -386,7 +386,6 @@ namespace SA
                 break;
             default: break;
             }
-
             return;
         }
 
