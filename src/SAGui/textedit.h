@@ -28,6 +28,7 @@ namespace SA
         bool isTextSelected();
         std::string selectedText();
         void removeSelectedText();
+        void selectAllText();
 
         void setEnabled(bool state);
         bool isEnabled();

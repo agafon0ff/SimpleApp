@@ -249,6 +249,20 @@ namespace SA
         d->selection.selected = false;
     }
 
+    void TextEdit::selectAllText()
+    {
+        d->selection.selected = true;
+
+        d->selection.columnStart = 0;
+        d->selection.rowStart = 0;
+        d->selection.posStart = 0;
+
+        d->selection.rowEnd = d->strings.size() - 1;
+        d->selection.columnEnd = d->strings.back().size();
+        d->selection.posEnd = textWidth(d->strings.back());
+        update();
+    }
+
     void TextEdit::setEnabled(bool state)
     {
         d->enable = state;
@@ -378,6 +392,7 @@ namespace SA
         {
             switch (event.keycode)
             {
+            case Key_A: selectAllText(); break;
             case Key_C: Clipboard::instance().setText(selectedText()); break;
             case Key_X: Clipboard::instance().setText(selectedText()); removeSelectedText(); break;
             case Key_V: insert(Clipboard::instance().getText(), d->currentRow, d->currentColumn); break;
@@ -511,7 +526,7 @@ namespace SA
 
     void TextEdit::keyReactionBackspace()
     {
-        if (isTextSelected())
+        if (d->selection.selected)
         {
             removeSelectedText();
         }
@@ -536,7 +551,7 @@ namespace SA
 
     void TextEdit::keyReactionDelete()
     {
-        if (isTextSelected())
+        if (d->selection.selected)
         {
             removeSelectedText();
         }
