@@ -174,12 +174,15 @@ namespace SA
         HGLOBAL hMem =  GlobalAlloc(GMEM_MOVEABLE, len);
         if (hMem == NULL) return;
 
-        memcpy(GlobalLock(hMem), d->text.c_str(), len);
-        GlobalUnlock(hMem);
-        OpenClipboard(d->hwnd);
-        EmptyClipboard();
-        SetClipboardData(CF_TEXT, hMem);
-        CloseClipboard();
+        if (OpenClipboard(d->hwnd))
+        {
+            memcpy(GlobalLock(hMem), d->text.c_str(), len);
+            GlobalUnlock(hMem);
+
+            EmptyClipboard();
+            SetClipboardData(CF_TEXT, hMem);
+            CloseClipboard();
+        }
     }
 
     void Clipboard::setNativePointers(HWND hwnd)
