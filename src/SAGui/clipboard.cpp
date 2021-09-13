@@ -146,16 +146,45 @@ namespace SA
     struct Clipboard::ClipboardPrivate
     {
         std::string text;
+        HWND hwnd = nullptr;
     };
 
     std::string Clipboard::getText()
     {
+        if (!d->hwnd) return std::string();
 
+        if (OpenClipboard(d->hwnd))
+         {
+              HANDLE hClipboardData = GetClipboardData(CF_TEXT);
+              char *pchData = (char*)GlobalLock(hClipboardData);
+              d->text = std::string(pchData);
+              GlobalUnlock(hClipboardData);
+              CloseClipboard();
+         }
+
+        return d->text;
     }
 
     void Clipboard::setText(const std::string &text)
     {
+        if (!d->hwnd) return;
+        d->text = text;
 
+        const size_t len = d->text.size() + 1;
+        HGLOBAL hMem =  GlobalAlloc(GMEM_MOVEABLE, len);
+        if (hMem == NULL) return;
+
+        memcpy(GlobalLock(hMem), d->text.c_str(), len);
+        GlobalUnlock(hMem);
+        OpenClipboard(d->hwnd);
+        EmptyClipboard();
+        SetClipboardData(CF_TEXT, hMem);
+        CloseClipboard();
+    }
+
+    void Clipboard::setNativePointers(HWND hwnd)
+    {
+        d->hwnd = hwnd;
     }
 
 #endif // #ifdef WIN32

@@ -231,7 +231,6 @@ namespace SA
         {
             Clipboard &clipboard = Clipboard::instance();
             clipboard.setNativePointers(d->display, d->window);
-//            cout << "clipboard: " << clipboard.getText() << endl;
         }
 
         WIDGETS_MAP.insert({d->window, this});
@@ -481,7 +480,7 @@ namespace SA
 
     size_t WidgetLinux::textHeight()
     {
-        return d->font->ascent;// - d->font->descent;
+        return d->font->ascent + d->font->descent;
     }
 
     bool WidgetLinux::isHovered()

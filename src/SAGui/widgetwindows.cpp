@@ -1,6 +1,7 @@
 #ifdef WIN32
 
 #include "SAGui/widgetwindows.h"
+#include "SAGui/clipboard.h"
 #include "SACore/application.h"
 #include "SACore/global.h"
 
@@ -236,6 +237,12 @@ namespace SA
             return;
         }
 
+        if (WIDGETS_MAP.empty())
+        {
+            Clipboard &clipboard = Clipboard::instance();
+            clipboard.setNativePointers(d->hwnd);
+        }
+
         WIDGETS_MAP.insert({d->hwnd, this});
 
         RECT rect;
@@ -367,7 +374,7 @@ namespace SA
         // https://docs.microsoft.com/ru-ru/windows/win32/gdi/using-a-stock-font-to-draw-text
 
         if (d->font) DeleteObject(d->font);
-        d->font = (HFONT)GetStockObject(ANSI_VAR_FONT);
+        d->font = (HFONT)GetStockObject(ANSI_FIXED_FONT);
     }
 
     void WidgetWindows::drawLine(int32_t x1, int32_t y1, int32_t x2, int32_t y2)

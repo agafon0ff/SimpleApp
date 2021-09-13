@@ -6,6 +6,10 @@
 #include <X11/Xlib.h>
 #endif
 
+#ifdef WIN32
+#include <windows.h>
+#endif // #ifdef WIN32
+
 namespace SA
 {
     class Clipboard
@@ -20,6 +24,11 @@ namespace SA
         void setNativePointers(Display *display, Window window);
         void onSelectionRequestEvent(XEvent *event);
 #endif
+
+#ifdef WIN32
+    void setNativePointers(HWND hwnd);
+#endif // #ifdef WIN32
+
 
     protected:
         Clipboard ();

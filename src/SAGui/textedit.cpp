@@ -72,8 +72,8 @@ namespace SA
 
         d->strings.push_back(std::string());
         d->timerId = startTimer(500);
-        d->cursorHeight = textHeight() + 6;
-        d->rowHeight = textHeight() + 5;
+        d->rowHeight = textHeight() + 2;
+        d->cursorHeight = d->rowHeight;
 
         setCursorShape(Text);
     }
@@ -718,7 +718,7 @@ namespace SA
         if (!d->blinkState) return;
 
         setPen(d->textColors[d->styleState], 2);
-        const int posY = d->currentRow * d->rowHeight - 2;
+        const int posY = d->currentRow * d->rowHeight - 1;
         drawLine(d->textCursorX, posY,
                  d->textCursorX, posY + d->cursorHeight);
     }
