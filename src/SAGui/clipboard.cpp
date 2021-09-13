@@ -3,6 +3,14 @@
 
 namespace SA
 {
+    Clipboard &Clipboard::instance()
+    {
+        static Clipboard * const ptr = new Clipboard();
+        return *ptr;
+    }
+
+#ifdef __linux__
+
     static const Atom XA_ATOM = 4, XA_STRING = 31;
 
     struct Clipboard::ClipboardPrivate
@@ -12,12 +20,6 @@ namespace SA
         std::string text;
         Atom selection = 0L;
     };
-
-    Clipboard &Clipboard::instance()
-    {
-        static Clipboard * const ptr = new Clipboard();
-        return *ptr;
-    }
 
     std::string Clipboard::getText()
     {
@@ -60,7 +62,7 @@ namespace SA
 
                 XDeleteProperty(event.xselection.display, event.xselection.requestor, event.xselection.property);
             }
-        case SelectionRequest: return d->text;  // copying own data
+        case SelectionRequest: return d->text;  // return own data
        }
 
         return d->text;
@@ -137,6 +139,26 @@ namespace SA
         if ((R & 2) == 0)
             XSendEvent (d->display, ev.requestor, 0, 0, (XEvent *)&ev);
     }
+#endif // #ifdef __linux__
+
+#ifdef WIN32
+
+    struct Clipboard::ClipboardPrivate
+    {
+        std::string text;
+    };
+
+    std::string Clipboard::getText()
+    {
+
+    }
+
+    void Clipboard::setText(const std::string &text)
+    {
+
+    }
+
+#endif // #ifdef WIN32
 
     Clipboard::Clipboard() : d(new ClipboardPrivate)
     {

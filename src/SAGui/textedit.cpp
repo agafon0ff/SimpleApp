@@ -378,13 +378,9 @@ namespace SA
         {
             switch (event.keycode)
             {
-            case Key_C:
-//                cout << "selected: " << selectedText() << endl;
-                Clipboard::instance().setText(selectedText());
-                break;
-            case Key_V:
-                insert(Clipboard::instance().getText(), d->currentRow, d->currentColumn);
-                break;
+            case Key_C: Clipboard::instance().setText(selectedText()); break;
+            case Key_X: Clipboard::instance().setText(selectedText()); removeSelectedText(); break;
+            case Key_V: insert(Clipboard::instance().getText(), d->currentRow, d->currentColumn); break;
             default: break;
             }
             return;
