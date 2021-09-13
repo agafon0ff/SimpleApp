@@ -72,7 +72,7 @@ namespace SA
 
         d->strings.push_back(std::string());
         d->timerId = startTimer(500);
-        d->rowHeight = textHeight() + 2;
+        d->rowHeight = textHeight() + 5;
         d->cursorHeight = d->rowHeight;
 
         setCursorShape(Text);

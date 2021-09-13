@@ -375,7 +375,8 @@ namespace SA
         }
 
         // https://www.oreilly.com/library/view/x-window-system/9780937175149/Chapter05.html
-        const char *fontname = "-misc-fixed-bold-r-normal--13-120-75-75-c-80-iso8859-1";
+//        const char *fontname = "-misc-fixed-bold-r-normal--13-120-75-75-c-80-iso8859-1";
+        const char *fontname = "-misc-fixed-bold-r-normal--15-140-75-75-c-84-iso8859-1";
         d->font = XLoadQueryFont(d->display, fontname);
         /* If the font could not be loaded, revert to the "fixed" font. */
         if (!d->font)
@@ -480,7 +481,7 @@ namespace SA
 
     size_t WidgetLinux::textHeight()
     {
-        return d->font->ascent + d->font->descent;
+        return d->font->ascent;// + d->font->descent;
     }
 
     bool WidgetLinux::isHovered()
