@@ -201,6 +201,8 @@ namespace SA
     {
         d->strings.clear();
         d->textSize = 0;
+        d->currentRow = 0;
+        d->currentColumn = 0;
         update();
     }
 
@@ -255,6 +257,7 @@ namespace SA
 
     void TextEdit::removeSelectedText()
     {
+        if(d->strings.empty()) return;
         if (!d->selection.selected) return;
 
         if (d->selection.rowStart == d->selection.rowEnd)
@@ -601,6 +604,7 @@ namespace SA
     void TextEdit::keyReactionSymbol(char symbol)
     {
         if (d->selection.selected) removeSelectedText();
+        if (d->strings.empty()) d->strings.push_back(std::string());
 
         d->strings[d->currentRow].insert(d->currentColumn, 1, symbol);
         ++d->textSize;
@@ -610,6 +614,8 @@ namespace SA
 
     void TextEdit::keyReactionBackspace()
     {
+        if (d->strings.empty()) return;
+
         if (d->selection.selected)
         {
             removeSelectedText();
@@ -624,32 +630,38 @@ namespace SA
             }
             else if(d->currentRow > 0)
             {
-                const std::string &text = d->strings.at(d->currentRow);
-                moveTextCursor(Left);
-                d->strings[d->currentRow].append(text);
+                if (d->currentRow < d->strings.size())
+                {
+                    const std::string &text = d->strings.at(d->currentRow);
+                    moveTextCursor(Left);
+                    if (!text.empty()) d->strings[d->currentRow].append(text);
+                }
+
                 d->strings.erase(d->strings.begin() + d->currentRow + 1);
                 --d->textSize;
             }
-
         }
     }
 
     void TextEdit::keyReactionDelete()
     {
+        if (d->strings.empty()) return;
+
         if (d->selection.selected)
         {
             removeSelectedText();
         }
-        else
+        else if(d->currentRow < d->strings.size())
         {
-           const std::string &text = d->strings.at(d->currentRow);
+            const std::string &text = d->strings.at(d->currentRow);
+            if (text.empty()) return;
 
             if ((text.size() - d->currentColumn) > 0)
             {
                 d->strings[d->currentRow].erase(d->currentColumn, 1);
                 --d->textSize;
             }
-            else if(d->strings.size() > d->currentRow + 1)
+            else if(d->currentRow + 1 < d->strings.size())
             {
                 d->strings[d->currentRow].append(d->strings.at(d->currentRow + 1));
                 d->strings.erase(d->strings.begin() + d->currentRow + 1);
@@ -661,7 +673,11 @@ namespace SA
 
     void TextEdit::keyReactionReturn()
     {
-        if (d->currentColumn >= d->strings.at(d->currentRow).size())
+        size_t size = 0;
+        if (d->strings.size() > d->currentRow)
+            size = d->strings.at(d->currentRow).size();
+
+        if (d->currentColumn >= size)
         {
             ++d->currentRow;
             d->strings.insert(d->strings.begin() + d->currentRow, std::string());
@@ -671,7 +687,7 @@ namespace SA
             const std::string &text = d->strings.at(d->currentRow);
             ++d->currentRow;
             d->strings.insert(d->strings.begin() + d->currentRow, text.substr(d->currentColumn));
-            d->strings[d->currentRow - 1].erase(d->currentColumn, text.size() - d->currentColumn);
+            d->strings[d->currentRow - 1].erase(d->currentColumn, size - d->currentColumn);
 
         }
         d->currentColumn = 0;
@@ -695,6 +711,7 @@ namespace SA
 
     void TextEdit::keyReactionTab()
     {
+        if (d->strings.empty()) return;
         d->strings[d->currentRow].insert(d->currentColumn, 4, ' ');
         d->currentColumn += 3;
         d->textSize += 4;
@@ -703,6 +720,8 @@ namespace SA
 
     void TextEdit::calcCurrentRow()
     {
+        if (d->strings.empty()){ d->currentRow = 0; return; }
+
         d->currentRow = std::max(d->cursorPos.y, 0) / d->rowHeight;
 
         if (d->currentRow >= d->strings.size())
@@ -782,6 +801,7 @@ namespace SA
 
     void TextEdit::drawTextSelection()
     {
+        if (d->strings.empty()) return;
         if (!d->selection.selected) return;
 
         setBrush(d->selectionColor);
