@@ -1,5 +1,6 @@
-#include <iostream>
 #include <algorithm>
+#include <iostream>
+#include <stack>
 #include <map>
 
 #include "SAGui/textedit.h"
@@ -11,11 +12,8 @@ using std::endl;
 
 namespace SA
 {
-
     struct TextSelection
     {
-        bool selected = false;
-
         uint32_t posStart = 0;
         uint32_t posEnd = 0;
 
@@ -24,11 +22,54 @@ namespace SA
 
         uint32_t columnStart = 0;
         uint32_t columnEnd = 0;
+
+        bool selected = false;
+    };
+
+    struct TextAction
+    {
+        enum ChangeType
+        {
+            Null,
+            InsertChar,
+            InsertString,
+            InsertRow,
+            InsertText,
+            RemoveChar,
+            RemoveString,
+            RemoveRow,
+            RemoveText
+        } type = Null;
+
+        Point pos;
+        char symbol = ' ';
+        std::string string;
+
+        TextAction(ChangeType type_, Point pos_, char symbol_) :
+            type(type_), pos(pos_), symbol(symbol_) {}
+
+        TextAction(ChangeType type_, Point pos_, const std::string &string_) :
+            type(type_), pos(pos_), string(string_){}
+
+        TextAction(const TextAction &a) :
+            type(a.type), pos(a.pos), symbol(a.symbol), string(a.string) {}
+
+        TextAction(TextAction &&a) noexcept :
+        type(a.type), pos(a.pos), symbol(a.symbol), string(std::move(a.string)) {}
+
+        TextAction& operator=(const TextAction &a)
+        {if (&a == this) return *this;  type = a.type; pos = a.pos;
+         symbol = a.symbol; string = a.string; return *this;}
+
+        TextAction& operator=(TextAction &&a) noexcept
+        {if (&a == this) return *this;  type = a.type; pos = a.pos;
+         symbol = a.symbol; string = std::move(a.string); return *this;}
     };
 
     struct TextEdit::TextEditPrivate
     {
         std::vector<std::string> strings;
+        std::stack<TextAction> actions;
 
         int timerId = 0;
 
@@ -52,10 +93,10 @@ namespace SA
         TextSelection selection;
 
         // Text style
-        StyleState styleState = EnableState;
-        Pen borderPens[AllStates];
-        Color textColors[AllStates];
-        Color backgrounds[AllStates];
+        TextEdit::StyleState styleState = TextEdit::EnableState;
+        Pen borderPens[TextEdit::AllStates];
+        Color textColors[TextEdit::AllStates];
+        Color backgrounds[TextEdit::AllStates];
         Color selectionColor = {180, 180, 180};
 
         // Events listeners
@@ -70,7 +111,6 @@ namespace SA
         calcBorders({90, 90, 90, 1});
         calcBackgrounds({250, 250, 250});
 
-        d->strings.push_back(std::string());
         d->timerId = startTimer(500);
         d->rowHeight = textHeight() + 5;
         d->cursorHeight = d->rowHeight;
@@ -93,6 +133,7 @@ namespace SA
     void TextEdit::append(const std::string &text)
     {
         size_t pos = 0, step = 0, size = 0;
+
         for (const char &c: text)
         {
             ++step;
@@ -161,6 +202,16 @@ namespace SA
         d->strings.clear();
         d->textSize = 0;
         update();
+    }
+
+    size_t TextEdit::textSize()
+    {
+        return d->textSize;
+    }
+
+    size_t TextEdit::rowCount()
+    {
+        return d->strings.size();
     }
 
     bool TextEdit::isTextSelected()
@@ -261,6 +312,34 @@ namespace SA
         d->selection.columnEnd = d->strings.back().size();
         d->selection.posEnd = textWidth(d->strings.back());
         update();
+    }
+
+    void TextEdit::undo()
+    {
+        if (d->actions.empty()) return;
+
+        TextAction action = std::move(d->actions.top());
+        d->actions.pop();
+
+        switch (action.type)
+        {
+        case TextAction::InsertChar:
+        {
+            d->strings[action.pos.x].erase(action.pos.y - 1, 1);
+            moveTextCursor(Left);
+            --d->textSize;
+            break;
+        }
+        case TextAction::RemoveChar:
+        {
+            d->strings[d->currentRow].insert(d->currentColumn, 1, action.symbol);
+            moveTextCursor(Right);
+            ++d->textSize;
+            break;
+        }
+        default:
+            break;
+        }
     }
 
     void TextEdit::setEnabled(bool state)
@@ -392,6 +471,7 @@ namespace SA
         {
             switch (event.keycode)
             {
+            case Key_Z: undo(); break;
             case Key_A: selectAllText(); break;
             case Key_C: Clipboard::instance().setText(selectedText()); break;
             case Key_X: Clipboard::instance().setText(selectedText()); removeSelectedText(); break;
@@ -403,13 +483,7 @@ namespace SA
 
         char symbol = getCharacter(event);
 
-        if (symbol != 0)
-        {
-            if (d->selection.selected) removeSelectedText();
-            d->strings[d->currentRow].insert(d->currentColumn, 1, symbol);
-            ++d->textSize;
-            moveTextCursor(Right);
-        }
+        if (symbol != 0) keyReactionSymbol(symbol);
         else
         {
             switch (event.keycode)
@@ -524,6 +598,16 @@ namespace SA
         d->selection.selected = (d->selection.posStart != d->selection.posEnd ||  d->selection.rowStart != d->selection.rowEnd);
     }
 
+    void TextEdit::keyReactionSymbol(char symbol)
+    {
+        if (d->selection.selected) removeSelectedText();
+
+        d->strings[d->currentRow].insert(d->currentColumn, 1, symbol);
+        ++d->textSize;
+
+        moveTextCursor(Right);
+    }
+
     void TextEdit::keyReactionBackspace()
     {
         if (d->selection.selected)
@@ -536,6 +620,7 @@ namespace SA
             {
                 moveTextCursor(Left);
                 d->strings[d->currentRow].erase(d->currentColumn, 1);
+                --d->textSize;
             }
             else if(d->currentRow > 0)
             {
@@ -543,9 +628,9 @@ namespace SA
                 moveTextCursor(Left);
                 d->strings[d->currentRow].append(text);
                 d->strings.erase(d->strings.begin() + d->currentRow + 1);
+                --d->textSize;
             }
 
-            --d->textSize;
         }
     }
 
@@ -557,19 +642,20 @@ namespace SA
         }
         else
         {
-            const std::string &text = d->strings.at(d->currentRow);
+           const std::string &text = d->strings.at(d->currentRow);
 
             if ((text.size() - d->currentColumn) > 0)
             {
                 d->strings[d->currentRow].erase(d->currentColumn, 1);
+                --d->textSize;
             }
             else if(d->strings.size() > d->currentRow + 1)
             {
                 d->strings[d->currentRow].append(d->strings.at(d->currentRow + 1));
                 d->strings.erase(d->strings.begin() + d->currentRow + 1);
+                --d->textSize;
             }
 
-            --d->textSize;
         }
     }
 
@@ -625,6 +711,13 @@ namespace SA
 
     void TextEdit::calcTextCursorPos()
     {
+        if (d->strings.empty())
+        {
+            d->currentColumn = 0;
+            d->textCursorX = 1;
+            return;
+        }
+
         int delta = 3;
 
         if (d->cursorPos.x <= delta)

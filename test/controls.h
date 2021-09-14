@@ -13,10 +13,12 @@ public:
     ~Controls();
 
 private:
-    SA::Button *m_button1 = nullptr;
+    SA::Button *m_buttonClear = nullptr;
+    SA::Button *m_buttonAdd = nullptr;
     SA::TextEdit *m_textEdit = nullptr;
 
-    void btnPressed(bool state);
+    void btnClearPressed(bool state);
+    void btnAddPressed(bool state);
     void resizeEvent(const SA::Size &size);
 };
 

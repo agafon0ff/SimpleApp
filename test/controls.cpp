@@ -3,12 +3,14 @@
 #include "controls.h"
 
 Controls::Controls(SA::Widget *parent) : SA::Widget(parent),
-    m_button1(new SA::Button("Button", this)),
+    m_buttonClear(new SA::Button("Clear", this)),
+    m_buttonAdd(new SA::Button("Add row", this)),
     m_textEdit(new SA::TextEdit(this))
 {
     using namespace std::placeholders;
 
-    m_button1->addPressHandler(std::bind(&Controls::btnPressed, this, _1));
+    m_buttonClear->addPressHandler(std::bind(&Controls::btnClearPressed, this, _1));
+    m_buttonAdd->addPressHandler(std::bind(&Controls::btnAddPressed, this, _1));
 
     m_textEdit->setText("    Lorem Ipsum is simply dummy\n"
                         "text of the printing and typesetting\n"
@@ -32,20 +34,26 @@ Controls::Controls(SA::Widget *parent) : SA::Widget(parent),
 
 Controls::~Controls()
 {
-    delete m_button1;
+    delete m_buttonClear;
     delete m_textEdit;
     std::cout << __PRETTY_FUNCTION__ << std::endl;
 }
 
-void Controls::btnPressed(bool state)
+void Controls::btnClearPressed(bool state)
 {
-    std::cout << __PRETTY_FUNCTION__
-              << " state: " << state
-              << std::endl;
+    if (state) m_textEdit->clear();
+}
+
+void Controls::btnAddPressed(bool state)
+{
+    if (!state) return;
+    m_textEdit->append("Count of symbols in text before: " +
+                       std::to_string(m_textEdit->textSize()));
 }
 
 void Controls::resizeEvent(const SA::Size &size)
 {
     m_textEdit->setGeometry(5, 5, size.width - 10, size.height - 40);
-    m_button1->setGeometry(size.width - 105, size.height - 30, 100, 25);
+    m_buttonClear->setGeometry(size.width - 105, size.height - 30, 100, 25);
+    m_buttonAdd->setGeometry(5, size.height - 30, 100, 25);
 }

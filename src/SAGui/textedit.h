@@ -24,11 +24,15 @@ namespace SA
         void insert(const std::string &text, uint32_t row, uint32_t column);
         std::string text();
         void clear();
+        size_t textSize();
+        size_t rowCount();
 
         bool isTextSelected();
         std::string selectedText();
         void removeSelectedText();
         void selectAllText();
+
+        void undo();
 
         void setEnabled(bool state);
         bool isEnabled();
@@ -54,6 +58,7 @@ namespace SA
         void moveTextCursor(Direction dir);
         void updateTextSelection(bool justPressed = false);
 
+        void keyReactionSymbol(char symbol);
         void keyReactionBackspace();
         void keyReactionDelete();
         void keyReactionReturn();
