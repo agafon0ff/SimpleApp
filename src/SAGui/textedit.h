@@ -24,13 +24,13 @@ namespace SA
         void append(char symbol);
         void append(const std::string &text);
 
-        void insert(uint32_t pos, char symbol);
+        void insert(uint64_t pos, char symbol);
         void insert(uint32_t row, uint32_t column, char symbol);
 
-        void insert(uint32_t pos, const std::string &text);
+        void insert(uint64_t pos, const std::string &text);
         void insert(uint32_t row, uint32_t column, const std::string &text);
 
-        void remove(uint32_t pos, size_t size);
+        void remove(uint64_t pos, size_t size);
         void remove(uint32_t row, uint32_t column, size_t size);
 
         std::string text();
@@ -81,7 +81,8 @@ namespace SA
 
         void calcCurrentRow();
         void calcTextCursorPos();
-        void calcRowColumn(uint32_t pos, uint32_t &row, uint32_t &column);
+        void calcRowColumn(uint64_t pos, uint32_t &row, uint32_t &column);
+        uint64_t calcTextPos(uint32_t row, uint32_t column);
         void calcTextColors(const Color &color);
         void calcBorders(const Pen &pen);
 

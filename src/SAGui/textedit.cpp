@@ -32,23 +32,19 @@ namespace SA
         {
             Null,
             InsertChar,
-            InsertString,
-            InsertRow,
             InsertText,
             RemoveChar,
-            RemoveString,
-            RemoveRow,
             RemoveText
         } type = Null;
 
-        Point pos;
+        uint64_t pos = 0;
         char symbol = ' ';
         std::string string;
 
-        TextAction(ChangeType type_, Point pos_, char symbol_) :
+        TextAction(ChangeType type_, uint64_t pos_, char symbol_) :
             type(type_), pos(pos_), symbol(symbol_) {}
 
-        TextAction(ChangeType type_, Point pos_, const std::string &string_) :
+        TextAction(ChangeType type_, uint64_t pos_, const std::string &string_) :
             type(type_), pos(pos_), string(string_){}
 
         TextAction(const TextAction &a) :
@@ -159,7 +155,7 @@ namespace SA
         update();
     }
 
-    void TextEdit::insert(uint32_t pos, char symbol)
+    void TextEdit::insert(uint64_t pos, char symbol)
     {
         uint32_t row = 0, column = 0;
         calcRowColumn(pos, row, column);
@@ -188,7 +184,7 @@ namespace SA
         update();
     }
 
-    void TextEdit::insert(uint32_t pos, const std::string &text)
+    void TextEdit::insert(uint64_t pos, const std::string &text)
     {
         uint32_t row = 0, column = 0;
         calcRowColumn(pos, row, column);
@@ -232,7 +228,7 @@ namespace SA
         update();
     }
 
-    void TextEdit::remove(uint32_t pos, size_t size)
+    void TextEdit::remove(uint64_t pos, size_t size)
     {
         uint32_t row = 0, column = 0;
         calcRowColumn(pos, row, column);
@@ -439,21 +435,19 @@ namespace SA
         {
         case TextAction::InsertChar:
         {
-            d->strings[action.pos.x].erase(action.pos.y - 1, 1);
-            moveTextCursor(Left);
-            --d->textSize;
+            remove(action.pos, 1);
             break;
         }
         case TextAction::RemoveChar:
         {
-            d->strings[d->currentRow].insert(d->currentColumn, 1, action.symbol);
-            moveTextCursor(Right);
-            ++d->textSize;
+            insert(action.pos, action.symbol);
             break;
         }
         default:
             break;
         }
+
+        calcTextCursorPos();
     }
 
     void TextEdit::setEnabled(bool state)
@@ -709,7 +703,8 @@ namespace SA
         d->selection.columnEnd = d->currentColumn;
 
 
-        d->selection.selected = (d->selection.posStart != d->selection.posEnd ||  d->selection.rowStart != d->selection.rowEnd);
+        d->selection.selected = (d->selection.posStart != d->selection.posEnd ||
+                d->selection.rowStart != d->selection.rowEnd);
     }
 
     void TextEdit::keyReactionSymbol(char symbol)
@@ -717,7 +712,9 @@ namespace SA
         if (d->selection.selected) removeSelectedText();
         if (d->strings.empty()) d->strings.push_back(std::string());
 
-        insert(symbol, d->currentRow, d->currentColumn);
+        insert(d->currentRow, d->currentColumn, symbol);
+        d->actions.push({TextAction::InsertChar, calcTextPos(d->currentRow, d->currentColumn), symbol});
+
         moveTextCursor(Right);
     }
 
@@ -734,6 +731,10 @@ namespace SA
             if(d->currentColumn > 0)
             {
                 moveTextCursor(Left);
+
+                d->actions.push({TextAction::RemoveChar, calcTextPos(d->currentRow, d->currentColumn),
+                                 d->strings.at(d->currentRow).at(d->currentColumn)});
+
                 d->strings[d->currentRow].erase(d->currentColumn, 1);
                 --d->textSize;
             }
@@ -748,6 +749,8 @@ namespace SA
 
                 d->strings.erase(d->strings.begin() + d->currentRow + 1);
                 --d->textSize;
+
+                d->actions.push({TextAction::RemoveChar, calcTextPos(d->currentRow, d->currentColumn), '\n'});
             }
         }
     }
@@ -883,7 +886,7 @@ namespace SA
         d->textCursorX = result;
     }
 
-    void TextEdit::calcRowColumn(uint32_t pos, uint32_t &row, uint32_t &column)
+    void TextEdit::calcRowColumn(uint64_t pos, uint32_t &row, uint32_t &column)
     {
         size_t steps = 0;
         row = 0; column = 0;
@@ -894,6 +897,21 @@ namespace SA
             ++steps;
             ++row;
         }
+    }
+
+    uint64_t TextEdit::calcTextPos(uint32_t row, uint32_t column)
+    {
+        uint32_t result = column;
+
+        for (size_t i=0; i<d->strings.size(); ++i)
+        {
+            if (i < row) result += d->strings.at(i).size();
+            else break;
+
+            ++result;
+        }
+
+        return result;
     }
 
     void TextEdit::calcTextColors(const Color &color)
