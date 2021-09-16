@@ -107,9 +107,9 @@ namespace SA
         d(new TextEditPrivate)
     {
         resize(150, 40);
-        calcTextColors({20, 20, 20});
+        calcTextColors({240, 240, 240});
         calcBorders({90, 90, 90, 1});
-        calcBackgrounds({250, 250, 250});
+        setBackground({50, 50, 50});
 
         d->timerId = startTimer(500);
         d->rowHeight = textHeight() + 5;
@@ -128,6 +128,13 @@ namespace SA
     {
         clear();
         append(text);
+    }
+
+    void TextEdit::append(char symbol)
+    {
+        d->strings.push_back(std::string(1, symbol));
+        d->textSize += 2;
+        update();
     }
 
     void TextEdit::append(const std::string &text)
@@ -152,9 +159,49 @@ namespace SA
         update();
     }
 
-    void TextEdit::insert(const std::string &text, uint32_t row, uint32_t column)
+    void TextEdit::insert(uint32_t pos, char symbol)
     {
-        if (row >= d->strings.size()) { append(text); return; }
+        uint32_t row = 0, column = 0;
+        calcRowColumn(pos, row, column);
+        insert(row, column, symbol);
+    }
+
+    void TextEdit::insert(uint32_t row, uint32_t column, char symbol)
+    {
+        if (d->strings.empty())
+            d->strings.push_back(std::string());
+
+        if (row >= d->strings.size())
+            row = d->strings.size() - 1;
+
+        size_t size = d->strings.at(row).size();
+        if (column > size) column = size;
+
+        if (symbol == '\n')
+        {
+            d->strings.insert(d->strings.begin() + row + 1, d->strings[row].substr(column, size-column));
+            d->strings[row].erase(column, size-column);
+        }
+        else d->strings[row].insert(column, 1, symbol);
+
+        ++d->textSize;
+        update();
+    }
+
+    void TextEdit::insert(uint32_t pos, const std::string &text)
+    {
+        uint32_t row = 0, column = 0;
+        calcRowColumn(pos, row, column);
+        insert(row, column, text);
+    }
+
+    void TextEdit::insert(uint32_t row, uint32_t column, const std::string &text)
+    {
+        if (d->strings.empty())
+            d->strings.push_back(std::string());
+
+        if (row >= d->strings.size())
+            row = d->strings.size() - 1;
 
         size_t size = d->strings.at(row).size();
         if (column > size) column = size;
@@ -182,7 +229,62 @@ namespace SA
 
         d->strings[row].append(remainder);
         d->textSize += text.size();
+        update();
+    }
 
+    void TextEdit::remove(uint32_t pos, size_t size)
+    {
+        uint32_t row = 0, column = 0;
+        calcRowColumn(pos, row, column);
+        remove(row, column, size);
+    }
+
+    void TextEdit::remove(uint32_t row, uint32_t column, size_t size)
+    {
+        if (d->strings.empty()) return;
+        if (row >= d->strings.size()) return;
+
+        if (column > d->strings.at(row).size())
+            column = d->strings.at(row).size();
+
+        if (d->strings.at(row).size() - column >= size)
+            d->strings[row].erase(column, size);
+        else
+        {
+            const int eraseSize = d->strings.at(row).size() - column;
+            d->strings[row].erase(column, eraseSize);
+
+            uint32_t rowStart = row;
+            uint32_t rowEnd = rowStart + 1;
+            uint32_t columnEnd = size - 1;
+            columnEnd -= eraseSize;
+
+            for (uint32_t i=rowEnd; i<d->strings.size(); ++i)
+            {
+                if (columnEnd > d->strings.at(i).size())
+                { ++rowEnd;  columnEnd -= d->strings.at(i).size(); }
+                else break;
+                --columnEnd;
+            }
+
+            if (rowEnd >= d->strings.size())
+            {
+                d->strings.erase(d->strings.begin() + rowStart + 1, d->strings.end());
+            }
+            else
+            {
+                d->strings[rowEnd].erase(0, columnEnd);
+
+                if (rowEnd > rowStart)
+                {
+                    d->strings[rowStart].append(d->strings.at(rowEnd));
+                    d->strings.erase(d->strings.begin() + rowStart + 1,
+                                     d->strings.begin() + rowEnd + 1);
+                }
+            }
+        }
+
+        d->textSize -= size;
         update();
     }
 
@@ -203,6 +305,7 @@ namespace SA
         d->textSize = 0;
         d->currentRow = 0;
         d->currentColumn = 0;
+        d->selection.selected = false;
         update();
     }
 
@@ -214,6 +317,14 @@ namespace SA
     size_t TextEdit::rowCount()
     {
         return d->strings.size();
+    }
+
+    size_t TextEdit::columnCount(uint32_t row)
+    {
+        if (row < d->strings.size())
+            return d->strings.at(row).size();
+
+        return 0;
     }
 
     bool TextEdit::isTextSelected()
@@ -371,7 +482,9 @@ namespace SA
 
     void TextEdit::setBackground(const Color &color, StyleState state)
     {
-        if (state == AllStates) calcBackgrounds(color);
+        if (state == AllStates)
+            for (int i=static_cast<int>(DisableState); i<static_cast<int>(AllStates); ++i)
+                d->backgrounds[static_cast<StyleState>(i)] = color;
         else d->backgrounds[state] = color;
     }
 
@@ -383,9 +496,7 @@ namespace SA
     int TextEdit::addHoverHandler(const std::function<void (bool)> &func)
     {
         int id = 0;
-        for (auto const& it : d->hoverHanders)
-            if (it.first != ++id) break;
-
+        for (auto const& it : d->hoverHanders) if (it.first != ++id) break;
         d->hoverHanders.insert({id, func});
         return id;
     }
@@ -478,7 +589,7 @@ namespace SA
             case Key_A: selectAllText(); break;
             case Key_C: Clipboard::instance().setText(selectedText()); break;
             case Key_X: Clipboard::instance().setText(selectedText()); removeSelectedText(); break;
-            case Key_V: insert(Clipboard::instance().getText(), d->currentRow, d->currentColumn); break;
+            case Key_V: insert(d->currentRow, d->currentColumn, Clipboard::instance().getText()); break;
             default: break;
             }
             return;
@@ -606,9 +717,7 @@ namespace SA
         if (d->selection.selected) removeSelectedText();
         if (d->strings.empty()) d->strings.push_back(std::string());
 
-        d->strings[d->currentRow].insert(d->currentColumn, 1, symbol);
-        ++d->textSize;
-
+        insert(symbol, d->currentRow, d->currentColumn);
         moveTextCursor(Right);
     }
 
@@ -774,6 +883,19 @@ namespace SA
         d->textCursorX = result;
     }
 
+    void TextEdit::calcRowColumn(uint32_t pos, uint32_t &row, uint32_t &column)
+    {
+        size_t steps = 0;
+        row = 0; column = 0;
+        for (const std::string &text: d->strings)
+        {
+            steps += text.size();
+            if (steps >= pos) {  column = text.size() - (steps - pos); break; }
+            ++steps;
+            ++row;
+        }
+    }
+
     void TextEdit::calcTextColors(const Color &color)
     {
         for (int i=static_cast<int>(DisableState); i<static_cast<int>(AllStates); ++i)
@@ -784,12 +906,6 @@ namespace SA
     {
         for (int i=static_cast<int>(DisableState); i<static_cast<int>(AllStates); ++i)
             darker(pen.color, d->borderPens[static_cast<StyleState>(i)].color, 6 * i);
-    }
-
-    void TextEdit::calcBackgrounds(const Color &color)
-    {
-        for (int i=static_cast<int>(DisableState); i<static_cast<int>(AllStates); ++i)
-            darker(color, d->backgrounds[static_cast<StyleState>(i)], 2 * i);
     }
 
     void TextEdit::drawBackground()

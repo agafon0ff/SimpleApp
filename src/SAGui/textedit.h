@@ -20,12 +20,25 @@ namespace SA
         virtual ~TextEdit();
 
         void setText(const std::string &text);
+
+        void append(char symbol);
         void append(const std::string &text);
-        void insert(const std::string &text, uint32_t row, uint32_t column);
+
+        void insert(uint32_t pos, char symbol);
+        void insert(uint32_t row, uint32_t column, char symbol);
+
+        void insert(uint32_t pos, const std::string &text);
+        void insert(uint32_t row, uint32_t column, const std::string &text);
+
+        void remove(uint32_t pos, size_t size);
+        void remove(uint32_t row, uint32_t column, size_t size);
+
         std::string text();
         void clear();
+
         size_t textSize();
         size_t rowCount();
+        size_t columnCount(uint32_t row);
 
         bool isTextSelected();
         std::string selectedText();
@@ -68,9 +81,9 @@ namespace SA
 
         void calcCurrentRow();
         void calcTextCursorPos();
+        void calcRowColumn(uint32_t pos, uint32_t &row, uint32_t &column);
         void calcTextColors(const Color &color);
         void calcBorders(const Pen &pen);
-        void calcBackgrounds(const Color &color);
 
         void drawBackground();
         void drawTextSelection();

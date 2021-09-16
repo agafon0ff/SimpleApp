@@ -161,9 +161,9 @@ namespace SA
         bool isPosChanged = false;
         bool isHovered = false;
 
-        unsigned long widthPen = 1L;
-        unsigned long colorPen = 0L;
-        unsigned long colorBrush = 0L;
+        uint32_t widthPen = 1L;
+        uint64_t colorPen = 0L;
+        uint64_t colorBrush = 0L;
 
         std::vector<SA::Object*> eventListners;
     };
@@ -192,9 +192,8 @@ namespace SA
             /* Create window */
             d->window = XCreateSimpleWindow(d->display,
                                             RootWindow(d->display, d->screen),
-                                            d->x, d->y, d->width, d->height, 1,
-                                            XBlackPixel(d->display, d->screen),
-                                            XWhitePixel(d->display, d->screen));
+                                            d->x, d->y, d->width, d->height, 0,
+                                            toColor(40, 40, 40), toColor(40, 40, 40));
 
             /* X-server messages */
             Atom WM_DELETE_WINDOW = XInternAtom(d->display, "WM_DELETE_WINDOW", False);
@@ -208,8 +207,7 @@ namespace SA
             d->window = XCreateSimpleWindow(d->display,
                                             d->parent->d->window,
                                             d->x, d->y, d->width, d->height, 0,
-                                            XBlackPixel(d->display, d->screen),
-                                            XWhitePixel(d->display, d->screen));
+                                            toColor(40, 40, 40), toColor(40, 40, 40));
 
             show();
         }
@@ -234,8 +232,6 @@ namespace SA
         }
 
         WIDGETS_MAP.insert({d->window, this});
-
-
     }
 
     WidgetLinux::~WidgetLinux()
@@ -376,7 +372,7 @@ namespace SA
 
         // https://www.oreilly.com/library/view/x-window-system/9780937175149/Chapter05.html
 //        const char *fontname = "-misc-fixed-bold-r-normal--13-120-75-75-c-80-iso8859-1";
-        const char *fontname = "-misc-fixed-bold-r-normal--15-140-75-75-c-84-iso8859-1";
+        const char *fontname = "-misc-fixed-medium-r-normal--15-140-75-75-c-84-iso8859-1";
         d->font = XLoadQueryFont(d->display, fontname);
         /* If the font could not be loaded, revert to the "fixed" font. */
         if (!d->font)
@@ -660,6 +656,17 @@ namespace SA
 
         // also
         // http://www.linuxhowtos.org/manpages/3/XSetTransientForHint.htm
+    }
+
+    uint64_t WidgetLinux::toColor(uint8_t red, uint8_t green, uint8_t blue)
+    {
+        uint64_t result = 0L;
+        result += red;
+        result <<= 8;
+        result += green;
+        result <<= 8;
+        result += blue;
+        return result;
     }
 }
 

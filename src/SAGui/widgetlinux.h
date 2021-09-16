@@ -55,7 +55,6 @@ namespace SA
         void addEventListener(SA::Object *object);
 
     private:
-
         void procEvent(XEvent *event);
         void sendEvent(SA::EventTypes type, const std::any &value);
         void focusEvent(bool state);
@@ -63,6 +62,7 @@ namespace SA
         void mouseEvent(MouseButton btn, bool pressed);
         void geometryUpdated();
         void setWindowProperties();
+        uint64_t toColor(uint8_t red, uint8_t green, uint8_t blue);
 
         struct WidgetLinuxPrivate;
         WidgetLinuxPrivate * const d;

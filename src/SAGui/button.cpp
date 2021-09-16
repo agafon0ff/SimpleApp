@@ -34,9 +34,9 @@ namespace SA
     {
         d->text = text;
         resize(150, 40);
-        calcTextColors({20, 20, 20});
+        calcTextColors({250, 250, 250});
         calcBorders({90, 90, 90, 1});
-        calcBackgrounds({250, 250, 250});
+        calcBackgrounds({70, 70, 70});
     }
 
     Button::~Button()
@@ -163,6 +163,7 @@ namespace SA
         drawRect(0, 0, width() - 1, height() - 1);
 
         setBrush(d->textColors[d->styleState]);
+        setPen(d->textColors[d->styleState], 1);
         drawText(width() / 2 - textWidth(d->text) / 2,
                  height() / 2 - textHeight() / 2,
                  d->text);
@@ -211,18 +212,18 @@ namespace SA
     void Button::calcTextColors(const Color &color)
     {
         for (int i=static_cast<int>(DisableState); i<static_cast<int>(AllStates); ++i)
-            darker(color, d->textColors[static_cast<StyleState>(i)], 20 * i);
+            darker(color, d->textColors[static_cast<StyleState>(i)], 2 * i);
     }
 
     void Button::calcBorders(const Pen &pen)
     {
         for (int i=static_cast<int>(DisableState); i<static_cast<int>(AllStates); ++i)
-            darker(pen.color, d->borderPens[static_cast<StyleState>(i)].color, 20 * i);
+            darker(pen.color, d->borderPens[static_cast<StyleState>(i)].color, 6 * i);
     }
 
     void Button::calcBackgrounds(const Color &color)
     {
         for (int i=static_cast<int>(DisableState); i<static_cast<int>(AllStates); ++i)
-            darker(color, d->backgrounds[static_cast<StyleState>(i)], 20 * i);
+            darker(color, d->backgrounds[static_cast<StyleState>(i)], 6 * i);
     }
 }
