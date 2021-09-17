@@ -274,8 +274,9 @@ namespace SA
                 if (rowEnd > rowStart)
                 {
                     d->strings[rowStart].append(d->strings.at(rowEnd));
-                    d->strings.erase(d->strings.begin() + rowStart + 1,
-                                     d->strings.begin() + rowEnd + 1);
+
+                    if (rowEnd + 1  < d->strings.size()) ++rowEnd;
+                    d->strings.erase(d->strings.begin() + rowStart + 1, d->strings.begin() + rowEnd);
                 }
             }
         }
@@ -367,47 +368,20 @@ namespace SA
         if(d->strings.empty()) return;
         if (!d->selection.selected) return;
 
-        if (d->selection.rowStart == d->selection.rowEnd)
+        TextSelection selection = d->selection;
+        if (d->selection.rowStart > d->selection.rowEnd)
         {
-            const int posX = std::min(d->selection.columnStart, d->selection.columnEnd);
-            const int size = std::max(d->selection.columnStart, d->selection.columnEnd) - posX;
-            d->strings[d->currentRow].erase(posX, size);
-            d->textCursorX = std::min(d->selection.posStart, d->selection.posEnd);
-            d->currentColumn = posX;
-            d->textSize -= size;
-            update();
-        }
-        else
-        {
-            TextSelection selection = d->selection;
-
-            if (d->selection.rowStart > d->selection.rowEnd)
-            {
-                std::swap(selection.columnStart, selection.columnEnd);
-                std::swap(selection.posStart, selection.posEnd);
-                std::swap(selection.rowStart, selection.rowEnd);
-            }
-
-            const int eraseSize = d->strings.at(selection.rowStart).size() - selection.columnStart;
-            d->strings[selection.rowStart].erase(selection.columnStart, eraseSize);
-            d->strings[selection.rowEnd].erase(0, selection.columnEnd);
-            d->strings[selection.rowStart].append(d->strings.at(selection.rowEnd));
-            d->textSize -= eraseSize;
-            d->textSize -= selection.columnEnd;
-
-            const int rowMin = std::min(d->selection.rowStart, d->selection.rowEnd) + 1;
-            const int rowMax = std::max(d->selection.rowStart, d->selection.rowEnd) + 1;
-            for (int i=rowMin; i<rowMax; ++i) d->textSize -= d->strings.at(i).size() + 1;
-            d->strings.erase(d->strings.begin() + rowMin, d->strings.begin() + rowMax);
-
-            d->textCursorX = selection.posStart;
-            d->currentRow = selection.rowStart;
-            d->currentColumn = selection.columnStart;
-
-            update();
+            std::swap(selection.columnStart, selection.columnEnd);
+            std::swap(selection.posStart, selection.posEnd);
+            std::swap(selection.rowStart, selection.rowEnd);
         }
 
+        TextAction action(TextAction::RemoveText, calcTextPos(selection.rowStart, selection.columnStart), selectedText());
+        d->actions.push(action);
+
+        remove(action.pos, action.string.size());
         d->selection.selected = false;
+        update();
     }
 
     void TextEdit::selectAllText()
@@ -433,21 +407,12 @@ namespace SA
 
         switch (action.type)
         {
-        case TextAction::InsertChar:
-        {
-            remove(action.pos, 1);
-            break;
+        case TextAction::InsertChar: remove(action.pos, 1); break;
+        case TextAction::InsertText: remove(action.pos, action.string.size()); break;
+        case TextAction::RemoveChar: insert(action.pos, action.symbol); break;
+        case TextAction::RemoveText: insert(action.pos, action.string); break;
+        default: break;
         }
-        case TextAction::RemoveChar:
-        {
-            insert(action.pos, action.symbol);
-            break;
-        }
-        default:
-            break;
-        }
-
-        calcTextCursorPos();
     }
 
     void TextEdit::setEnabled(bool state)
@@ -583,7 +548,7 @@ namespace SA
             case Key_A: selectAllText(); break;
             case Key_C: Clipboard::instance().setText(selectedText()); break;
             case Key_X: Clipboard::instance().setText(selectedText()); removeSelectedText(); break;
-            case Key_V: insert(d->currentRow, d->currentColumn, Clipboard::instance().getText()); break;
+            case Key_V: insertClipboardText(); break;
             default: break;
             }
             return;
@@ -707,6 +672,13 @@ namespace SA
                 d->selection.rowStart != d->selection.rowEnd);
     }
 
+    void TextEdit::insertClipboardText()
+    {
+        const std::string text = Clipboard::instance().getText();
+        insert(d->currentRow, d->currentColumn, text);
+        d->actions.push({TextAction::InsertText, calcTextPos(d->currentRow, d->currentColumn), text});
+    }
+
     void TextEdit::keyReactionSymbol(char symbol)
     {
         if (d->selection.selected) removeSelectedText();
@@ -766,10 +738,19 @@ namespace SA
         else if(d->currentRow < d->strings.size())
         {
             const std::string &text = d->strings.at(d->currentRow);
-            if (text.empty()) return;
+            if (text.empty())
+            {
+                d->strings.erase(d->strings.begin() + d->currentRow);
+                --d->textSize;
+                d->actions.push({TextAction::RemoveChar, calcTextPos(d->currentRow, d->currentColumn), '\n'});
+                return;
+            }
 
             if ((text.size() - d->currentColumn) > 0)
             {
+                d->actions.push({TextAction::RemoveChar, calcTextPos(d->currentRow, d->currentColumn),
+                                 d->strings.at(d->currentRow).at(d->currentColumn)});
+
                 d->strings[d->currentRow].erase(d->currentColumn, 1);
                 --d->textSize;
             }
@@ -778,6 +759,8 @@ namespace SA
                 d->strings[d->currentRow].append(d->strings.at(d->currentRow + 1));
                 d->strings.erase(d->strings.begin() + d->currentRow + 1);
                 --d->textSize;
+
+                d->actions.push({TextAction::RemoveChar, calcTextPos(d->currentRow, d->currentColumn), '\n'});
             }
 
         }
@@ -785,9 +768,14 @@ namespace SA
 
     void TextEdit::keyReactionReturn()
     {
+        if (d->selection.selected)
+            removeSelectedText();
+
         size_t size = 0;
         if (d->strings.size() > d->currentRow)
             size = d->strings.at(d->currentRow).size();
+
+        d->actions.push({TextAction::InsertChar, calcTextPos(d->currentRow, d->currentColumn), '\n'});
 
         if (d->currentColumn >= size)
         {
@@ -802,6 +790,7 @@ namespace SA
             d->strings[d->currentRow - 1].erase(d->currentColumn, size - d->currentColumn);
 
         }
+
         d->currentColumn = 0;
         d->textCursorX = 1;
         ++d->textSize;
@@ -824,9 +813,11 @@ namespace SA
     void TextEdit::keyReactionTab()
     {
         if (d->strings.empty()) return;
+        d->actions.push({TextAction::InsertText, calcTextPos(d->currentRow, d->currentColumn), std::string("    ")});
         d->strings[d->currentRow].insert(d->currentColumn, 4, ' ');
         d->currentColumn += 3;
         d->textSize += 4;
+
         moveTextCursor(Right);
     }
 

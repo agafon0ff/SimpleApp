@@ -70,6 +70,7 @@ namespace SA
     private:
         void moveTextCursor(Direction dir);
         void updateTextSelection(bool justPressed = false);
+        void insertClipboardText();
 
         void keyReactionSymbol(char symbol);
         void keyReactionBackspace();
