@@ -275,7 +275,7 @@ namespace SA
                 {
                     d->strings[rowStart].append(d->strings.at(rowEnd));
 
-                    if (rowEnd + 1  < d->strings.size()) ++rowEnd;
+                    if (rowEnd + 1 <= d->strings.size()) ++rowEnd;
                     d->strings.erase(d->strings.begin() + rowStart + 1, d->strings.begin() + rowEnd);
                 }
             }
