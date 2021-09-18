@@ -50,6 +50,9 @@ namespace SA
         void setEnabled(bool state);
         bool isEnabled();
 
+        void setTextCursorPos(uint64_t pos);
+        void setTextCursorPos(uint32_t row, uint32_t column);
+
         void setTextColor(const Color &color, StyleState state = AllStates);
         void setBorder(const Pen &pen, StyleState state = AllStates);
         void setBackground(const Color &color, StyleState state = AllStates);

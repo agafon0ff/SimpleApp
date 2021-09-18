@@ -71,6 +71,7 @@ namespace SA
 
         Point cursorPos;
         Point pressPos;
+        Point shiftPos = {14, 14};
 
         uint32_t currentRow = 0;
         uint32_t currentColumn = 0;
@@ -93,7 +94,7 @@ namespace SA
         Pen borderPens[TextEdit::AllStates];
         Color textColors[TextEdit::AllStates];
         Color backgrounds[TextEdit::AllStates];
-        Color selectionColor = {180, 180, 180};
+        Color selectionColor = {140, 140, 140};
 
         // Events listeners
         std::map<int, std::function<void (bool)> > hoverHanders;
@@ -381,6 +382,8 @@ namespace SA
 
         remove(action.pos, action.string.size());
         d->selection.selected = false;
+        d->currentRow = selection.rowStart;
+        d->currentColumn = selection.columnStart;
         update();
     }
 
@@ -404,6 +407,7 @@ namespace SA
 
         TextAction action = std::move(d->actions.top());
         d->actions.pop();
+        calcRowColumn(action.pos, d->currentRow, d->currentColumn);
 
         switch (action.type)
         {
@@ -413,6 +417,7 @@ namespace SA
         case TextAction::RemoveText: insert(action.pos, action.string); break;
         default: break;
         }
+
     }
 
     void TextEdit::setEnabled(bool state)
@@ -425,6 +430,19 @@ namespace SA
     bool TextEdit::isEnabled()
     {
         return d->enable;
+    }
+
+    void TextEdit::setTextCursorPos(uint64_t pos)
+    {
+        calcRowColumn(pos, d->currentRow, d->currentColumn);
+        update();
+    }
+
+    void TextEdit::setTextCursorPos(uint32_t row, uint32_t column)
+    {
+        d->currentRow = row;
+        d->currentColumn = column;
+        update();
     }
 
     void TextEdit::setTextColor(const Color &color, StyleState state)
@@ -667,7 +685,6 @@ namespace SA
         d->selection.rowEnd = d->currentRow;
         d->selection.columnEnd = d->currentColumn;
 
-
         d->selection.selected = (d->selection.posStart != d->selection.posEnd ||
                 d->selection.rowStart != d->selection.rowEnd);
     }
@@ -825,7 +842,7 @@ namespace SA
     {
         if (d->strings.empty()){ d->currentRow = 0; return; }
 
-        d->currentRow = std::max(d->cursorPos.y, 0) / d->rowHeight;
+        d->currentRow = std::max(d->cursorPos.y - d->shiftPos.y, 0) / d->rowHeight;
 
         if (d->currentRow >= d->strings.size())
             d->currentRow = d->strings.size() - 1;
@@ -836,26 +853,27 @@ namespace SA
         if (d->strings.empty())
         {
             d->currentColumn = 0;
-            d->textCursorX = 1;
+            d->textCursorX = d->shiftPos.x;
             return;
         }
 
         int delta = 3;
 
-        if (d->cursorPos.x <= delta)
+        if (d->cursorPos.x <= delta + d->shiftPos.x)
         {
             d->currentColumn = 0;
-            d->textCursorX = 1;
+            d->textCursorX = d->shiftPos.x;
             return;
         }
 
         const std::string &text = d->strings.at(d->currentRow);
         size_t result = textWidth(text);
+        int32_t shiftedX = d->cursorPos.x - d->shiftPos.x;
 
-        if (d->cursorPos.x > result)
+        if (shiftedX > result)
         {
             d->currentColumn = text.size();
-            d->textCursorX = result;
+            d->textCursorX = result + d->shiftPos.x;
             return;
         }
 
@@ -864,17 +882,17 @@ namespace SA
 
         for (size_t i=0; i<text.size(); ++i)
         {
-            if (d->cursorPos.x > (result + delta)) length += half;
+            if (shiftedX > (result + delta)) length += half;
             else length -= half;
 
             if (half > 1) half = half / 2;
 
             result = textWidth(text.data(), length);
-            if (std::abs(d->cursorPos.x - static_cast<int>(result)) <= delta) break;
+            if (std::abs(shiftedX - static_cast<int>(result)) <= delta) break;
         }
 
         d->currentColumn = length;
-        d->textCursorX = result;
+        d->textCursorX = result + d->shiftPos.x;
     }
 
     void TextEdit::calcRowColumn(uint64_t pos, uint32_t &row, uint32_t &column)
@@ -936,7 +954,7 @@ namespace SA
         {
             const int posX = std::min(d->selection.posStart, d->selection.posEnd);
             const int posY = std::max(d->selection.posStart, d->selection.posEnd) - posX;
-            drawRect(posX, d->selection.rowStart * d->rowHeight, posY, d->rowHeight);
+            drawRect(posX, d->selection.rowStart * d->rowHeight + d->shiftPos.y, posY, d->rowHeight);
         }
         else
         {
@@ -946,12 +964,12 @@ namespace SA
             uint32_t rowEnd = d->selection.rowEnd;
 
             if (d->selection.rowStart > d->selection.rowEnd){ std::swap(posStart, posEnd); std::swap(rowStart, rowEnd);}
-            drawRect(0, rowEnd * d->rowHeight, posEnd, d->rowHeight);
-            drawRect(posStart, rowStart * d->rowHeight, textWidth(d->strings.at(rowStart)) - posStart, d->rowHeight);
+            drawRect(d->shiftPos.x, rowEnd * d->rowHeight + d->shiftPos.y, posEnd, d->rowHeight);
+            drawRect(posStart, rowStart * d->rowHeight + d->shiftPos.y, textWidth(d->strings.at(rowStart)) - posStart, d->rowHeight);
 
             const int rowMin = std::min(d->selection.rowStart, d->selection.rowEnd) + 1;
             const int rowMax = std::max(d->selection.rowStart, d->selection.rowEnd);
-            for (int i=rowMin; i<rowMax; ++i) drawRect(0, i*d->rowHeight, textWidth(d->strings.at(i)), d->rowHeight);
+            for (int i=rowMin; i<rowMax; ++i) drawRect(d->shiftPos.x, i * d->rowHeight + d->shiftPos.y, textWidth(d->strings.at(i)), d->rowHeight);
         }
 
     }
@@ -963,7 +981,7 @@ namespace SA
 
         int row = -1;
         for (const std::string &text: d->strings)
-            drawText(0, ++row * d->rowHeight, text);
+            drawText(d->shiftPos.x, ++row * d->rowHeight + d->shiftPos.y, text);
     }
 
     void TextEdit::drawTextCursor()
@@ -971,7 +989,7 @@ namespace SA
         if (!d->blinkState) return;
 
         setPen(d->textColors[d->styleState], 2);
-        const int posY = d->currentRow * d->rowHeight - 1;
+        const int posY = d->currentRow * d->rowHeight - 1 + d->shiftPos.y;
         drawLine(d->textCursorX, posY,
                  d->textCursorX, posY + d->cursorHeight);
     }
