@@ -558,25 +558,40 @@ namespace SA
 
     void TextEdit::mouseWheelEvent(int32_t delta)
     {
-        if (d->rowHeight * d->strings.size() < height())
-            return;
+        const int32_t verticalArea = height() - d->textIndent[SideTop] - d->textIndent[SideBottom];
+        const int32_t textHeight = d->rowHeight * d->strings.size();
 
+        if (textHeight < verticalArea)
+        {
+            if (d->shiftPos.y < d->textIndent[SideTop])
+            {
+                d->shiftPos.y = d->textIndent[SideTop];
+                update();
+            }
+
+            return;
+        }
+
+        int32_t verticalShift = d->shiftPos.y;
         if (delta < 0)
         {
-            d->shiftPos.y += d->scrollRate;
+            verticalShift += d->scrollRate;
 
-            if (d->shiftPos.y > d->textIndent[SideTop])
-                d->shiftPos.y = d->textIndent[SideTop];
+            if (verticalShift > d->textIndent[SideTop])
+                verticalShift = d->textIndent[SideTop];
         }
         else
         {
-            d->shiftPos.y -= d->scrollRate;
-            int32_t bottomShift = height() - d->rowHeight * d->strings.size() - d->textIndent[SideBottom];
+            verticalShift -= d->scrollRate;
+            int32_t bottomShift = height() - textHeight - d->textIndent[SideBottom];
 
-            if (d->shiftPos.y < bottomShift)
-                d->shiftPos.y = bottomShift;
+            if (verticalShift < bottomShift)
+                verticalShift = bottomShift;
         }
 
+        if (verticalShift == d->shiftPos.y) return;
+
+        d->shiftPos.y = verticalShift;
         update();
     }
 
