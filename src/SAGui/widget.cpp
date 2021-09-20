@@ -258,6 +258,11 @@ namespace SA
         std::ignore = event;
     }
 
+    void Widget::mouseWheelEvent(int32_t delta)
+    {
+        std::ignore = delta;
+    }
+
     void Widget::focusEvent(bool state)
     {
         std::ignore = state;
@@ -289,6 +294,11 @@ namespace SA
         case MouseButtonEvent:
         {
             mouseButtonEvent(std::any_cast<MouseEvent>(value));
+            break;
+        }
+        case MouseWheelEvent:
+        {
+            mouseWheelEvent(std::any_cast<int32_t>(value));
             break;
         }
         case PaintEvent:

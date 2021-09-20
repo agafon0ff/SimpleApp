@@ -67,6 +67,7 @@ namespace SA
         virtual void mouseHoverEvent(bool state);
         virtual void mouseMoveEvent(const Point &pos);
         virtual void mouseButtonEvent(const MouseEvent &event);
+        virtual void mouseWheelEvent(int32_t delta);
         virtual void keyboardEvent(const KeyEvent &event);
         virtual void focusEvent(bool state);
 

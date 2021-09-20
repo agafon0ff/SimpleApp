@@ -11,6 +11,7 @@ namespace SA
         MouseMoveEvent,
         MouseHoverEvent,
         MouseButtonEvent,
+        MouseWheelEvent,
         FocusInEvent,
         FocusOutEvent,
         PaintEvent,
@@ -35,10 +36,18 @@ namespace SA
 
     enum Direction
     {
-        Left,
-        Right,
-        Up,
-        Down
+        DirLeft,
+        DirRight,
+        DirUp,
+        DirDown
+    };
+
+    enum Side
+    {
+        SideLeft,
+        SideTop,
+        SideRight,
+        SideBottom
     };
 
     enum Keys

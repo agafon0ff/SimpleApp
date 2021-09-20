@@ -71,7 +71,7 @@ namespace SA
 
         Point cursorPos;
         Point pressPos;
-        Point shiftPos = {14, 14};
+        Point shiftPos = {3, 3};
 
         uint32_t currentRow = 0;
         uint32_t currentColumn = 0;
@@ -80,6 +80,8 @@ namespace SA
         uint32_t cursorHeight = 10;
         uint32_t rowHeight = 10;
         size_t textSize = 0;
+        int32_t textIndent[sizeof(Side)] = {3, 3, 3, 3};
+        int16_t scrollRate = 20;
 
         bool blinkState = false;
         bool enable = true;
@@ -554,6 +556,30 @@ namespace SA
         }
     }
 
+    void TextEdit::mouseWheelEvent(int32_t delta)
+    {
+        if (d->rowHeight * d->strings.size() < height())
+            return;
+
+        if (delta < 0)
+        {
+            d->shiftPos.y += d->scrollRate;
+
+            if (d->shiftPos.y > d->textIndent[SideTop])
+                d->shiftPos.y = d->textIndent[SideTop];
+        }
+        else
+        {
+            d->shiftPos.y -= d->scrollRate;
+            int32_t bottomShift = height() - d->rowHeight * d->strings.size() - d->textIndent[SideBottom];
+
+            if (d->shiftPos.y < bottomShift)
+                d->shiftPos.y = bottomShift;
+        }
+
+        update();
+    }
+
     void TextEdit::keyboardEvent(const KeyEvent &event)
     {
         if (!event.pressed) return;
@@ -582,10 +608,10 @@ namespace SA
             case Key_Backspace: keyReactionBackspace(); break;
             case Key_Delete:    keyReactionDelete(); break;
             case Key_Return:    keyReactionReturn(); break;
-            case Key_Left:      moveTextCursor(Left); break;
-            case Key_Right:     moveTextCursor(Right); break;
-            case Key_Up:        moveTextCursor(Up); break;
-            case Key_Down:      moveTextCursor(Down); break;
+            case Key_Left:      moveTextCursor(DirLeft); break;
+            case Key_Right:     moveTextCursor(DirRight); break;
+            case Key_Up:        moveTextCursor(DirUp); break;
+            case Key_Down:      moveTextCursor(DirDown); break;
             case Key_Home:      keyReactionHome(); break;
             case Key_End:       keyReactionEnd(); break;
             case Key_Tab:       keyReactionTab(); break;
@@ -605,7 +631,7 @@ namespace SA
     {
         switch (dir)
         {
-        case Left:
+        case DirLeft:
         {
             if (d->currentColumn > 0)
                 --d->currentColumn;
@@ -621,7 +647,7 @@ namespace SA
 
             break;
         }
-        case Right:
+        case DirRight:
         {
             ++d->currentColumn;
 
@@ -639,7 +665,7 @@ namespace SA
 
             break;
         }
-        case Up:
+        case DirUp:
         {
             if (d->currentRow > 0)
                 --d->currentRow;
@@ -651,7 +677,7 @@ namespace SA
 
             break;
         }
-        case Down:
+        case DirDown:
         {
             ++d->currentRow;
 
@@ -704,7 +730,7 @@ namespace SA
         insert(d->currentRow, d->currentColumn, symbol);
         d->actions.push({TextAction::InsertChar, calcTextPos(d->currentRow, d->currentColumn), symbol});
 
-        moveTextCursor(Right);
+        moveTextCursor(DirRight);
     }
 
     void TextEdit::keyReactionBackspace()
@@ -719,7 +745,7 @@ namespace SA
         {
             if(d->currentColumn > 0)
             {
-                moveTextCursor(Left);
+                moveTextCursor(DirLeft);
 
                 d->actions.push({TextAction::RemoveChar, calcTextPos(d->currentRow, d->currentColumn),
                                  d->strings.at(d->currentRow).at(d->currentColumn)});
@@ -732,7 +758,7 @@ namespace SA
                 if (d->currentRow < d->strings.size())
                 {
                     const std::string &text = d->strings.at(d->currentRow);
-                    moveTextCursor(Left);
+                    moveTextCursor(DirLeft);
                     if (!text.empty()) d->strings[d->currentRow].append(text);
                 }
 
@@ -835,7 +861,7 @@ namespace SA
         d->currentColumn += 3;
         d->textSize += 4;
 
-        moveTextCursor(Right);
+        moveTextCursor(DirRight);
     }
 
     void TextEdit::calcCurrentRow()
@@ -963,15 +989,24 @@ namespace SA
             uint32_t rowStart = d->selection.rowStart;
             uint32_t rowEnd = d->selection.rowEnd;
 
-            if (d->selection.rowStart > d->selection.rowEnd){ std::swap(posStart, posEnd); std::swap(rowStart, rowEnd);}
-            drawRect(d->shiftPos.x, rowEnd * d->rowHeight + d->shiftPos.y, posEnd, d->rowHeight);
-            drawRect(posStart, rowStart * d->rowHeight + d->shiftPos.y, textWidth(d->strings.at(rowStart)) - posStart, d->rowHeight);
+            if (d->selection.rowStart > d->selection.rowEnd)
+            { std::swap(posStart, posEnd); std::swap(rowStart, rowEnd);}
+
+            // Top line of selection
+            drawRect(posStart, rowStart * d->rowHeight + d->shiftPos.y,
+                     textWidth(d->strings.at(rowStart)) - posStart + d->shiftPos.x, d->rowHeight);
+
+            // Bottom line
+            drawRect(d->shiftPos.x, rowEnd * d->rowHeight + d->shiftPos.y,
+                     posEnd - d->shiftPos.x, d->rowHeight);
 
             const int rowMin = std::min(d->selection.rowStart, d->selection.rowEnd) + 1;
             const int rowMax = std::max(d->selection.rowStart, d->selection.rowEnd);
-            for (int i=rowMin; i<rowMax; ++i) drawRect(d->shiftPos.x, i * d->rowHeight + d->shiftPos.y, textWidth(d->strings.at(i)), d->rowHeight);
-        }
 
+            for (int i=rowMin; i<rowMax; ++i)
+                drawRect(d->shiftPos.x, i * d->rowHeight + d->shiftPos.y,
+                         textWidth(d->strings.at(i)), d->rowHeight);
+        }
     }
 
     void TextEdit::drawTextStrings()

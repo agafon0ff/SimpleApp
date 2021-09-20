@@ -69,6 +69,7 @@ namespace SA
         virtual void mouseMoveEvent(const Point &pos);
         virtual void mouseHoverEvent(bool state);
         virtual void mouseButtonEvent(const MouseEvent &event);
+        virtual void mouseWheelEvent(int32_t delta);
         virtual void focusEvent(bool state);
 
     private:
