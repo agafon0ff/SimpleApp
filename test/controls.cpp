@@ -27,6 +27,22 @@ Controls::Controls(SA::Widget *parent) : SA::Widget(parent),
                         "sheets containing Lorem Ipsum passages,\n"
                         "and more recently with desktop publishing\n"
                         "software like Aldus PageMaker including\n"
+                        "versions of Lorem Ipsum.\n"
+                        "    Lorem Ipsum is simply dummy\n"
+                        "text of the printing and typesetting\n"
+                        "industry. Lorem Ipsum has been the\n"
+                        "industry's standard dummy text ever\n"
+                        "since the 1500s, when an unknown printer\n"
+                        "took a galley of type and scrambled\n"
+                        "it to make a type specimen book.\n\n"
+                        "    It has survived not only five centuries,\n"
+                        "but also the leap into electronic\n"
+                        "typesetting, remaining essentially\n"
+                        "unchanged. It was popularised in\n"
+                        "the 1960s with the release of Letraset\n"
+                        "sheets containing Lorem Ipsum passages,\n"
+                        "and more recently with desktop publishing\n"
+                        "software like Aldus PageMaker including\n"
                         "versions of Lorem Ipsum.");
 
     std::cout << __PRETTY_FUNCTION__ << std::endl;
