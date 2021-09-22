@@ -304,7 +304,7 @@ namespace SA
         d->strings.clear();
         d->textSize = 0;
         d->currentRow = 0;
-        d->textShiftPos = {0, 0};
+        d->textShiftPos = {d->textIndent[SideLeft], d->textIndent[SideTop]};
         d->textCursorPos = {0, 0};
         d->currentColumn = 0;
         d->selection.selected = false;
@@ -390,7 +390,7 @@ namespace SA
         d->currentColumn = selection.columnStart;
 
         d->textCursorPos.y = d->currentRow * d->rowHeight - 1 + d->textShiftPos.y;
-        d->textCursorPos.x = textWidth(d->strings.at(d->currentRow).data(), d->currentColumn);
+        d->textCursorPos.x = textWidth(d->strings.at(d->currentRow).data(), d->currentColumn) + d->textShiftPos.x;
 
         update();
     }
@@ -452,7 +452,7 @@ namespace SA
         d->currentColumn = column;
 
         d->textCursorPos.y = d->currentRow * d->rowHeight - 1 + d->textShiftPos.y;
-        d->textCursorPos.x = textWidth(d->strings.at(d->currentRow).data(), d->currentColumn);
+        d->textCursorPos.x = textWidth(d->strings.at(d->currentRow).data(), d->currentColumn) + d->textShiftPos.x;
 
         update();
     }
@@ -601,6 +601,10 @@ namespace SA
         if (verticalShift == d->textShiftPos.y) return;
 
         d->textShiftPos.y = verticalShift;
+
+        d->textCursorPos.y = d->currentRow * d->rowHeight - 1 + d->textShiftPos.y;
+        d->textCursorPos.x = textWidth(d->strings.at(d->currentRow).data(), d->currentColumn) + d->textShiftPos.x;
+
         update();
     }
 
@@ -692,7 +696,10 @@ namespace SA
         case DirUp:
         {
             if (d->currentRow > 0)
+            {
                 --d->currentRow;
+                if(d->textCursorPos.y < d->textIndent[SideTop]) d->textShiftPos.y += d->rowHeight;
+            }
             else
             {
                 const std::string &text = d->strings.at(d->currentRow);
@@ -706,24 +713,25 @@ namespace SA
             ++d->currentRow;
 
             if (d->currentRow >= d->strings.size())
+            {
                 d->currentRow = d->strings.size() - 1;
+            }
             else
             {
                 const std::string &text = d->strings.at(d->currentRow);
                 if (d->currentColumn > text.size()) d->currentColumn = text.size();
+
+                const int32_t visibleHeight = height() - d->textIndent[SideBottom] - d->textIndent[SideTop];
+                if (d->textCursorPos.y + d->rowHeight > visibleHeight)
+                    d->textShiftPos.y -= d->rowHeight;
             }
+
             break;
         }
         default: break;
         }
 
-        const int32_t visibleHeight = height() - d->textIndent[SideBottom] - d->textIndent[SideTop];
-        if (d->textCursorPos.y + d->rowHeight > visibleHeight)
-            d->textShiftPos.y -= d->rowHeight;
-        else if(d->textCursorPos.y < d->textIndent[SideTop])
-            d->textShiftPos.y += d->rowHeight;
-
-        d->textCursorPos.x = textWidth(d->strings.at(d->currentRow).data(), d->currentColumn);
+        d->textCursorPos.x = textWidth(d->strings.at(d->currentRow).data(), d->currentColumn) + d->textShiftPos.x;
         d->textCursorPos.y = d->currentRow * d->rowHeight - 1 + d->textShiftPos.y;
 
         d->blinkState = true;
@@ -868,21 +876,21 @@ namespace SA
         }
 
         d->currentColumn = 0;
-        d->textCursorPos.x = 1;
+        d->textCursorPos.x = d->textShiftPos.x;
         ++d->textSize;
     }
 
     void TextEdit::keyReactionHome()
     {
         d->currentColumn = 0;
-        d->textCursorPos.x = 1;
+        d->textCursorPos.x = d->textShiftPos.x;
         d->blinkState = true;
     }
 
     void TextEdit::keyReactionEnd()
     {
         d->currentColumn = d->strings.at(d->currentRow).size();
-        d->textCursorPos.x = textWidth(d->strings.at(d->currentRow));
+        d->textCursorPos.x = textWidth(d->strings.at(d->currentRow)) + d->textShiftPos.x;
         d->blinkState = true;
     }
 
