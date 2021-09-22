@@ -80,7 +80,7 @@ namespace SA
         uint32_t cursorHeight = 10;
         uint32_t rowHeight = 10;
         size_t textSize = 0;
-        int32_t textIndent[sizeof(Side)] = {3, 3, 3, 3};
+        int32_t textIndent[sizeof(Side)] = {3, 3, 18, 18};
         int16_t scrollRate = 20;
 
         bool blinkState = false;
