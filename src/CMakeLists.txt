@@ -10,6 +10,7 @@ set(SA_SOURCES
     SAGui/widgetwindows.cpp
     SAGui/button.cpp
     SAGui/textedit.cpp
+    SAGui/scrollbar.cpp
     SAGui/clipboard.cpp)
 
 set(SA_HEADERS
@@ -23,6 +24,7 @@ set(SA_HEADERS
     SAGui/widgetwindows.h
     SAGui/button.h
     SAGui/textedit.h
+    SAGui/scrollbar.h
     SAGui/clipboard.h)
 
 set(SA_DIRS

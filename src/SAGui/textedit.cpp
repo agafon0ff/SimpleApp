@@ -92,34 +92,42 @@ namespace SA
         TextSelection selection;
 
         // Text style
-        TextEdit::StyleState styleState = TextEdit::EnableState;
-        Pen borderPens[TextEdit::AllStates];
-        Color textColors[TextEdit::AllStates];
-        Color backgrounds[TextEdit::AllStates];
+        StyleState styleState = EnableState;
+        Pen borderPens[AllStates];
+        Color textColors[AllStates];
+        Color backgrounds[AllStates];
         Color selectionColor = {140, 140, 140};
 
         // Events listeners
         std::map<int, std::function<void (bool)> > hoverHanders;
+
+        ScrollBar *scrollBarV = nullptr;
+        ScrollBar *scrollBarH = nullptr;
     };
 
     TextEdit::TextEdit(Widget *parent) : Widget(parent),
         d(new TextEditPrivate)
     {
-        resize(150, 40);
-        calcTextColors({240, 240, 240});
-        calcBorders({90, 90, 90, 1});
-        setBackground({50, 50, 50});
+        d->scrollBarV = new SA::ScrollBar(Vertical, this);
+        d->scrollBarH = new SA::ScrollBar(Horizontal, this);
 
         d->timerId = startTimer(500);
         d->rowHeight = textHeight() + 5;
         d->cursorHeight = d->rowHeight;
 
+        resize(150, 40);
         setCursorShape(Text);
+        calcTextColors({240, 240, 240});
+        calcBorders({90, 90, 90, 1});
+        setBackground({50, 50, 50});
     }
 
     TextEdit::~TextEdit()
     {
         killTimer(d->timerId);
+
+        delete d->scrollBarV;
+        delete d->scrollBarH;
         delete d;
     }
 
@@ -655,6 +663,16 @@ namespace SA
         d->inFocus = state;
     }
 
+    void TextEdit::resizeEvent(const Size &size)
+    {
+        int thickness = 15;
+        d->scrollBarV->setGeometry(size.width - thickness , 0,
+                                   thickness , size.height - thickness);
+
+        d->scrollBarH->setGeometry(0, size.height - thickness,
+                                   size.width, thickness);
+    }
+
     void TextEdit::moveTextCursor(Direction dir)
     {
         switch (dir)
@@ -735,6 +753,7 @@ namespace SA
         d->textCursorPos.y = d->currentRow * d->rowHeight - 1 + d->textShiftPos.y;
 
         d->blinkState = true;
+        d->selection.selected = false;
 
         update();
     }

@@ -160,6 +160,7 @@ namespace SA
         uint32_t height = 200;
         bool isHidden = false;
         bool isPosChanged = false;
+        bool isSizeChanged = false;
         bool isHovered = false;
 
         uint32_t widthPen = 1L;
@@ -291,13 +292,20 @@ namespace SA
         d->y = y;
         d->isPosChanged = true;
         XMoveWindow(d->display, d->window, d->x, d->y);
+
+        sendEvent(SA::EventTypes::MoveEvent,
+                  std::pair<int32_t, int32_t>(d->x, d->y));
     }
 
     void WidgetLinux::resize(uint32_t width, uint32_t height)
     {
         d->width = width;
         d->height = height;
+        d->isSizeChanged = true;
         XResizeWindow(d->display, d->window, d->width, d->height);
+
+        sendEvent(SA::EventTypes::ResizeEvent,
+                  std::pair<uint32_t, uint32_t>(d->width, d->height));
     }
 
     void WidgetLinux::setGeometry(int32_t x, int32_t y, uint32_t w, uint32_t h)
@@ -307,7 +315,14 @@ namespace SA
         d->width = w;
         d->height = h;
         d->isPosChanged = true;
+        d->isSizeChanged = true;
         XMoveResizeWindow(d->display, d->window, d->x, d->y, d->width, d->height);
+
+        sendEvent(SA::EventTypes::MoveEvent,
+                  std::pair<int32_t, int32_t>(d->x, d->y));
+
+        sendEvent(SA::EventTypes::ResizeEvent,
+                  std::pair<uint32_t, uint32_t>(d->width, d->height));
     }
 
     int32_t WidgetLinux::x()
@@ -628,18 +643,16 @@ namespace SA
         {
             d->x = x;
             d->y = y;
-            for (SA::Object *object: d->eventListners)
-                object->event(SA::EventTypes::MoveEvent,
-                              std::pair<int32_t, int32_t>(d->x, d->y));
+            sendEvent(SA::EventTypes::MoveEvent,
+                      std::pair<int32_t, int32_t>(d->x, d->y));
         }
 
         if (width != d->width || height != d->height)
         {
             d->width = width;
             d->height = height;
-            for (SA::Object *object: d->eventListners)
-                object->event(SA::EventTypes::ResizeEvent,
-                              std::pair<uint32_t, uint32_t>(d->width, d->height));
+            sendEvent(SA::EventTypes::ResizeEvent,
+                      std::pair<uint32_t, uint32_t>(d->width, d->height));
         }
     }
 

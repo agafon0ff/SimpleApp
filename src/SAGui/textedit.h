@@ -1,20 +1,14 @@
 #pragma once
 #include <functional>
 #include "SAGui/widget.h"
+#include "SAGui/scrollbar.h"
+#include "SACore/global.h"
 
 namespace SA
 {
     class TextEdit : public Widget
     {
     public:
-
-        enum StyleState
-        {
-            DisableState,
-            EnableState,
-            HoveredState,
-            AllStates
-        };
 
         explicit TextEdit(Widget *parent = nullptr);
         virtual ~TextEdit();
@@ -70,6 +64,7 @@ namespace SA
         virtual void mouseWheelEvent(int32_t delta);
         virtual void keyboardEvent(const KeyEvent &event);
         virtual void focusEvent(bool state);
+        virtual void resizeEvent(const Size &size);
 
     private:
         void moveTextCursor(Direction dir);

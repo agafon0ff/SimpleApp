@@ -51,6 +51,7 @@ Controls::Controls(SA::Widget *parent) : SA::Widget(parent),
 Controls::~Controls()
 {
     delete m_buttonClear;
+    delete m_buttonAdd;
     delete m_textEdit;
     std::cout << __PRETTY_FUNCTION__ << std::endl;
 }

@@ -50,6 +50,20 @@ namespace SA
         SideBottom
     };
 
+    enum Orientation
+    {
+        Vertical,
+        Horizontal
+    };
+
+    enum StyleState
+    {
+        DisableState,
+        EnableState,
+        HoveredState,
+        AllStates
+    };
+
     enum Keys
     {
         Key_Escape,     Key_Tab,         Key_Backspace,  Key_Return,    Key_Enter,
