@@ -79,9 +79,10 @@ namespace SA
 
         uint32_t cursorHeight = 10;
         uint32_t rowHeight = 10;
-        size_t textSize = 0;
-        int32_t textIndent[sizeof(Side)] = {3, 3, 18, 18};
-        int16_t scrollRate = 20;
+        size_t   textSize = 0;
+        int32_t  textIndent[sizeof(Side)] = {3, 3, 18, 18};
+        int16_t  scrollRate = 20;
+        int32_t  scrollBarWidth = 12;
 
         bool blinkState = false;
         bool enable = true;
@@ -665,12 +666,11 @@ namespace SA
 
     void TextEdit::resizeEvent(const Size &size)
     {
-        int thickness = 15;
-        d->scrollBarV->setGeometry(size.width - thickness , 0,
-                                   thickness , size.height - thickness);
+        d->scrollBarV->setGeometry(size.width - d->scrollBarWidth , 0,
+                                   d->scrollBarWidth , size.height - d->scrollBarWidth);
 
-        d->scrollBarH->setGeometry(0, size.height - thickness,
-                                   size.width, thickness);
+        d->scrollBarH->setGeometry(0, size.height - d->scrollBarWidth,
+                                   size.width - d->scrollBarWidth, d->scrollBarWidth);
     }
 
     void TextEdit::moveTextCursor(Direction dir)

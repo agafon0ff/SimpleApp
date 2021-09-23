@@ -13,6 +13,13 @@ namespace SA
     inline const Point operator+(const Point &p1, const Point &p2){ return Point(p1.x + p2.x, p1.y + p2.y); }
     inline const Point operator*(const Point &p, double c){ return Point(p.x * c, p.y * c); }
 
+    inline const bool contains(const Rect &rect, const Point &point)
+    {
+        return point.x >= rect.x && point.y >= rect.y &&
+               point.x <= rect.width + rect.x &&
+               point.y <= rect.height + rect.y;
+    }
+
     inline char getCharacter(const KeyEvent &event)
     {
         char result = 0;

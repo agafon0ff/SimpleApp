@@ -14,11 +14,14 @@ namespace SA
     {
         Point mouseCursorPos;
         Point mousePressPos;
+        Point grabbedPos;
+        Rect handleRect = {0, 0, 50, 50};
+        Size moveArea;
 
         Orientation orientation = Vertical;
         bool enable = true;
-        bool inFocus = false;
         bool pressed = false;
+        bool grabbed = false;
 
         StyleState styleState = EnableState;
         Pen borderPens[AllStates];
@@ -46,6 +49,7 @@ namespace SA
     {
         if (state == AllStates) calcBorders(pen);
         else d->borderPens[state] = pen;
+        updateSizes();
     }
 
     void ScrollBar::setHandleColors(const Color &color, StyleState state)
@@ -69,10 +73,7 @@ namespace SA
         drawRect(0, 0, width() - 1, height() - 1);
 
         setBrush(d->handleColors[d->styleState]);
-
-        if (d->orientation == Vertical)
-            drawRect(0, 20, width() - 1, 50);
-        else drawRect(20, 0, 50, height() - 1);
+        drawRect(d->handleRect);
     }
 
     void ScrollBar::mouseHoverEvent(bool state)
@@ -85,12 +86,48 @@ namespace SA
 
     void ScrollBar::mouseMoveEvent(const Point &pos)
     {
+        d->mouseCursorPos = pos;
 
+        if (!d->grabbed) return;
+
+        if (d->orientation == Vertical)
+        {
+            d->handleRect.y = pos.y - d->grabbedPos.y;
+            if (d->handleRect.y < 0) d->handleRect.y = 0;
+            else if(d->handleRect.y > d->moveArea.height)
+                d->handleRect.y = d->moveArea.height;
+        }
+        else
+        {
+            d->handleRect.x = pos.x - d->grabbedPos.x;
+
+            if (d->handleRect.x < 0) d->handleRect.x = 0;
+            else if(d->handleRect.x > d->moveArea.width)
+                d->handleRect.x = d->moveArea.width;
+        }
+
+        update();
     }
 
     void ScrollBar::mouseButtonEvent(const MouseEvent &event)
     {
+        if (event.button != ButtonLeft) return;
+        d->pressed = event.pressed;
 
+        if (event.pressed)
+        {
+            d->mousePressPos = d->mouseCursorPos;
+            d->grabbed = contains(d->handleRect, d->mousePressPos);
+            d->grabbedPos = { d->mousePressPos.x - d->handleRect.x,
+                              d->mousePressPos.y - d->handleRect.y};
+        }
+        else d->grabbed = false;
+    }
+
+    void ScrollBar::resizeEvent(const Size &size)
+    {
+        std::ignore = size;
+        updateSizes();
     }
 
     void ScrollBar::calcBorders(const Pen &pen)
@@ -103,6 +140,22 @@ namespace SA
     {
         for (int i=static_cast<int>(DisableState); i<static_cast<int>(AllStates); ++i)
             darker(color, d->handleColors[static_cast<StyleState>(i)], 2 * i);
+    }
+
+    void ScrollBar::updateSizes()
+    {
+        if (d->orientation == Vertical)
+        {
+            d->handleRect.x = 0;
+            d->handleRect.width = width() - d->borderPens[0].width;
+            d->moveArea.height = height() - d->handleRect.height - d->borderPens[0].width;
+        }
+        else
+        {
+            d->handleRect.y = 0;
+            d->handleRect.height = height() - d->borderPens[0].width;
+            d->moveArea.width = width() - d->handleRect.width - d->borderPens[0].width;
+        }
     }
 
 } // namespace SA

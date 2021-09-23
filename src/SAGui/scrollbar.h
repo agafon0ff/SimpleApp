@@ -20,11 +20,14 @@ namespace SA
         virtual void mouseHoverEvent(bool state);
         virtual void mouseMoveEvent(const Point &pos);
         virtual void mouseButtonEvent(const MouseEvent &event);
+        virtual void resizeEvent(const Size &size);
 
     private:
 
         void calcBorders(const Pen &pen);
         void calcHandeColors(const Color &color);
+
+        void updateSizes();
 
         struct ScrollBarPrivate;
         ScrollBarPrivate * const d;
