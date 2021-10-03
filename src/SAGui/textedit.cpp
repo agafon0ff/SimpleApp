@@ -73,13 +73,14 @@ namespace SA
         Point mouseCursorPos;
         Point mousePressPos;
         Point textShiftPos = {3, 3};
+        Size  textAreaSize;
 
         uint32_t currentRow = 0;
         uint32_t currentColumn = 0;
 
         uint32_t cursorHeight = 10;
         uint32_t rowHeight = 10;
-        size_t   textSize = 0;
+        size_t   textLength = 0;
         int32_t  textIndent[sizeof(Side)] = {3, 3, 18, 18};
         int16_t  scrollRate = 20;
         int32_t  scrollBarWidth = 12;
@@ -141,7 +142,7 @@ namespace SA
     void TextEdit::append(char symbol)
     {
         d->strings.push_back(std::string(1, symbol));
-        d->textSize += 2;
+        d->textLength += 2;
         update();
     }
 
@@ -162,7 +163,7 @@ namespace SA
         }
 
         d->strings.push_back(text.substr(pos, size));
-        d->textSize += text.size();
+        d->textLength += text.size();
 
         update();
     }
@@ -192,7 +193,7 @@ namespace SA
         }
         else d->strings[row].insert(column, 1, symbol);
 
-        ++d->textSize;
+        ++d->textLength;
         update();
     }
 
@@ -236,7 +237,7 @@ namespace SA
         else d->strings.insert(d->strings.begin() + row, text.substr(pos, size));
 
         d->strings[row].append(remainder);
-        d->textSize += text.size();
+        d->textLength += text.size();
         update();
     }
 
@@ -293,14 +294,14 @@ namespace SA
             }
         }
 
-        d->textSize -= size;
+        d->textLength -= size;
         update();
     }
 
     std::string TextEdit::text()
     {
         std::string result;
-        result.reserve(d->textSize);
+        result.reserve(d->textLength);
 
         for (const std::string &text: d->strings)
         { result += text; result += "\n"; }
@@ -311,18 +312,19 @@ namespace SA
     void TextEdit::clear()
     {
         d->strings.clear();
-        d->textSize = 0;
+        d->textLength = 0;
         d->currentRow = 0;
         d->textShiftPos = {d->textIndent[SideLeft], d->textIndent[SideTop]};
         d->textCursorPos = {0, 0};
         d->currentColumn = 0;
         d->selection.selected = false;
+        d->textAreaSize = {0, 0};
         update();
     }
 
     size_t TextEdit::textSize()
     {
-        return d->textSize;
+        return d->textLength;
     }
 
     size_t TextEdit::rowCount()
@@ -811,7 +813,7 @@ namespace SA
                                  d->strings.at(d->currentRow).at(d->currentColumn)});
 
                 d->strings[d->currentRow].erase(d->currentColumn, 1);
-                --d->textSize;
+                --d->textLength;
             }
             else if(d->currentRow > 0)
             {
@@ -823,7 +825,7 @@ namespace SA
                 }
 
                 d->strings.erase(d->strings.begin() + d->currentRow + 1);
-                --d->textSize;
+                --d->textLength;
 
                 d->actions.push({TextAction::RemoveChar, calcTextPos(d->currentRow, d->currentColumn), '\n'});
             }
@@ -844,7 +846,7 @@ namespace SA
             if (text.empty())
             {
                 d->strings.erase(d->strings.begin() + d->currentRow);
-                --d->textSize;
+                --d->textLength;
                 d->actions.push({TextAction::RemoveChar, calcTextPos(d->currentRow, d->currentColumn), '\n'});
                 return;
             }
@@ -855,13 +857,13 @@ namespace SA
                                  d->strings.at(d->currentRow).at(d->currentColumn)});
 
                 d->strings[d->currentRow].erase(d->currentColumn, 1);
-                --d->textSize;
+                --d->textLength;
             }
             else if(d->currentRow + 1 < d->strings.size())
             {
                 d->strings[d->currentRow].append(d->strings.at(d->currentRow + 1));
                 d->strings.erase(d->strings.begin() + d->currentRow + 1);
-                --d->textSize;
+                --d->textLength;
 
                 d->actions.push({TextAction::RemoveChar, calcTextPos(d->currentRow, d->currentColumn), '\n'});
             }
@@ -896,7 +898,7 @@ namespace SA
 
         d->currentColumn = 0;
         d->textCursorPos.x = d->textShiftPos.x;
-        ++d->textSize;
+        ++d->textLength;
     }
 
     void TextEdit::keyReactionHome()
@@ -919,7 +921,7 @@ namespace SA
         d->actions.push({TextAction::InsertText, calcTextPos(d->currentRow, d->currentColumn), std::string("    ")});
         d->strings[d->currentRow].insert(d->currentColumn, 4, ' ');
         d->currentColumn += 3;
-        d->textSize += 4;
+        d->textLength += 4;
 
         moveTextCursor(DirRight);
     }

@@ -432,8 +432,6 @@ namespace SA
                        d->window,
                        d->gc,
                        x, y, width, height);
-
-//        GXcopyInverted();
     }
 
     void WidgetLinux::drawText(int32_t x, int32_t y, const std::string &text)
