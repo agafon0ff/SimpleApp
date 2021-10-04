@@ -74,7 +74,6 @@ namespace SA
         Point mouseCursorPos;
         Point mousePressPos;
         Point textShiftPos = {3, 3};
-        Size  textAreaSize;
 
         uint32_t currentRow = 0;
         uint32_t currentColumn = 0;
@@ -82,7 +81,6 @@ namespace SA
         uint32_t cursorHeight = 10;
         uint32_t rowHeight = 10;
         size_t   textLength = 0;
-        size_t   longestRow = 0;
         int32_t  textIndent[sizeof(Side)] = {3, 3, 18, 18};
         int16_t  scrollRate = 20;
         int32_t  scrollBarWidth = 12;
@@ -150,6 +148,7 @@ namespace SA
     {
         d->strings.push_back(std::string(1, symbol));
         d->textLength += 2;
+        calcRowsWidths(d->strings.size() - 1);
         calcScrollBars();
         update();
     }
@@ -157,6 +156,7 @@ namespace SA
     void TextEdit::append(const std::string &text)
     {
         size_t pos = 0, step = 0, size = 0;
+        size_t psize = d->strings.size();
 
         for (const char &c: text)
         {
@@ -172,6 +172,7 @@ namespace SA
 
         d->strings.push_back(text.substr(pos, size));
         d->textLength += text.size();
+        calcRowsWidths(psize, d->strings.size() - psize);
         calcScrollBars();
         update();
     }
@@ -203,6 +204,7 @@ namespace SA
         else d->strings[row].insert(column, 1, symbol);
 
         ++d->textLength;
+        calcRowsWidths(row);
         update();
     }
 
@@ -221,6 +223,7 @@ namespace SA
         if (row >= d->strings.size())
             row = d->strings.size() - 1;
 
+        size_t psize = row;
         size_t size = d->strings.at(row).size();
         if (column > size) column = size;
 
@@ -247,6 +250,7 @@ namespace SA
 
         d->strings[row].append(remainder);
         d->textLength += text.size();
+        calcRowsWidths(psize, row - psize);
         calcScrollBars();
         update();
     }
@@ -269,6 +273,7 @@ namespace SA
         if (d->strings.at(row).size() - column >= size)
         {
             d->strings[row].erase(column, size);
+            calcRowsWidths(row);
         }
         else
         {
@@ -306,6 +311,7 @@ namespace SA
                     calcScrollBars();
                 }
             }
+            calcRowsWidths(rowStart, rowEnd - rowStart);
         }
 
         d->textLength -= size;
@@ -326,14 +332,13 @@ namespace SA
     void TextEdit::clear()
     {
         d->strings.clear();
+        d->rowsWidths.clear();
         d->textLength = 0;
         d->currentRow = 0;
         d->textShiftPos = {d->textIndent[SideLeft], d->textIndent[SideTop]};
         d->textCursorPos = {0, 0};
         d->currentColumn = 0;
         d->selection.selected = false;
-        d->textAreaSize = {0, 0};
-        d->longestRow = 0;
         calcScrollBars();
         update();
     }
@@ -837,8 +842,7 @@ namespace SA
                 d->actions.push({TextAction::RemoveChar, calcTextPos(d->currentRow, d->currentColumn),
                                  d->strings.at(d->currentRow).at(d->currentColumn)});
 
-                d->strings[d->currentRow].erase(d->currentColumn, 1);
-                --d->textLength;
+                remove(d->currentRow, d->currentColumn, 1);
             }
             else if(d->currentRow > 0)
             {
@@ -847,9 +851,12 @@ namespace SA
                     const std::string &text = d->strings.at(d->currentRow);
                     moveTextCursor(DirLeft);
                     if (!text.empty()) d->strings[d->currentRow].append(text);
+                    calcRowsWidths(d->currentRow);
                 }
 
+
                 d->strings.erase(d->strings.begin() + d->currentRow + 1);
+                d->rowsWidths.erase(d->rowsWidths.begin() + d->currentRow + 1);
                 --d->textLength;
 
                 d->actions.push({TextAction::RemoveChar, calcTextPos(d->currentRow, d->currentColumn), '\n'});
@@ -872,6 +879,7 @@ namespace SA
             if (text.empty())
             {
                 d->strings.erase(d->strings.begin() + d->currentRow);
+                d->rowsWidths.erase(d->rowsWidths.begin() + d->currentRow);
                 --d->textLength;
                 d->actions.push({TextAction::RemoveChar, calcTextPos(d->currentRow, d->currentColumn), '\n'});
                 calcScrollBars();
