@@ -219,6 +219,11 @@ namespace SA
         return d->widget->textHeight();
     }
 
+    bool Widget::isHidden()
+    {
+        return d->widget->isHidden();
+    }
+
     bool Widget::isHovered()
     {
         return d->widget->isHovered();

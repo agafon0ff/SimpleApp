@@ -10,10 +10,18 @@ namespace SA
         explicit ScrollBar(Orientation orientation, Widget *parent = nullptr);
         virtual ~ScrollBar();
 
+        uint32_t range();
+        void setRange(uint32_t range);
+
+        uint32_t value();
+        void setValue(uint32_t value);
 
         void setBorder(const Pen &pen, StyleState state = AllStates);
         void setHandleColors(const Color &color, StyleState state = AllStates);
         void setBackground(const Color &color, StyleState state = AllStates);
+
+        int addScrollHandler(const std::function<void (uint32_t)> &func);
+        void removeScrollHandler(int id);
 
     protected:
         virtual void paintEvent();
@@ -27,6 +35,7 @@ namespace SA
         void calcBorders(const Pen &pen);
         void calcHandeColors(const Color &color);
 
+        void updateValue();
         void updateSizes();
 
         struct ScrollBarPrivate;

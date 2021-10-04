@@ -427,6 +427,11 @@ namespace SA
         return static_cast<size_t>(textSize.cy);
     }
 
+    bool WidgetWindows::isHidden()
+    {
+        return d->isHidden;
+    }
+
     bool WidgetWindows::isHovered()
     {
         return d->isHovered;

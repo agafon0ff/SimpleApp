@@ -70,6 +70,8 @@ namespace SA
         void moveTextCursor(Direction dir);
         void updateTextSelection(bool justPressed = false);
         void insertClipboardText();
+        void onScrollVertical(uint32_t value);
+        void onScrollHorizontal(uint32_t value);
 
         void keyReactionSymbol(char symbol);
         void keyReactionBackspace();
@@ -79,6 +81,8 @@ namespace SA
         void keyReactionEnd();
         void keyReactionTab();
 
+        void calcRowsWidths(uint32_t row, uint32_t count = 1);
+        void calcScrollBars();
         void calcCurrentRow();
         void calcTextCursorPos();
         void calcRowColumn(uint64_t pos, uint32_t &row, uint32_t &column);

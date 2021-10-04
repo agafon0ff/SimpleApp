@@ -18,6 +18,9 @@ namespace SA
         Rect handleRect = {0, 0, 50, 50};
         Size moveArea;
 
+        uint32_t range = 100;
+        uint32_t value = 0;
+
         Orientation orientation = Vertical;
         bool enable = true;
         bool pressed = false;
@@ -27,6 +30,8 @@ namespace SA
         Pen borderPens[AllStates];
         Color handleColors[AllStates];
         Color backgrounds[AllStates];
+
+        std::map<int, std::function<void (uint32_t)> > scrollHanders;
     };
 
     ScrollBar::ScrollBar(Orientation orientation, Widget *parent) : Widget(parent),
@@ -43,6 +48,38 @@ namespace SA
     ScrollBar::~ScrollBar()
     {
         delete d;
+    }
+
+    uint32_t ScrollBar::range()
+    {
+        return d->range;
+    }
+
+    void ScrollBar::setRange(uint32_t range)
+    {
+        if (range == d->range) return;
+
+        d->range = range;
+        if (d->range > d->value) d->value = d->range;
+    }
+
+    uint32_t ScrollBar::value()
+    {
+        return d->value;
+    }
+
+    void ScrollBar::setValue(uint32_t value)
+    {
+        if (value == d->value) return;
+
+        d->value = value;
+        if (d->value > d->range) d->value = d->range;
+
+        if (d->orientation == Vertical)
+            d->handleRect.y = (d->moveArea.height * d->value) / d->range;
+        else d->handleRect.x = (d->moveArea.width * d->value) / d->range;
+
+        update();
     }
 
     void ScrollBar::setBorder(const Pen &pen, StyleState state)
@@ -64,6 +101,21 @@ namespace SA
             for (int i=static_cast<int>(DisableState); i<static_cast<int>(AllStates); ++i)
                 d->backgrounds[static_cast<StyleState>(i)] = color;
         else d->backgrounds[state] = color;
+    }
+
+    int ScrollBar::addScrollHandler(const std::function<void (uint32_t)> &func)
+    {
+        int id = 0;
+        for (auto const& it : d->scrollHanders) if (it.first != ++id) break;
+        d->scrollHanders.insert({id, func});
+        return id;
+    }
+
+    void ScrollBar::removeScrollHandler(int id)
+    {
+        auto it = d->scrollHanders.find(id);
+        if (it != d->scrollHanders.end())
+            d->scrollHanders.erase(it);
     }
 
     void ScrollBar::paintEvent()
@@ -93,6 +145,7 @@ namespace SA
         if (d->orientation == Vertical)
         {
             d->handleRect.y = pos.y - d->grabbedPos.y;
+
             if (d->handleRect.y < 0) d->handleRect.y = 0;
             else if(d->handleRect.y > d->moveArea.height)
                 d->handleRect.y = d->moveArea.height;
@@ -106,6 +159,7 @@ namespace SA
                 d->handleRect.x = d->moveArea.width;
         }
 
+        updateValue();
         update();
     }
 
@@ -140,6 +194,24 @@ namespace SA
     {
         for (int i=static_cast<int>(DisableState); i<static_cast<int>(AllStates); ++i)
             darker(color, d->handleColors[static_cast<StyleState>(i)], 2 * i);
+    }
+
+    void ScrollBar::updateValue()
+    {
+        uint32_t pos = d->handleRect.x;
+        uint32_t dist = d->moveArea.width;
+
+        if (d->orientation == Vertical)
+        {
+            pos = d->handleRect.y;
+            dist = d->moveArea.height;
+        }
+
+        uint32_t value = (d->range * pos) / dist;
+        if (value == d->value) return;
+
+        d->value = value;
+        for (const auto &it: d->scrollHanders) it.second(d->value);
     }
 
     void ScrollBar::updateSizes()

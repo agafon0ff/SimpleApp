@@ -494,6 +494,11 @@ namespace SA
         return d->font->ascent;// + d->font->descent;
     }
 
+    bool WidgetLinux::isHidden()
+    {
+        return d->isHidden;
+    }
+
     bool WidgetLinux::isHovered()
     {
         return d->isHovered;

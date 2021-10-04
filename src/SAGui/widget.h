@@ -59,6 +59,7 @@ namespace SA
         size_t textWidth(const char* text, size_t len);
         size_t textHeight();
 
+        bool isHidden();
         bool isHovered();
 
     protected:

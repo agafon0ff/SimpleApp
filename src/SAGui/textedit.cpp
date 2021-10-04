@@ -65,6 +65,7 @@ namespace SA
     struct TextEdit::TextEditPrivate
     {
         std::vector<std::string> strings;
+        std::vector<size_t> rowsWidths;
         std::stack<TextAction> actions;
 
         int timerId = 0;
@@ -81,6 +82,7 @@ namespace SA
         uint32_t cursorHeight = 10;
         uint32_t rowHeight = 10;
         size_t   textLength = 0;
+        size_t   longestRow = 0;
         int32_t  textIndent[sizeof(Side)] = {3, 3, 18, 18};
         int16_t  scrollRate = 20;
         int32_t  scrollBarWidth = 12;
@@ -110,8 +112,13 @@ namespace SA
     TextEdit::TextEdit(Widget *parent) : Widget(parent),
         d(new TextEditPrivate)
     {
+        using namespace std::placeholders;
+
         d->scrollBarV = new SA::ScrollBar(Vertical, this);
+        d->scrollBarV->addScrollHandler(std::bind(&TextEdit::onScrollVertical, this, _1));
+
         d->scrollBarH = new SA::ScrollBar(Horizontal, this);
+        d->scrollBarH->addScrollHandler(std::bind(&TextEdit::onScrollHorizontal, this, _1));
 
         d->timerId = startTimer(500);
         d->rowHeight = textHeight() + 5;
@@ -143,6 +150,7 @@ namespace SA
     {
         d->strings.push_back(std::string(1, symbol));
         d->textLength += 2;
+        calcScrollBars();
         update();
     }
 
@@ -164,7 +172,7 @@ namespace SA
 
         d->strings.push_back(text.substr(pos, size));
         d->textLength += text.size();
-
+        calcScrollBars();
         update();
     }
 
@@ -190,6 +198,7 @@ namespace SA
         {
             d->strings.insert(d->strings.begin() + row + 1, d->strings[row].substr(column, size-column));
             d->strings[row].erase(column, size-column);
+            calcScrollBars();
         }
         else d->strings[row].insert(column, 1, symbol);
 
@@ -238,6 +247,7 @@ namespace SA
 
         d->strings[row].append(remainder);
         d->textLength += text.size();
+        calcScrollBars();
         update();
     }
 
@@ -257,7 +267,9 @@ namespace SA
             column = d->strings.at(row).size();
 
         if (d->strings.at(row).size() - column >= size)
+        {
             d->strings[row].erase(column, size);
+        }
         else
         {
             const int eraseSize = d->strings.at(row).size() - column;
@@ -279,6 +291,7 @@ namespace SA
             if (rowEnd >= d->strings.size())
             {
                 d->strings.erase(d->strings.begin() + rowStart + 1, d->strings.end());
+                calcScrollBars();
             }
             else
             {
@@ -290,6 +303,7 @@ namespace SA
 
                     if (rowEnd + 1 <= d->strings.size()) ++rowEnd;
                     d->strings.erase(d->strings.begin() + rowStart + 1, d->strings.begin() + rowEnd);
+                    calcScrollBars();
                 }
             }
         }
@@ -319,6 +333,8 @@ namespace SA
         d->currentColumn = 0;
         d->selection.selected = false;
         d->textAreaSize = {0, 0};
+        d->longestRow = 0;
+        calcScrollBars();
         update();
     }
 
@@ -612,10 +628,9 @@ namespace SA
         if (verticalShift == d->textShiftPos.y) return;
 
         d->textShiftPos.y = verticalShift;
-
         d->textCursorPos.y = d->currentRow * d->rowHeight - 1 + d->textShiftPos.y;
         d->textCursorPos.x = textWidth(d->strings.at(d->currentRow).data(), d->currentColumn) + d->textShiftPos.x;
-
+        d->scrollBarV->setValue(std::abs(d->textShiftPos.y));
         update();
     }
 
@@ -668,11 +683,8 @@ namespace SA
 
     void TextEdit::resizeEvent(const Size &size)
     {
-        d->scrollBarV->setGeometry(size.width - d->scrollBarWidth , 0,
-                                   d->scrollBarWidth , size.height - d->scrollBarWidth);
-
-        d->scrollBarH->setGeometry(0, size.height - d->scrollBarWidth,
-                                   size.width - d->scrollBarWidth, d->scrollBarWidth);
+        std::ignore = size;
+        calcScrollBars();
     }
 
     void TextEdit::moveTextCursor(Direction dir)
@@ -784,6 +796,18 @@ namespace SA
         d->actions.push({TextAction::InsertText, calcTextPos(d->currentRow, d->currentColumn), text});
     }
 
+    void TextEdit::onScrollVertical(uint32_t value)
+    {
+        d->textShiftPos.y = -value + d->textIndent[SideTop];
+        update();
+    }
+
+    void TextEdit::onScrollHorizontal(uint32_t value)
+    {
+        d->textShiftPos.x = -value;
+        update();
+    }
+
     void TextEdit::keyReactionSymbol(char symbol)
     {
         if (d->selection.selected) removeSelectedText();
@@ -793,6 +817,7 @@ namespace SA
         d->actions.push({TextAction::InsertChar, calcTextPos(d->currentRow, d->currentColumn), symbol});
 
         moveTextCursor(DirRight);
+        calcScrollBars();
     }
 
     void TextEdit::keyReactionBackspace()
@@ -829,6 +854,7 @@ namespace SA
 
                 d->actions.push({TextAction::RemoveChar, calcTextPos(d->currentRow, d->currentColumn), '\n'});
             }
+            calcScrollBars();
         }
     }
 
@@ -848,6 +874,7 @@ namespace SA
                 d->strings.erase(d->strings.begin() + d->currentRow);
                 --d->textLength;
                 d->actions.push({TextAction::RemoveChar, calcTextPos(d->currentRow, d->currentColumn), '\n'});
+                calcScrollBars();
                 return;
             }
 
@@ -867,7 +894,7 @@ namespace SA
 
                 d->actions.push({TextAction::RemoveChar, calcTextPos(d->currentRow, d->currentColumn), '\n'});
             }
-
+            calcScrollBars();
         }
     }
 
@@ -893,12 +920,13 @@ namespace SA
             ++d->currentRow;
             d->strings.insert(d->strings.begin() + d->currentRow, text.substr(d->currentColumn));
             d->strings[d->currentRow - 1].erase(d->currentColumn, size - d->currentColumn);
-
         }
 
         d->currentColumn = 0;
         d->textCursorPos.x = d->textShiftPos.x;
+        d->textCursorPos.y = d->currentRow * d->rowHeight - 1 + d->textShiftPos.y;
         ++d->textLength;
+        calcScrollBars();
     }
 
     void TextEdit::keyReactionHome()
@@ -924,6 +952,52 @@ namespace SA
         d->textLength += 4;
 
         moveTextCursor(DirRight);
+    }
+
+    void TextEdit::calcRowsWidths(uint32_t row, uint32_t count)
+    {
+        uint32_t end = row + count;
+        if (end > d->strings.size()) return;
+
+        if (d->rowsWidths.size() != d->strings.size())
+            d->rowsWidths.resize(d->strings.size());
+
+        uint32_t maxWidth = 0;
+        for (uint32_t i=0; i<d->strings.size(); ++i)
+        {
+            if (i >= row && i < end) d->rowsWidths[i] = textWidth(d->strings[i]);
+            if (d->rowsWidths[i] > maxWidth) maxWidth = d->rowsWidths[i];
+        }
+
+        cout << __PRETTY_FUNCTION__ << " maxWidth: " << maxWidth << endl;
+    }
+
+    void TextEdit::calcScrollBars()
+    {
+        // Vertical
+        uint32_t textAreaHeight = d->strings.size() * d->rowHeight;
+        uint32_t visibleHeight = height();
+        visibleHeight -= d->textIndent[SideTop];
+        visibleHeight -= d->textIndent[SideBottom];
+
+        if (textAreaHeight > visibleHeight)
+        {
+            if (d->scrollBarV->isHidden()) d->scrollBarV->show();
+
+            d->scrollBarV->setGeometry(width() - d->scrollBarWidth , 0,
+                                       d->scrollBarWidth , height() - d->scrollBarWidth);
+
+            d->scrollBarV->setRange(textAreaHeight - visibleHeight);
+        }
+        else
+        {
+            d->scrollBarV->setRange(0);
+            if (!d->scrollBarV->isHidden()) d->scrollBarV->hide();
+        }
+
+        // Horizontal
+        d->scrollBarH->setGeometry(0, height() - d->scrollBarWidth,
+                                   width() - d->scrollBarWidth, d->scrollBarWidth);
     }
 
     void TextEdit::calcCurrentRow()
