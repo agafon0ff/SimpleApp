@@ -74,6 +74,7 @@ namespace SA
         Point mouseCursorPos;
         Point mousePressPos;
         Point textShiftPos = {3, 3};
+        Size  textAreaSize = {0, 0};
 
         uint32_t currentRow = 0;
         uint32_t currentColumn = 0;
@@ -148,7 +149,7 @@ namespace SA
     {
         d->strings.push_back(std::string(1, symbol));
         d->textLength += 2;
-        calcRowsWidths(d->strings.size() - 1);
+        calcTextAreaSize(d->strings.size() - 1);
         calcScrollBars();
         update();
     }
@@ -172,7 +173,7 @@ namespace SA
 
         d->strings.push_back(text.substr(pos, size));
         d->textLength += text.size();
-        calcRowsWidths(psize, d->strings.size() - psize);
+        calcTextAreaSize(psize, d->strings.size() - psize);
         calcScrollBars();
         update();
     }
@@ -204,7 +205,7 @@ namespace SA
         else d->strings[row].insert(column, 1, symbol);
 
         ++d->textLength;
-        calcRowsWidths(row);
+        calcTextAreaSize(row);
         update();
     }
 
@@ -250,7 +251,7 @@ namespace SA
 
         d->strings[row].append(remainder);
         d->textLength += text.size();
-        calcRowsWidths(psize, row - psize);
+        calcTextAreaSize(psize, row - psize);
         calcScrollBars();
         update();
     }
@@ -273,7 +274,7 @@ namespace SA
         if (d->strings.at(row).size() - column >= size)
         {
             d->strings[row].erase(column, size);
-            calcRowsWidths(row);
+            calcTextAreaSize(row);
         }
         else
         {
@@ -311,7 +312,7 @@ namespace SA
                     calcScrollBars();
                 }
             }
-            calcRowsWidths(rowStart, rowEnd - rowStart);
+            calcTextAreaSize(rowStart, rowEnd - rowStart);
         }
 
         d->textLength -= size;
@@ -809,7 +810,7 @@ namespace SA
 
     void TextEdit::onScrollHorizontal(uint32_t value)
     {
-        d->textShiftPos.x = -value;
+        d->textShiftPos.x = -value + d->textIndent[SideLeft];
         update();
     }
 
@@ -851,7 +852,7 @@ namespace SA
                     const std::string &text = d->strings.at(d->currentRow);
                     moveTextCursor(DirLeft);
                     if (!text.empty()) d->strings[d->currentRow].append(text);
-                    calcRowsWidths(d->currentRow);
+                    calcTextAreaSize(d->currentRow);
                 }
 
 
@@ -882,6 +883,7 @@ namespace SA
                 d->rowsWidths.erase(d->rowsWidths.begin() + d->currentRow);
                 --d->textLength;
                 d->actions.push({TextAction::RemoveChar, calcTextPos(d->currentRow, d->currentColumn), '\n'});
+                calcTextAreaSize(d->currentRow);
                 calcScrollBars();
                 return;
             }
@@ -893,12 +895,15 @@ namespace SA
 
                 d->strings[d->currentRow].erase(d->currentColumn, 1);
                 --d->textLength;
+                calcTextAreaSize(d->currentRow);
             }
             else if(d->currentRow + 1 < d->strings.size())
             {
                 d->strings[d->currentRow].append(d->strings.at(d->currentRow + 1));
                 d->strings.erase(d->strings.begin() + d->currentRow + 1);
+                d->rowsWidths.erase(d->rowsWidths.begin() + d->currentRow + 1);
                 --d->textLength;
+                calcTextAreaSize(d->currentRow);
 
                 d->actions.push({TextAction::RemoveChar, calcTextPos(d->currentRow, d->currentColumn), '\n'});
             }
@@ -921,6 +926,7 @@ namespace SA
         {
             ++d->currentRow;
             d->strings.insert(d->strings.begin() + d->currentRow, std::string());
+            d->rowsWidths.insert(d->rowsWidths.begin() + d->currentRow, 0);
         }
         else
         {
@@ -928,6 +934,8 @@ namespace SA
             ++d->currentRow;
             d->strings.insert(d->strings.begin() + d->currentRow, text.substr(d->currentColumn));
             d->strings[d->currentRow - 1].erase(d->currentColumn, size - d->currentColumn);
+            d->rowsWidths.insert(d->rowsWidths.begin() + d->currentRow, 0);
+            calcTextAreaSize(d->currentRow - 1, 2);
         }
 
         d->currentColumn = 0;
@@ -960,9 +968,10 @@ namespace SA
         d->textLength += 4;
 
         moveTextCursor(DirRight);
+        calcTextAreaSize(d->currentRow);
     }
 
-    void TextEdit::calcRowsWidths(uint32_t row, uint32_t count)
+    void TextEdit::calcTextAreaSize(uint32_t row, uint32_t count)
     {
         uint32_t end = row + count;
         if (end > d->strings.size()) return;
@@ -977,25 +986,25 @@ namespace SA
             if (d->rowsWidths[i] > maxWidth) maxWidth = d->rowsWidths[i];
         }
 
-        cout << __PRETTY_FUNCTION__ << " maxWidth: " << maxWidth << endl;
+        d->textAreaSize.width = maxWidth;
+        d->textAreaSize.height = d->strings.size() * d->rowHeight;
     }
 
     void TextEdit::calcScrollBars()
     {
         // Vertical
-        uint32_t textAreaHeight = d->strings.size() * d->rowHeight;
         uint32_t visibleHeight = height();
         visibleHeight -= d->textIndent[SideTop];
         visibleHeight -= d->textIndent[SideBottom];
 
-        if (textAreaHeight > visibleHeight)
+        if (d->textAreaSize.height > visibleHeight)
         {
             if (d->scrollBarV->isHidden()) d->scrollBarV->show();
 
             d->scrollBarV->setGeometry(width() - d->scrollBarWidth , 0,
                                        d->scrollBarWidth , height() - d->scrollBarWidth);
 
-            d->scrollBarV->setRange(textAreaHeight - visibleHeight);
+            d->scrollBarV->setRange(d->textAreaSize.height - visibleHeight);
         }
         else
         {
@@ -1004,8 +1013,22 @@ namespace SA
         }
 
         // Horizontal
-        d->scrollBarH->setGeometry(0, height() - d->scrollBarWidth,
-                                   width() - d->scrollBarWidth, d->scrollBarWidth);
+        uint32_t visibleWidth = width();
+        visibleWidth -= d->textIndent[SideLeft];
+        visibleWidth -= d->textIndent[SideRight];
+        if (d->textAreaSize.width > visibleWidth)
+        {
+            if (d->scrollBarH->isHidden()) d->scrollBarH->show();
+            d->scrollBarH->setGeometry(0, height() - d->scrollBarWidth,
+                                       width() - d->scrollBarWidth, d->scrollBarWidth);
+
+            d->scrollBarH->setRange(d->textAreaSize.width - visibleWidth);
+        }
+        else
+        {
+            d->scrollBarH->setRange(0);
+            if (!d->scrollBarH->isHidden()) d->scrollBarH->hide();
+        }
     }
 
     void TextEdit::calcCurrentRow()

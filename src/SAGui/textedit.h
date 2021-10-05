@@ -81,7 +81,7 @@ namespace SA
         void keyReactionEnd();
         void keyReactionTab();
 
-        void calcRowsWidths(uint32_t row, uint32_t count = 1);
+        void calcTextAreaSize(uint32_t row, uint32_t count = 1);
         void calcScrollBars();
         void calcCurrentRow();
         void calcTextCursorPos();
