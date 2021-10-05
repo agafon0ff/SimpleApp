@@ -12,56 +12,6 @@ using std::endl;
 
 namespace SA
 {
-    struct TextSelection
-    {
-        uint32_t posStart = 0;
-        uint32_t posEnd = 0;
-
-        uint32_t rowStart = 0;
-        uint32_t rowEnd = 0;
-
-        uint32_t columnStart = 0;
-        uint32_t columnEnd = 0;
-
-        bool selected = false;
-    };
-
-    struct TextAction
-    {
-        enum ChangeType
-        {
-            Null,
-            InsertChar,
-            InsertText,
-            RemoveChar,
-            RemoveText
-        } type = Null;
-
-        uint64_t pos = 0;
-        char symbol = ' ';
-        std::string string;
-
-        TextAction(ChangeType type_, uint64_t pos_, char symbol_) :
-            type(type_), pos(pos_), symbol(symbol_) {}
-
-        TextAction(ChangeType type_, uint64_t pos_, const std::string &string_) :
-            type(type_), pos(pos_), string(string_){}
-
-        TextAction(const TextAction &a) :
-            type(a.type), pos(a.pos), symbol(a.symbol), string(a.string) {}
-
-        TextAction(TextAction &&a) noexcept :
-        type(a.type), pos(a.pos), symbol(a.symbol), string(std::move(a.string)) {}
-
-        TextAction& operator=(const TextAction &a)
-        {if (&a == this) return *this;  type = a.type; pos = a.pos;
-         symbol = a.symbol; string = a.string; return *this;}
-
-        TextAction& operator=(TextAction &&a) noexcept
-        {if (&a == this) return *this;  type = a.type; pos = a.pos;
-         symbol = a.symbol; string = std::move(a.string); return *this;}
-    };
-
     struct TextEdit::TextEditPrivate
     {
         std::vector<std::string> strings;
@@ -458,7 +408,6 @@ namespace SA
         case TextAction::RemoveText: insert(action.pos, action.string); break;
         default: break;
         }
-
     }
 
     void TextEdit::setEnabled(bool state)
@@ -993,16 +942,21 @@ namespace SA
 
     void TextEdit::calcScrollBars()
     {
-        // Vertical
         uint32_t visibleHeight = height();
         visibleHeight -= d->textIndent[SideTop];
         visibleHeight -= d->textIndent[SideBottom];
-        uint32_t scrollBarWidth = 0;
 
+        uint32_t visibleWidth = width();
+        visibleWidth -= d->textIndent[SideLeft];
+        visibleWidth -= d->textIndent[SideRight];
+
+        uint16_t scrollBarWidth = 0;
+
+        // Vertical
         if (d->textAreaSize.height > visibleHeight)
         {
             if (d->scrollBarV->isHidden()) d->scrollBarV->show();
-            if (!d->scrollBarH->isHidden()) scrollBarWidth = d->scrollBarWidth;
+            if (d->textAreaSize.width > visibleWidth) scrollBarWidth = d->scrollBarWidth;
 
             d->scrollBarV->setGeometry(width() - d->scrollBarWidth , 0,
                                        d->scrollBarWidth , height() - scrollBarWidth);
@@ -1016,9 +970,6 @@ namespace SA
         }
 
         // Horizontal
-        uint32_t visibleWidth = width();
-        visibleWidth -= d->textIndent[SideLeft];
-        visibleWidth -= d->textIndent[SideRight];
         if (d->textAreaSize.width > visibleWidth)
         {
             if (d->scrollBarH->isHidden()) d->scrollBarH->show();
