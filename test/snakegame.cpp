@@ -5,39 +5,20 @@
 #include <tuple>
 
 #include "snakegame.h"
-
-enum class Direction
-{
-    Right,
-    Left,
-    Up,
-    Down
-};
-
-struct Point
-{
-    int x, y;
-    Point(int _x, int _y): x(_x), y(_y){}
-};
-
-struct Rect
-{
-    int x, y, width, height;
-    Rect(int _x, int _y, int _w, int _h):
-        x(_x), y(_y), width(_w), height(_h){}
-};
+#include "SACore/global.h"
 
 struct SnakeGame::SnakeGamePrivate
 {
     int timerId = 0;
     int cellsCount = 16;
     bool gameOver = false;
-    Rect gameRect = Rect(0, 0, 400, 400);
-    Point foodPoint = Point(3, 4);
-    Direction dirCurrent = Direction::Left;
-    Direction dirNext = Direction::Left;
+    SA::Rect gameRect = SA::Rect(0, 0, 400, 400);
+    SA::Point foodPoint = SA::Point(3, 4);
+    SA::Direction dirCurrent = SA::DirLeft;
+    SA::Direction dirNext = SA::DirLeft;
 
-    std::vector<Point> snake = { Point(0,7), Point(1,7), Point(2,7), Point(3,7)};
+    std::vector<SA::Point> snake = { SA::Point(0,7), SA::Point(1,7),
+                                     SA::Point(2,7), SA::Point(3,7)};
 };
 
 SnakeGame::SnakeGame(Widget *parent) : SA::Widget(parent),
@@ -62,15 +43,15 @@ void SnakeGame::keyboardEvent(const SA::KeyEvent &event)
 {
     if (!event.pressed) return;
 
-    if (d->dirCurrent == Direction::Left || d->dirCurrent == Direction::Right)
+    if (d->dirCurrent == SA::DirLeft || d->dirCurrent == SA::DirRight)
     {
-        if (event.keycode == SA::Key_Up || event.keycode == SA::Key_W) d->dirNext = Direction::Up;
-        if (event.keycode == SA::Key_Down || event.keycode == SA::Key_S) d->dirNext = Direction::Down;
+        if (event.keycode == SA::Key_Up || event.keycode == SA::Key_W) d->dirNext = SA::DirUp;
+        if (event.keycode == SA::Key_Down || event.keycode == SA::Key_S) d->dirNext = SA::DirDown;
     }
-    else if (d->dirCurrent == Direction::Up || d->dirCurrent == Direction::Down)
+    else if (d->dirCurrent == SA::DirUp || d->dirCurrent == SA::DirDown)
     {
-        if (event.keycode == SA::Key_Left || event.keycode == SA::Key_A) d->dirNext = Direction::Left;
-        if (event.keycode == SA::Key_Right || event.keycode == SA::Key_D) d->dirNext = Direction::Right;
+        if (event.keycode == SA::Key_Left || event.keycode == SA::Key_A) d->dirNext = SA::DirLeft;
+        if (event.keycode == SA::Key_Right || event.keycode == SA::Key_D) d->dirNext = SA::DirRight;
     }
 
 //    std::cout << __PRETTY_FUNCTION__ << " keyCode: " << std::hex << keyCode << std::endl;
@@ -161,7 +142,7 @@ void SnakeGame::addFoodPoint()
         break;
     }
 
-    d->foodPoint = Point(x, y);
+    d->foodPoint = SA::Point(x, y);
 }
 
 void SnakeGame::updateSnakePos()
@@ -178,14 +159,14 @@ void SnakeGame::updateSnakePos()
         d->snake[i].y = d->snake[i-1].y;
     }
 
-    Point head = d->snake[0];
+    SA::Point head = d->snake[0];
 
     switch (d->dirCurrent)
     {
-    case Direction::Right: ++head.x; break;
-    case Direction::Left: --head.x; break;
-    case Direction::Down: ++head.y; break;
-    case Direction::Up: --head.y; break;
+    case SA::DirRight: ++head.x; break;
+    case SA::DirLeft: --head.x; break;
+    case SA::DirDown: ++head.y; break;
+    case SA::DirUp: --head.y; break;
     }
 
     if (head.x >= d->cellsCount) head.x = 0;
@@ -211,7 +192,7 @@ void SnakeGame::updateSnakePos()
 
 void SnakeGame::updateGeometry()
 {
-    d->gameRect = Rect(width() / 2 - d->gameRect.width / 2,
+    d->gameRect = SA::Rect(width() / 2 - d->gameRect.width / 2,
                        height() / 2 - d->gameRect.height / 2,
                        d->gameRect.width, d->gameRect.height);
 
