@@ -4,6 +4,8 @@
 #include "SACore/utility.h"
 #include "scrollbar.h"
 
+static const uint16_t MIN_HANDLE_SIZE = 30;
+
 using std::cout;
 using std::endl;
 
@@ -220,12 +222,20 @@ namespace SA
         {
             d->handleRect.x = 0;
             d->handleRect.width = width() - d->borderPens[0].width;
+
+            if (d->range > height() - MIN_HANDLE_SIZE) d->handleRect.height = MIN_HANDLE_SIZE;
+            else d->handleRect.height = height() - d->range;
+
             d->moveArea.height = height() - d->handleRect.height - d->borderPens[0].width;
         }
         else
         {
             d->handleRect.y = 0;
             d->handleRect.height = height() - d->borderPens[0].width;
+
+            if (d->range > height() - MIN_HANDLE_SIZE) d->handleRect.width = MIN_HANDLE_SIZE;
+            else d->handleRect.width = width() - d->range;
+
             d->moveArea.width = width() - d->handleRect.width - d->borderPens[0].width;
         }
     }
