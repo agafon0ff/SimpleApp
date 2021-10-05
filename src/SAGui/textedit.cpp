@@ -927,6 +927,7 @@ namespace SA
             ++d->currentRow;
             d->strings.insert(d->strings.begin() + d->currentRow, std::string());
             d->rowsWidths.insert(d->rowsWidths.begin() + d->currentRow, 0);
+            calcTextAreaSize(d->currentRow);
         }
         else
         {

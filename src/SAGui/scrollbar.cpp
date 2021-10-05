@@ -60,9 +60,12 @@ namespace SA
     void ScrollBar::setRange(uint32_t range)
     {
         if (range == d->range) return;
+        if (range == 0) return;
 
         d->range = range;
         if (d->range > d->value) d->value = d->range;
+        updateSizes();
+        update();
     }
 
     uint32_t ScrollBar::value()
