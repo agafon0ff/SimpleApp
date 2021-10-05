@@ -20,12 +20,12 @@ namespace SA
 
         Point mouseCursorPos;
         Point mousePressPos;
-        Point textShiftPos = {3, 3};
+        Point textShiftPos = {5, 5};
 
         uint32_t textCursorX = 0;
         uint32_t cursorHeight = 10;
         uint32_t currentColumn = 0;
-        int32_t  textIndent[sizeof(Side)] = {3, 3, 18, 18};
+        int32_t  textIndent[sizeof(Side)] = {5, 5, 5, 5};
 
         bool blinkState = false;
         bool enable = true;
@@ -51,13 +51,13 @@ namespace SA
         d(new LineEditPrivate)
     {
         d->timerId = startTimer(500);
-        d->cursorHeight = textHeight() + 5;
+        d->cursorHeight = textHeight() + 4;
 
         resize(150, 26);
         setCursorShape(Text);
         calcTextColors({240, 240, 240});
         calcBorders({90, 90, 90, 1});
-        setBackground({50, 50, 50});
+        setBackground({30, 30, 30});
     }
 
     LineEdit::~LineEdit()

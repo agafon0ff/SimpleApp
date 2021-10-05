@@ -77,7 +77,7 @@ namespace SA
         setCursorShape(Text);
         calcTextColors({240, 240, 240});
         calcBorders({90, 90, 90, 1});
-        setBackground({50, 50, 50});
+        setBackground({30, 30, 30});
     }
 
     TextEdit::~TextEdit()
