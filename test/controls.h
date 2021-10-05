@@ -1,10 +1,10 @@
 #pragma once
 
-#include "widget.h"
-#include "button.h"
+#include "SACore/structs.h"
+#include "SAGui/widget.h"
+#include "SAGui/button.h"
+#include "SAGui/textedit.h"
 #include "snakegame.h"
-
-#include <iostream>
 
 class Controls : public SA::Widget
 {
@@ -12,14 +12,14 @@ public:
     Controls(SA::Widget *parent = nullptr);
     ~Controls();
 
-    SA::Button *m_button1 = nullptr;
-    SA::Button *m_button2 = nullptr;
-    SA::Button *m_button3 = nullptr;
-    SA::Button *m_button4 = nullptr;
+private:
+    SA::Button *m_buttonClear = nullptr;
+    SA::Button *m_buttonAdd = nullptr;
+    SA::TextEdit *m_textEdit = nullptr;
 
-    void btnPressed(bool state);
-    void btnHovered(bool state);
-    void btnChecked(bool state);
+    void btnClearPressed(bool state);
+    void btnAddPressed(bool state);
+    void resizeEvent(const SA::Size &size);
 };
 
 

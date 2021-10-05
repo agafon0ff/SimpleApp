@@ -1,6 +1,7 @@
 #ifdef WIN32
 
 #include "SAGui/widgetwindows.h"
+#include "SAGui/clipboard.h"
 #include "SACore/application.h"
 #include "SACore/global.h"
 
@@ -14,131 +15,133 @@
 
 using namespace std;
 
-static std::map<HWND, SA::WidgetWindows*> WIDGETS_MAP;
-
-static const std::map<unsigned int, SA::Keys> KEYS_MAP = {
-    { VK_ESCAPE,    SA::Key_Escape      },
-    { VK_TAB,       SA::Key_Tab         },
-    { VK_BACK,      SA::Key_Backspace   },
-    { VK_RETURN,    SA::Key_Return      },
-    { VK_INSERT,    SA::Key_Insert      },
-    { VK_DELETE,    SA::Key_Delete      },
-    { VK_PAUSE,     SA::Key_Pause       },
-    { VK_PRINT,     SA::Key_Print       },
-    { VK_MODECHANGE,SA::Key_SysReq      },
-    { VK_CLEAR,     SA::Key_Clear       },
-    { VK_HOME,      SA::Key_Home        },
-    { VK_END,       SA::Key_End         },
-    { VK_LEFT,      SA::Key_Left        },
-    { VK_UP,        SA::Key_Up          },
-    { VK_RIGHT,     SA::Key_Right       },
-    { VK_DOWN,      SA::Key_Down        },
-    { VK_PRIOR,     SA::Key_PageUp      },
-    { VK_NEXT,      SA::Key_PageDown    },
-    { VK_SHIFT,     SA::Key_Shift       },
-    { VK_CONTROL,   SA::Key_Control     },
-    { VK_LCONTROL,  SA::Key_ControlL    },
-    { VK_MENU,      SA::Key_Alt         },
-    { VK_CAPITAL,   SA::Key_CapsLock    },
-    { VK_NUMLOCK,   SA::Key_NumLock     },
-    { VK_SCROLL,    SA::Key_ScrollLock  },
-    { VK_F1,        SA::Key_F1          },
-    { VK_F2,        SA::Key_F2          },
-    { VK_F3,        SA::Key_F3          },
-    { VK_F4,        SA::Key_F4          },
-    { VK_F5,        SA::Key_F5          },
-    { VK_F6,        SA::Key_F6          },
-    { VK_F7,        SA::Key_F7          },
-    { VK_F8,        SA::Key_F8          },
-    { VK_F9,        SA::Key_F9          },
-    { VK_F10,       SA::Key_F10         },
-    { VK_F11,       SA::Key_F11         },
-    { VK_F12,       SA::Key_F12         },
-    { VK_F13,       SA::Key_F13         },
-    { VK_F14,       SA::Key_F14         },
-    { VK_F15,       SA::Key_F15         },
-    { VK_F16,       SA::Key_F16         },
-    { VK_F17,       SA::Key_F17         },
-    { VK_F18,       SA::Key_F18         },
-    { VK_F19,       SA::Key_F19         },
-    { VK_F20,       SA::Key_F20         },
-    { VK_F21,       SA::Key_F21         },
-    { VK_F22,       SA::Key_F22         },
-    { VK_F23,       SA::Key_F23         },
-    { VK_F24,       SA::Key_F24         },
-    { VK_LMENU,     SA::Key_LMenu       },
-    { VK_RMENU,     SA::Key_RMenu       },
-    { VK_HELP,      SA::Key_Help        },
-    { VK_SPACE,     SA::Key_Space       },
-    { VK_OEM_7,     SA::Key_Quote    },
-    { VK_MULTIPLY,  SA::Key_Asterisk    },
-    { VK_ADD,       SA::Key_Plus        },
-    { VK_DECIMAL,   SA::Key_Comma       },
-    { VK_SUBTRACT,  SA::Key_Minus       },
-    { VK_SEPARATOR, SA::Key_Period      },
-    { VK_DIVIDE,    SA::Key_Slash       },
-    { 0x30,         SA::Key_0           },
-    { 0x31,         SA::Key_1           },
-    { 0x32,         SA::Key_2           },
-    { 0x33,         SA::Key_3           },
-    { 0x34,         SA::Key_4           },
-    { 0x35,         SA::Key_5           },
-    { 0x36,         SA::Key_6           },
-    { 0x37,         SA::Key_7           },
-    { 0x38,         SA::Key_8           },
-    { 0x39,         SA::Key_9           },
-    { VK_OEM_1,     SA::Key_Semicolon   },
-    { 0x41,         SA::Key_A           },
-    { 0x42,         SA::Key_B           },
-    { 0x43,         SA::Key_C           },
-    { 0x44,         SA::Key_D           },
-    { 0x45,         SA::Key_E           },
-    { 0x46,         SA::Key_F           },
-    { 0x47,         SA::Key_G           },
-    { 0x48,         SA::Key_H           },
-    { 0x49,         SA::Key_I           },
-    { 0x4A,         SA::Key_J           },
-    { 0x4B,         SA::Key_K           },
-    { 0x4C,         SA::Key_L           },
-    { 0x4D,         SA::Key_M           },
-    { 0x4E,         SA::Key_N           },
-    { 0x4F,         SA::Key_O           },
-    { 0x50,         SA::Key_P           },
-    { 0x51,         SA::Key_Q           },
-    { 0x52,         SA::Key_R           },
-    { 0x53,         SA::Key_S           },
-    { 0x54,         SA::Key_T           },
-    { 0x55,         SA::Key_U           },
-    { 0x56,         SA::Key_V           },
-    { 0x57,         SA::Key_W           },
-    { 0x58,         SA::Key_X           },
-    { 0x59,         SA::Key_Y           },
-    { 0x5A,         SA::Key_Z           },
-    { VK_OEM_4,     SA::Key_BracketLeft },
-    { VK_OEM_5,     SA::Key_Backslash   },
-    { VK_OEM_6,     SA::Key_BracketRight},
-    { VK_OEM_3,     SA::Key_AsciiTilde  },
-    { VK_VOLUME_MUTE,       SA::Key_VolumeMute  },
-    { VK_VOLUME_DOWN,       SA::Key_VolumeDown  },
-    { VK_VOLUME_UP,         SA::Key_VolumeUp    },
-    { VK_MEDIA_NEXT_TRACK,  SA::Key_MediaNext   },
-    { VK_MEDIA_PREV_TRACK,  SA::Key_MediaPrev   },
-    { VK_MEDIA_STOP,        SA::Key_MediaStop   },
-    { VK_MEDIA_PLAY_PAUSE,  SA::Key_MediaPlay   }
-};
-
-LRESULT CALLBACK winproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-    auto it = WIDGETS_MAP.find(hwnd);
-
-    if (it != WIDGETS_MAP.end())
-        return it->second->windowProc(msg, wParam, lParam);
-    else
-        return DefWindowProc(hwnd, msg, wParam, lParam);
-}
-
 namespace SA
 {
+    static const std::map<unsigned int, SA::Keys> KEYS_MAP =
+    {
+        { VK_ESCAPE,    SA::Key_Escape      },
+        { VK_TAB,       SA::Key_Tab         },
+        { VK_BACK,      SA::Key_Backspace   },
+        { VK_RETURN,    SA::Key_Return      },
+        { VK_INSERT,    SA::Key_Insert      },
+        { VK_DELETE,    SA::Key_Delete      },
+        { VK_PAUSE,     SA::Key_Pause       },
+        { VK_PRINT,     SA::Key_Print       },
+        { VK_MODECHANGE,SA::Key_SysReq      },
+        { VK_CLEAR,     SA::Key_Clear       },
+        { VK_HOME,      SA::Key_Home        },
+        { VK_END,       SA::Key_End         },
+        { VK_LEFT,      SA::Key_Left        },
+        { VK_UP,        SA::Key_Up          },
+        { VK_RIGHT,     SA::Key_Right       },
+        { VK_DOWN,      SA::Key_Down        },
+        { VK_PRIOR,     SA::Key_PageUp      },
+        { VK_NEXT,      SA::Key_PageDown    },
+        { VK_SHIFT,     SA::Key_Shift       },
+        { VK_CONTROL,   SA::Key_Control     },
+        { VK_LCONTROL,  SA::Key_ControlL    },
+        { VK_MENU,      SA::Key_Alt         },
+        { VK_CAPITAL,   SA::Key_CapsLock    },
+        { VK_NUMLOCK,   SA::Key_NumLock     },
+        { VK_SCROLL,    SA::Key_ScrollLock  },
+        { VK_F1,        SA::Key_F1          },
+        { VK_F2,        SA::Key_F2          },
+        { VK_F3,        SA::Key_F3          },
+        { VK_F4,        SA::Key_F4          },
+        { VK_F5,        SA::Key_F5          },
+        { VK_F6,        SA::Key_F6          },
+        { VK_F7,        SA::Key_F7          },
+        { VK_F8,        SA::Key_F8          },
+        { VK_F9,        SA::Key_F9          },
+        { VK_F10,       SA::Key_F10         },
+        { VK_F11,       SA::Key_F11         },
+        { VK_F12,       SA::Key_F12         },
+        { VK_F13,       SA::Key_F13         },
+        { VK_F14,       SA::Key_F14         },
+        { VK_F15,       SA::Key_F15         },
+        { VK_F16,       SA::Key_F16         },
+        { VK_F17,       SA::Key_F17         },
+        { VK_F18,       SA::Key_F18         },
+        { VK_F19,       SA::Key_F19         },
+        { VK_F20,       SA::Key_F20         },
+        { VK_F21,       SA::Key_F21         },
+        { VK_F22,       SA::Key_F22         },
+        { VK_F23,       SA::Key_F23         },
+        { VK_F24,       SA::Key_F24         },
+        { VK_LMENU,     SA::Key_LMenu       },
+        { VK_RMENU,     SA::Key_RMenu       },
+        { VK_HELP,      SA::Key_Help        },
+        { VK_SPACE,     SA::Key_Space       },
+        { VK_OEM_7,     SA::Key_Quote    },
+        { VK_MULTIPLY,  SA::Key_Asterisk    },
+        { VK_ADD,       SA::Key_Plus        },
+        { VK_DECIMAL,   SA::Key_Comma       },
+        { VK_SUBTRACT,  SA::Key_Minus       },
+        { VK_SEPARATOR, SA::Key_Period      },
+        { VK_DIVIDE,    SA::Key_Slash       },
+        { 0x30,         SA::Key_0           },
+        { 0x31,         SA::Key_1           },
+        { 0x32,         SA::Key_2           },
+        { 0x33,         SA::Key_3           },
+        { 0x34,         SA::Key_4           },
+        { 0x35,         SA::Key_5           },
+        { 0x36,         SA::Key_6           },
+        { 0x37,         SA::Key_7           },
+        { 0x38,         SA::Key_8           },
+        { 0x39,         SA::Key_9           },
+        { VK_OEM_1,     SA::Key_Semicolon   },
+        { 0x41,         SA::Key_A           },
+        { 0x42,         SA::Key_B           },
+        { 0x43,         SA::Key_C           },
+        { 0x44,         SA::Key_D           },
+        { 0x45,         SA::Key_E           },
+        { 0x46,         SA::Key_F           },
+        { 0x47,         SA::Key_G           },
+        { 0x48,         SA::Key_H           },
+        { 0x49,         SA::Key_I           },
+        { 0x4A,         SA::Key_J           },
+        { 0x4B,         SA::Key_K           },
+        { 0x4C,         SA::Key_L           },
+        { 0x4D,         SA::Key_M           },
+        { 0x4E,         SA::Key_N           },
+        { 0x4F,         SA::Key_O           },
+        { 0x50,         SA::Key_P           },
+        { 0x51,         SA::Key_Q           },
+        { 0x52,         SA::Key_R           },
+        { 0x53,         SA::Key_S           },
+        { 0x54,         SA::Key_T           },
+        { 0x55,         SA::Key_U           },
+        { 0x56,         SA::Key_V           },
+        { 0x57,         SA::Key_W           },
+        { 0x58,         SA::Key_X           },
+        { 0x59,         SA::Key_Y           },
+        { 0x5A,         SA::Key_Z           },
+        { VK_OEM_4,     SA::Key_BracketLeft },
+        { VK_OEM_5,     SA::Key_Backslash   },
+        { VK_OEM_6,     SA::Key_BracketRight},
+        { VK_OEM_3,     SA::Key_AsciiTilde  },
+        { VK_VOLUME_MUTE,       SA::Key_VolumeMute  },
+        { VK_VOLUME_DOWN,       SA::Key_VolumeDown  },
+        { VK_VOLUME_UP,         SA::Key_VolumeUp    },
+        { VK_MEDIA_NEXT_TRACK,  SA::Key_MediaNext   },
+        { VK_MEDIA_PREV_TRACK,  SA::Key_MediaPrev   },
+        { VK_MEDIA_STOP,        SA::Key_MediaStop   },
+        { VK_MEDIA_PLAY_PAUSE,  SA::Key_MediaPlay   }
+    }; // KEYS_MAP
+
+    static std::map<HWND, WidgetWindows*> WIDGETS_MAP;
+    static WidgetWindows* WIDGET_IN_FOCUS = nullptr;
+
+    LRESULT CALLBACK winproc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
+    {
+        auto it = WIDGETS_MAP.find(hwnd);
+
+        if (it != WIDGETS_MAP.end())
+            return it->second->windowProc(msg, wParam, lParam);
+        else
+            return DefWindowProc(hwnd, msg, wParam, lParam);
+    }
+
     struct WidgetWindows::WidgetWindowsPrivate
     {
         friend class SA::WidgetWindows;
@@ -154,13 +157,14 @@ namespace SA
         HPEN pen = nullptr;
         HBRUSH brush = nullptr;
         HFONT font = nullptr;
+        HCURSOR cursor = nullptr;
 
         // geometry
         RECT rect;
-        int x = 0;
-        int y = 0;
-        int width = 200;
-        int height = 200;
+        int32_t x = 0;
+        int32_t y = 0;
+        uint32_t width = 200;
+        uint32_t height = 200;
         bool isHidden = false;
         bool isPosChanged = false;
         bool isHovered = false;
@@ -233,6 +237,12 @@ namespace SA
             return;
         }
 
+        if (WIDGETS_MAP.empty())
+        {
+            Clipboard &clipboard = Clipboard::instance();
+            clipboard.setNativePointers(d->hwnd);
+        }
+
         WIDGETS_MAP.insert({d->hwnd, this});
 
         RECT rect;
@@ -248,6 +258,7 @@ namespace SA
         d->paintStruct.hdc = d->dc;
 
         setFont();
+        setCursorShape(Arrow);
         update();
     }
 
@@ -284,7 +295,7 @@ namespace SA
         SetWindowText(d->hwnd, title.c_str());
     }
 
-    void WidgetWindows::move(int x, int y)
+    void WidgetWindows::move(int32_t x, int32_t y)
     {
         d->x = x;
         d->y = y;
@@ -292,7 +303,7 @@ namespace SA
         update();
     }
 
-    void WidgetWindows::resize(int w, int h)
+    void WidgetWindows::resize(uint32_t w, uint32_t h)
     {
         d->width = w;
         d->height = h;
@@ -300,7 +311,7 @@ namespace SA
         update();
     }
 
-    void WidgetWindows::setGeometry(int x, int y, int w, int h)
+    void WidgetWindows::setGeometry(int32_t x, int32_t y, uint32_t w, uint32_t h)
     {
         d->x = x;
         d->y = y;
@@ -310,28 +321,27 @@ namespace SA
         update();
     }
 
-    int WidgetWindows::x()
+    int32_t WidgetWindows::x()
     {
         return d->x;
     }
 
-    int WidgetWindows::y()
+    int32_t WidgetWindows::y()
     {
         return d->y;
     }
 
-    int WidgetWindows::width()
+    uint32_t WidgetWindows::width()
     {
         return d->width;
     }
 
-    int WidgetWindows::height()
+    uint32_t WidgetWindows::height()
     {
         return d->height;
     }
 
-    void WidgetWindows::setPen(unsigned char red, unsigned char green,
-                               unsigned char blue, unsigned int width)
+    void WidgetWindows::setPen(uint8_t red, uint8_t green, uint8_t blue, uint32_t width)
     {
         if (!d->paintingHandle) return;
 
@@ -342,7 +352,7 @@ namespace SA
         d->pen = CreatePen(PS_SOLID, width, RGB(red, green, blue));
     }
 
-    void WidgetWindows::setBrush(unsigned char red, unsigned char green, unsigned char blue)
+    void WidgetWindows::setBrush(uint8_t red, uint8_t green, uint8_t blue)
     {
         if (!d->paintingHandle) return;
 
@@ -350,15 +360,24 @@ namespace SA
         d->brush = CreateSolidBrush(RGB(red,green,blue));
     }
 
+    void WidgetWindows::setCursorShape(CursorShapes shape)
+    {
+        switch (shape)
+        {
+        case Arrow: d->cursor = LoadCursor( NULL, IDC_ARROW ); break;
+        case Text: d->cursor = LoadCursor( NULL, IDC_IBEAM ); break;
+        }
+    }
+
     void WidgetWindows::setFont()
     {
         // https://docs.microsoft.com/ru-ru/windows/win32/gdi/using-a-stock-font-to-draw-text
 
         if (d->font) DeleteObject(d->font);
-        d->font = (HFONT)GetStockObject(ANSI_VAR_FONT);
+        d->font = (HFONT)GetStockObject(ANSI_FIXED_FONT);
     }
 
-    void WidgetWindows::drawLine(int x1, int y1, int x2, int y2)
+    void WidgetWindows::drawLine(int32_t x1, int32_t y1, int32_t x2, int32_t y2)
     {
         if (!d->paintingHandle) return;
 
@@ -367,7 +386,7 @@ namespace SA
         LineTo(d->paintingHandle, x2, y2);
     }
 
-    void WidgetWindows::drawRect(int x, int y, int width, int height)
+    void WidgetWindows::drawRect(int32_t x, int32_t y, uint32_t width, uint32_t height)
     {
         if (!d->paintingHandle) return;
 
@@ -377,7 +396,7 @@ namespace SA
         Rectangle(d->paintingHandle, x, y, x + width, y + height);
     }
 
-    void WidgetWindows::drawText(int x, int y, const std::string &text)
+    void WidgetWindows::drawText(int32_t x, int32_t y, const std::string &text)
     {
         if (!d->paintingHandle) return;
 
@@ -389,18 +408,28 @@ namespace SA
         }
     }
 
-    int WidgetWindows::textWidth(const std::string &text)
+    size_t WidgetWindows::textWidth(const std::string &text)
+    {
+        return textWidth(text.c_str(), text.size());
+    }
+
+    size_t WidgetWindows::textWidth(const char *text, size_t len)
     {
         SIZE textSize;
-        GetTextExtentPoint32(d->dc, text.c_str(), text.size(), &textSize);
+        GetTextExtentPoint32(d->dc, text, len, &textSize);
         return static_cast<int>(textSize.cx);
     }
 
-    int WidgetWindows::textHeight()
+    size_t WidgetWindows::textHeight()
     {
         SIZE textSize;
         GetTextExtentPoint32(d->dc, " ", 1, &textSize);
-        return static_cast<int>(textSize.cy);
+        return static_cast<size_t>(textSize.cy);
+    }
+
+    bool WidgetWindows::isHidden()
+    {
+        return d->isHidden;
     }
 
     bool WidgetWindows::isHovered()
@@ -431,32 +460,20 @@ namespace SA
         case WM_QUIT:    SA::Application::instance().quit(); break;
         case WM_SIZE: geometryUpdated(); break;
         case WM_MOVE: geometryUpdated(); break;
-        case WM_KEYDOWN:
-        {
-            if (KEYS_MAP.find(wParam) == KEYS_MAP.end())
-                sendEvent(ButtonPressEvent, static_cast<unsigned int>(SA::Key_Unknown + wParam));
-            else sendEvent(ButtonPressEvent, static_cast<unsigned int>(KEYS_MAP.at(wParam)));
-            break;
-        }
-        case WM_KEYUP:
-        {
-            if (KEYS_MAP.find(wParam) == KEYS_MAP.end())
-                sendEvent(ButtonReleaseEvent, static_cast<unsigned int>(SA::Key_Unknown + wParam));
-            else sendEvent(ButtonReleaseEvent, static_cast<unsigned int>(KEYS_MAP.at(wParam)));
-            break;
-        }
-        case WM_LBUTTONDOWN: sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonLeft)); break;
-        case WM_RBUTTONDOWN: sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonRight)); break;
-        case WM_MBUTTONDOWN: sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonMiddle)); break;
-        case WM_XBUTTONDOWN: sendEvent(MousePressEvent, static_cast<unsigned int>(ButtonX1)); break;
-        case WM_LBUTTONUP: sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonLeft)); break;
-        case WM_RBUTTONUP: sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonRight)); break;
-        case WM_MBUTTONUP: sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonMiddle)); break;
-        case WM_XBUTTONUP: sendEvent(MouseReleaseEvent, static_cast<unsigned int>(ButtonX1)); break;
+        case WM_KEYDOWN: keyEvent(wParam, true); break;
+        case WM_KEYUP: keyEvent(wParam, false); break;
+        case WM_LBUTTONDOWN: mouseEvent(ButtonLeft, true); break;
+        case WM_RBUTTONDOWN: mouseEvent(ButtonRight, true); break;
+        case WM_MBUTTONDOWN: mouseEvent(ButtonMiddle, true); break;
+        case WM_XBUTTONDOWN: mouseEvent(ButtonX1, true); break;
+        case WM_LBUTTONUP: mouseEvent(ButtonLeft, false); break;
+        case WM_RBUTTONUP: mouseEvent(ButtonRight, false); break;
+        case WM_MBUTTONUP: mouseEvent(ButtonMiddle, false); break;
+        case WM_XBUTTONUP: mouseEvent(ButtonX1, false); break;
         case WM_MOUSEMOVE:
         {
             sendEvent(MouseMoveEvent,
-                      std::pair<int, int>(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
+                      std::pair<int32_t, int32_t>(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
 
             if (!d->isHovered)
             {
@@ -477,6 +494,8 @@ namespace SA
             sendEvent(MouseHoverEvent, false);
             break;
         }
+        case WM_SETFOCUS: if (WIDGET_IN_FOCUS) WIDGET_IN_FOCUS->sendEvent(FocusInEvent, true); break;
+        case WM_KILLFOCUS: if (WIDGET_IN_FOCUS) WIDGET_IN_FOCUS->sendEvent(FocusOutEvent, false); break;
         case WM_PAINT:
         {
             HDC tmpDC = BeginPaint(d->hwnd, &d->paintStruct);
@@ -495,6 +514,15 @@ namespace SA
             DeleteObject(memBM);
             break;
         }
+        case WM_SETCURSOR:
+        {
+            if (LOWORD(lParam) == HTCLIENT)
+            {
+                SetCursor(d->cursor);
+                return 1;
+            }
+            break;
+        }
         case WM_ERASEBKGND: return 1;
         }
 
@@ -505,8 +533,49 @@ namespace SA
 
     void WidgetWindows::sendEvent(EventTypes type, const any &value)
     {
-        for (SA::Object *object: d->eventListners)
+        for (Object *object: d->eventListners)
             object->event(type, value);
+    }
+
+    void WidgetWindows::focusEvent(bool state)
+    {
+        if (state)
+        {
+            if (WIDGET_IN_FOCUS && WIDGET_IN_FOCUS != this)
+                WIDGET_IN_FOCUS->focusEvent(false);
+
+            WIDGET_IN_FOCUS = this;
+            WIDGET_IN_FOCUS->sendEvent(FocusInEvent, true);
+        }
+        else if (WIDGET_IN_FOCUS)
+        {
+            WIDGET_IN_FOCUS->sendEvent(FocusOutEvent, false);
+            WIDGET_IN_FOCUS = nullptr;
+        }
+    }
+
+    void WidgetWindows::keyEvent(unsigned int param, bool pressed)
+    {
+        Keys keycode = Key_Unknown;
+
+        if (KEYS_MAP.find(param) != KEYS_MAP.end())
+            keycode = KEYS_MAP.at(param);
+
+        KeyModifiers modifiers;
+        modifiers.shift     = (GetKeyState(VK_SHIFT) & 0x8000);
+        modifiers.ctrl      = (GetKeyState(VK_CONTROL) & 0x8000);
+        modifiers.alt       = (GetKeyState(VK_MENU) & 0x8000);
+        modifiers.capsLock  = (GetKeyState(VK_CAPITAL) & 0x0001);
+        modifiers.numLock   = (GetKeyState(VK_NUMLOCK) & 0x0001);
+
+        if (WIDGET_IN_FOCUS)
+            WIDGET_IN_FOCUS->sendEvent(EventTypes::KeyboardEvent, KeyEvent(keycode, modifiers, pressed));
+    }
+
+    void WidgetWindows::mouseEvent(MouseButton btn, bool pressed)
+    {
+        sendEvent(SA::EventTypes::MouseButtonEvent, MouseEvent(btn, pressed));
+        if (pressed) focusEvent(true);
     }
 
     void WidgetWindows::geometryUpdated()
@@ -524,7 +593,7 @@ namespace SA
             d->x = x;
             d->y = y;
             sendEvent(MoveEvent,
-                      std::pair<int, int>(d->x, d->y));
+                      std::pair<int32_t, int32_t>(d->x, d->y));
         }
 
         if (width != d->width || height != d->height)
@@ -532,7 +601,7 @@ namespace SA
             d->width = static_cast<int>(width);
             d->height = static_cast<int>(height);
             sendEvent(ResizeEvent,
-                      std::pair<int, int>(d->width, d->height));
+                      std::pair<uint32_t, uint32_t>(d->width, d->height));
         }
     }
 }

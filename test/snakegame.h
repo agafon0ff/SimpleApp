@@ -1,5 +1,6 @@
 #pragma once
 
+#include "SACore/structs.h"
 #include "SAGui/widget.h"
 
 class SnakeGame : public SA::Widget
@@ -8,11 +9,11 @@ public:
     SnakeGame(SA::Widget *parent = nullptr);
     ~SnakeGame();
 
-    void keyPressEvent(bool state, unsigned int keyCode);
+    void keyboardEvent(const SA::KeyEvent &event);
 
     void timerEvent(int id);
     void paintEvent();
-    void resizeEvent(int width, int height);
+    void resizeEvent(const SA::Size &size);
 
 private:
 

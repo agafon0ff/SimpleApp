@@ -1,7 +1,9 @@
 #include <iostream>
 #include <algorithm>
 #include <map>
-#include "button.h"
+
+#include "SAGui/button.h"
+#include "SACore/utility.h"
 
 namespace SA
 {
@@ -15,8 +17,8 @@ namespace SA
 
         StyleState styleState = EnableState;
         Pen borderPens[AllStates];
-        Brush textColors[AllStates];
-        Brush backgrounds[AllStates];
+        Color textColors[AllStates];
+        Color backgrounds[AllStates];
 
         std::map<int, std::function<void (bool)> > hoverHanders;
         std::map<int, std::function<void (bool)> > pressHanders;
@@ -32,9 +34,9 @@ namespace SA
     {
         d->text = text;
         resize(150, 40);
-        calcTextColors({20, 20, 20});
+        calcTextColors({250, 250, 250});
         calcBorders({90, 90, 90, 1});
-        calcBackgrounds({250, 250, 250});
+        calcBackgrounds({70, 70, 70});
     }
 
     Button::~Button()
@@ -91,33 +93,28 @@ namespace SA
         return d->pressed;
     }
 
-    void Button::setTextColor(unsigned char red, unsigned char green,
-                              unsigned char blue, StyleState state)
+    void Button::setTextColor(const Color &color, StyleState state)
     {
-        if (state == AllStates) calcTextColors({red, green, blue});
-        else d->textColors[state] = {red, green, blue};
+        if (state == AllStates) calcTextColors(color);
+        else d->textColors[state] = color;
     }
 
-    void Button::setBorder(unsigned char red, unsigned char green,
-                           unsigned char blue, unsigned int width, StyleState state)
+    void Button::setBorder(const Pen &pen, StyleState state)
     {
-        if (state == AllStates) calcBorders({red, green, blue, width});
-        else d->borderPens[state] = {red, green, blue, width};
+        if (state == AllStates) calcBorders(pen);
+        else d->borderPens[state] = pen;
     }
 
-    void Button::setBackground(unsigned char red, unsigned char green,
-                               unsigned char blue, StyleState state)
+    void Button::setBackground(const Color &color, StyleState state)
     {
-        if (state == AllStates) calcBackgrounds({red, green, blue});
-        else d->backgrounds[state] = {red, green, blue};
+        if (state == AllStates) calcBackgrounds(color);
+        else d->backgrounds[state] = color;
     }
 
     int Button::addHoverHandler(const std::function<void (bool)> &func)
     {
         int id = 0;
-        for (auto const& it : d->hoverHanders)
-            if (it.first != ++id) break;
-
+        for (auto const& it : d->hoverHanders) if (it.first != ++id) break;
         d->hoverHanders.insert({id, func});
         return id;
     }
@@ -132,9 +129,7 @@ namespace SA
     int Button::addPressHandler(const std::function<void(bool)> &func)
     {
         int id = 0;
-        for (auto const& it : d->pressHanders)
-            if (it.first != ++id) break;
-
+        for (auto const& it : d->pressHanders) if (it.first != ++id) break;
         d->pressHanders.insert({id, func});
         return id;
     }
@@ -149,9 +144,7 @@ namespace SA
     int Button::addCheckHandler(const std::function<void (bool)> &func)
     {
         int id = 0;
-        for (auto const& it : d->checkHanders)
-            if (it.first != ++id) break;
-
+        for (auto const& it : d->checkHanders) if (it.first != ++id) break;
         d->checkHanders.insert({id, func});
         return id;
     }
@@ -165,15 +158,12 @@ namespace SA
 
     void Button::paintEvent()
     {
-        Brush brush = d->backgrounds[d->styleState];
-        setBrush(brush.red, brush.green, brush.blue);
-
-        Pen pen = d->borderPens[d->styleState];
-        setPen(pen.red, pen.green, pen.blue, pen.width);
+        setBrush(d->backgrounds[d->styleState]);
+        setPen(d->borderPens[d->styleState]);
         drawRect(0, 0, width() - 1, height() - 1);
 
-        brush = d->textColors[d->styleState];
-        setBrush(brush.red, brush.green, brush.blue);
+        setBrush(d->textColors[d->styleState]);
+        setPen(d->textColors[d->styleState], 1);
         drawText(width() / 2 - textWidth(d->text) / 2,
                  height() / 2 - textHeight() / 2,
                  d->text);
@@ -189,16 +179,16 @@ namespace SA
         for (const auto &it: d->hoverHanders) it.second(state);
     }
 
-    void Button::mousePressEvent(bool state, unsigned int button)
+    void Button::mouseButtonEvent(const MouseEvent &event)
     {
         if (!d->enable) return;
-        if (button != ButtonLeft) return;
+        if (event.button != ButtonLeft) return;
 
-        d->pressed = state;
+        d->pressed = event.pressed;
 
         if (d->checkable)
         {
-            if (state)
+            if (event.pressed)
             {
                 d->checked = !d->checked;
                 d->styleState = d->checked ? CheckedState : HoveredState;
@@ -206,53 +196,34 @@ namespace SA
         }
         else
         {
-            d->checked = state;
+            d->checked = event.pressed;
             d->styleState = d->checked ? PressedState : HoveredState;
         }
 
         update();
 
-        for (const auto &it: d->pressHanders) it.second(state);
+        for (const auto &it: d->pressHanders) it.second(event.pressed);
 
         if (d->checkable)
-        { if(state) for (const auto &it: d->checkHanders) it.second(d->checked); }
+        { if(event.pressed) for (const auto &it: d->checkHanders) it.second(d->checked); }
         else for (const auto &it: d->checkHanders) it.second(d->checked);
     }
 
-    void Button::calcTextColors(const Brush &brush)
+    void Button::calcTextColors(const Color &color)
     {
         for (int i=static_cast<int>(DisableState); i<static_cast<int>(AllStates); ++i)
-        {
-            d->textColors[static_cast<StyleState>(i)] = {
-                    static_cast<unsigned char>(std::clamp((brush.red - 20 * i), 0, 255)),
-                    static_cast<unsigned char>(std::clamp((brush.green - 20 * i), 0, 255)),
-                    static_cast<unsigned char>(std::clamp((brush.blue - 20 * i), 0, 255))
-                };
-        }
+            darker(color, d->textColors[static_cast<StyleState>(i)], 2 * i);
     }
 
     void Button::calcBorders(const Pen &pen)
     {
         for (int i=static_cast<int>(DisableState); i<static_cast<int>(AllStates); ++i)
-        {
-            d->borderPens[static_cast<StyleState>(i)] = {
-                    static_cast<unsigned char>(std::clamp((pen.red - 20 * i), 0, 255)),
-                    static_cast<unsigned char>(std::clamp((pen.green - 20 * i), 0, 255)),
-                    static_cast<unsigned char>(std::clamp((pen.blue - 20 * i), 0, 255)),
-                    pen.width
-                };
-        }
+            darker(pen.color, d->borderPens[static_cast<StyleState>(i)].color, 6 * i);
     }
 
-    void Button::calcBackgrounds(const Brush &brush)
+    void Button::calcBackgrounds(const Color &color)
     {
         for (int i=static_cast<int>(DisableState); i<static_cast<int>(AllStates); ++i)
-        {
-            d->backgrounds[static_cast<StyleState>(i)] = {
-                    static_cast<unsigned char>(std::clamp((brush.red - 20 * i), 0, 255)),
-                    static_cast<unsigned char>(std::clamp((brush.green - 20 * i), 0, 255)),
-                    static_cast<unsigned char>(std::clamp((brush.blue - 20 * i), 0, 255))
-                };
-        }
+            darker(color, d->backgrounds[static_cast<StyleState>(i)], 6 * i);
     }
 }

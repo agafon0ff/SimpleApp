@@ -1,5 +1,6 @@
 #pragma once
 #include <functional>
+#include <iostream>
 #include "SAGui/widget.h"
 
 namespace SA
@@ -35,14 +36,9 @@ namespace SA
         bool isChecked();
         bool isPressed();
 
-        void setTextColor(unsigned char red, unsigned char green,
-                          unsigned char blue, StyleState state = AllStates);
-
-        void setBorder(unsigned char red, unsigned char green, unsigned char blue,
-                       unsigned int width, StyleState state = AllStates);
-
-        void setBackground(unsigned char red, unsigned char green,
-                           unsigned char blue, StyleState state = AllStates);
+        void setTextColor(const Color &color, StyleState state = AllStates);
+        void setBorder(const Pen &pen, StyleState state = AllStates);
+        void setBackground(const Color &color, StyleState state = AllStates);
 
         int addHoverHandler(const std::function<void (bool)> &func);
         void removeHoverHandler(int id);
@@ -53,14 +49,15 @@ namespace SA
         int addCheckHandler(const std::function<void (bool)> &func);
         void removeCheckHandler(int id);
 
-    private:
+    protected:
         virtual void paintEvent();
         virtual void mouseHoverEvent(bool state);
-        virtual void mousePressEvent(bool state, unsigned int button);
+        virtual void mouseButtonEvent(const MouseEvent &event);
 
-        void calcTextColors(const Brush &brush);
+    private:
+        void calcTextColors(const Color &brush);
         void calcBorders(const Pen &pen);
-        void calcBackgrounds(const Brush &brush);
+        void calcBackgrounds(const Color &brush);
 
         struct ButtonPrivate;
         ButtonPrivate * const d;

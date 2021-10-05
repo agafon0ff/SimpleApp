@@ -8,17 +8,24 @@ set(SA_SOURCES
     SAGui/widget.cpp
     SAGui/widgetlinux.cpp
     SAGui/widgetwindows.cpp
-    SAGui/button.cpp)
+    SAGui/button.cpp
+    SAGui/textedit.cpp
+    SAGui/scrollbar.cpp
+    SAGui/clipboard.cpp)
 
 set(SA_HEADERS
     SACore/application.h
     SACore/global.h
     SACore/object.h
     SACore/structs.h
+    SACore/utility.h
     SAGui/widget.h
     SAGui/widgetlinux.h
     SAGui/widgetwindows.h
-    SAGui/button.h)
+    SAGui/button.h
+    SAGui/textedit.h
+    SAGui/scrollbar.h
+    SAGui/clipboard.h)
 
 set(SA_DIRS
     SACore
