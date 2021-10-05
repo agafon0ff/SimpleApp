@@ -996,13 +996,15 @@ namespace SA
         uint32_t visibleHeight = height();
         visibleHeight -= d->textIndent[SideTop];
         visibleHeight -= d->textIndent[SideBottom];
+        uint32_t scrollBarWidth = 0;
 
         if (d->textAreaSize.height > visibleHeight)
         {
             if (d->scrollBarV->isHidden()) d->scrollBarV->show();
+            if (!d->scrollBarH->isHidden()) scrollBarWidth = d->scrollBarWidth;
 
             d->scrollBarV->setGeometry(width() - d->scrollBarWidth , 0,
-                                       d->scrollBarWidth , height() - d->scrollBarWidth);
+                                       d->scrollBarWidth , height() - scrollBarWidth);
 
             d->scrollBarV->setRange(d->textAreaSize.height - visibleHeight);
         }
@@ -1019,8 +1021,10 @@ namespace SA
         if (d->textAreaSize.width > visibleWidth)
         {
             if (d->scrollBarH->isHidden()) d->scrollBarH->show();
+            if (!d->scrollBarV->isHidden()) scrollBarWidth = d->scrollBarWidth;
+
             d->scrollBarH->setGeometry(0, height() - d->scrollBarWidth,
-                                       width() - d->scrollBarWidth, d->scrollBarWidth);
+                                       width() - scrollBarWidth, d->scrollBarWidth);
 
             d->scrollBarH->setRange(d->textAreaSize.width - visibleWidth);
         }
