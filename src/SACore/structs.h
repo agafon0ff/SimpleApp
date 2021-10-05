@@ -89,4 +89,54 @@ namespace SA
             button(button_), pressed(pressed_){}
     };
 
+    struct TextSelection
+    {
+        uint32_t posStart = 0;
+        uint32_t posEnd = 0;
+
+        uint32_t rowStart = 0;
+        uint32_t rowEnd = 0;
+
+        uint32_t columnStart = 0;
+        uint32_t columnEnd = 0;
+
+        bool selected = false;
+    };
+
+    struct TextAction
+    {
+        enum ChangeType
+        {
+            Null,
+            InsertChar,
+            InsertText,
+            RemoveChar,
+            RemoveText
+        } type = Null;
+
+        uint64_t pos = 0;
+        char symbol = ' ';
+        std::string string;
+
+        TextAction(ChangeType type_, uint64_t pos_, char symbol_) :
+            type(type_), pos(pos_), symbol(symbol_) {}
+
+        TextAction(ChangeType type_, uint64_t pos_, const std::string &string_) :
+            type(type_), pos(pos_), string(string_){}
+
+        TextAction(const TextAction &a) :
+            type(a.type), pos(a.pos), symbol(a.symbol), string(a.string) {}
+
+        TextAction(TextAction &&a) noexcept :
+        type(a.type), pos(a.pos), symbol(a.symbol), string(std::move(a.string)) {}
+
+        TextAction& operator=(const TextAction &a)
+        {if (&a == this) return *this;  type = a.type; pos = a.pos;
+         symbol = a.symbol; string = a.string; return *this;}
+
+        TextAction& operator=(TextAction &&a) noexcept
+        {if (&a == this) return *this;  type = a.type; pos = a.pos;
+         symbol = a.symbol; string = std::move(a.string); return *this;}
+    };
+
 } // namespace SA
