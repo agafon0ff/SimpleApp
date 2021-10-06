@@ -952,10 +952,6 @@ namespace SA
 
         uint16_t scrollBarWidth = 0;
 
-        cout << "=======================" << endl;
-        cout << visibleWidth << " " << visibleHeight << endl;
-        cout << d->textAreaSize.width << " " << d->textAreaSize.height << endl;
-
         // Vertical
         if (d->textAreaSize.height > visibleHeight)
         {
