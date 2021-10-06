@@ -156,6 +156,7 @@ namespace SA
 
         HPEN pen = nullptr;
         HBRUSH brush = nullptr;
+        HBRUSH backBrush = nullptr;
         HFONT font = nullptr;
         HCURSOR cursor = nullptr;
 
@@ -258,6 +259,7 @@ namespace SA
         d->paintStruct.hdc = d->dc;
 
         setFont();
+        d->backBrush = CreateSolidBrush(RGB(40, 40, 40));
         setCursorShape(Arrow);
         update();
     }
@@ -297,27 +299,19 @@ namespace SA
 
     void WidgetWindows::move(int32_t x, int32_t y)
     {
-        d->x = x;
-        d->y = y;
-        MoveWindow(d->hwnd, d->x, d->y, d->width, d->height, true);
+        MoveWindow(d->hwnd, x, y, d->width, d->height, true);
         update();
     }
 
     void WidgetWindows::resize(uint32_t w, uint32_t h)
     {
-        d->width = w;
-        d->height = h;
-        MoveWindow(d->hwnd, d->x, d->y, d->width, d->height, true);
+        MoveWindow(d->hwnd, d->x, d->y, w, h, true);
         update();
     }
 
     void WidgetWindows::setGeometry(int32_t x, int32_t y, uint32_t w, uint32_t h)
     {
-        d->x = x;
-        d->y = y;
-        d->width = w;
-        d->height = h;
-        MoveWindow(d->hwnd, d->x, d->y, d->width, d->height, true);
+        MoveWindow(d->hwnd, x, y, w, h, true);
         update();
     }
 
@@ -470,6 +464,7 @@ namespace SA
         case WM_RBUTTONUP: mouseEvent(ButtonRight, false); break;
         case WM_MBUTTONUP: mouseEvent(ButtonMiddle, false); break;
         case WM_XBUTTONUP: mouseEvent(ButtonX1, false); break;
+        case WM_MOUSEWHEEL: sendEvent(MouseWheelEvent, static_cast<int32_t>(GET_WHEEL_DELTA_WPARAM(wParam))); break;
         case WM_MOUSEMOVE:
         {
             sendEvent(MouseMoveEvent,
@@ -503,7 +498,7 @@ namespace SA
             d->paintingHandle = CreateCompatibleDC(tmpDC);
             HBITMAP memBM = CreateCompatibleBitmap(tmpDC, d->width, d->height);
             SelectObject(d->paintingHandle, memBM);
-            FillRect(d->paintingHandle, &d->rect, (HBRUSH)GetStockObject(DC_BRUSH));
+            FillRect(d->paintingHandle, &d->rect, d->backBrush);
 
             sendEvent(PaintEvent, true);
 

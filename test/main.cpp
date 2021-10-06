@@ -18,9 +18,9 @@ int main()
     signal(SIGQUIT, signalHandler);
 #endif // Q_OS_WIN
 
-    SnakeGame sg;
-    sg.setGeometry(250, 350 , 410, 410);
-    sg.show();
+//    SnakeGame sg;
+//    sg.setGeometry(250, 350 , 410, 410);
+//    sg.show();
 
     Controls tt;
     tt.setTitle("Controls");

@@ -547,8 +547,8 @@ namespace SA
             case Button1: mouseEvent(ButtonLeft, true); break;
             case Button2: mouseEvent(ButtonMiddle, true); break;
             case Button3: mouseEvent(ButtonRight, true); break;
-            case Button4: sendEvent(SA::EventTypes::MouseWheelEvent, -WHEEL_DELTA); break;
-            case Button5: sendEvent(SA::EventTypes::MouseWheelEvent, WHEEL_DELTA); break;
+            case Button4: sendEvent(SA::EventTypes::MouseWheelEvent, WHEEL_DELTA); break;
+            case Button5: sendEvent(SA::EventTypes::MouseWheelEvent, -WHEEL_DELTA); break;
             }
             break;
         }
