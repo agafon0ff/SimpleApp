@@ -564,7 +564,7 @@ namespace SA
         }
 
         int32_t verticalShift = d->textShiftPos.y;
-        if (delta < 0)
+        if (delta > 0)
         {
             verticalShift += d->scrollRate;
 
@@ -951,6 +951,10 @@ namespace SA
         visibleWidth -= d->textIndent[SideRight];
 
         uint16_t scrollBarWidth = 0;
+
+        cout << "=======================" << endl;
+        cout << visibleWidth << " " << visibleHeight << endl;
+        cout << d->textAreaSize.width << " " << d->textAreaSize.height << endl;
 
         // Vertical
         if (d->textAreaSize.height > visibleHeight)
