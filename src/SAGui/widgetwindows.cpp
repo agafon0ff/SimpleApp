@@ -446,7 +446,7 @@ namespace SA
         d->eventListners.push_back(object);
     }
 
-    int WidgetWindows::windowProc(unsigned int msg, unsigned int &wParam, long &lParam)
+    int WidgetWindows::windowProc(unsigned int msg, unsigned int wParam, long lParam)
     {
         switch(msg)
         {

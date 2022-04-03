@@ -50,7 +50,7 @@ namespace SA
         void mainLoopEvent();
         void addEventListener(SA::Object *object);
 
-        int windowProc(unsigned int msg, unsigned int &wParam, long &lParam);
+        int windowProc(unsigned int msg, unsigned int wParam, long lParam);
     private:
 
         void sendEvent(SA::EventTypes type, const std::any &value);
