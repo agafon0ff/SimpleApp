@@ -354,12 +354,12 @@ namespace SA
         d->brush = CreateSolidBrush(RGB(red,green,blue));
     }
 
-    void WidgetWindows::setCursorShape(CursorShapes shape)
+    void WidgetWindows::setCursorShape(SA::CursorShapes shape)
     {
         switch (shape)
         {
-        case Arrow: d->cursor = LoadCursor( NULL, IDC_ARROW ); break;
-        case Text: d->cursor = LoadCursor( NULL, IDC_IBEAM ); break;
+        case SA::CursorShapes::Arrow: d->cursor = LoadCursor( NULL, IDC_ARROW ); break;
+        case SA::CursorShapes::Text: d->cursor = LoadCursor( NULL, IDC_IBEAM ); break;
         }
     }
 
@@ -368,7 +368,7 @@ namespace SA
         // https://docs.microsoft.com/ru-ru/windows/win32/gdi/using-a-stock-font-to-draw-text
 
         if (d->font) DeleteObject(d->font);
-        d->font = (HFONT)GetStockObject(ANSI_FIXED_FONT);
+        d->font = (HFONT)GetStockObject(SYSTEM_FIXED_FONT);
     }
 
     void WidgetWindows::drawLine(int32_t x1, int32_t y1, int32_t x2, int32_t y2)
@@ -394,7 +394,7 @@ namespace SA
     {
         if (!d->paintingHandle) return;
 
-        HFONT fontTmp = (HFONT)SelectObject(d->dc, d->font);
+        HFONT fontTmp = (HFONT)SelectObject(d->paintingHandle, d->font);
         if (fontTmp)
         {
             TextOut(d->paintingHandle, x, y, text.c_str(), text.size());
@@ -456,18 +456,18 @@ namespace SA
         case WM_MOVE: geometryUpdated(); break;
         case WM_KEYDOWN: keyEvent(wParam, true); break;
         case WM_KEYUP: keyEvent(wParam, false); break;
-        case WM_LBUTTONDOWN: mouseEvent(ButtonLeft, true); break;
-        case WM_RBUTTONDOWN: mouseEvent(ButtonRight, true); break;
-        case WM_MBUTTONDOWN: mouseEvent(ButtonMiddle, true); break;
-        case WM_XBUTTONDOWN: mouseEvent(ButtonX1, true); break;
-        case WM_LBUTTONUP: mouseEvent(ButtonLeft, false); break;
-        case WM_RBUTTONUP: mouseEvent(ButtonRight, false); break;
-        case WM_MBUTTONUP: mouseEvent(ButtonMiddle, false); break;
-        case WM_XBUTTONUP: mouseEvent(ButtonX1, false); break;
-        case WM_MOUSEWHEEL: sendEvent(MouseWheelEvent, static_cast<int32_t>(GET_WHEEL_DELTA_WPARAM(wParam))); break;
+        case WM_LBUTTONDOWN: mouseEvent(SA::MouseButton::ButtonLeft, true); break;
+        case WM_RBUTTONDOWN: mouseEvent(SA::MouseButton::ButtonRight, true); break;
+        case WM_MBUTTONDOWN: mouseEvent(SA::MouseButton::ButtonMiddle, true); break;
+        case WM_XBUTTONDOWN: mouseEvent(SA::MouseButton::ButtonX1, true); break;
+        case WM_LBUTTONUP: mouseEvent(SA::MouseButton::ButtonLeft, false); break;
+        case WM_RBUTTONUP: mouseEvent(SA::MouseButton::ButtonRight, false); break;
+        case WM_MBUTTONUP: mouseEvent(SA::MouseButton::ButtonMiddle, false); break;
+        case WM_XBUTTONUP: mouseEvent(SA::MouseButton::ButtonX1, false); break;
+        case WM_MOUSEWHEEL: sendEvent(SA::EventTypes::MouseWheelEvent, static_cast<int32_t>(GET_WHEEL_DELTA_WPARAM(wParam))); break;
         case WM_MOUSEMOVE:
         {
-            sendEvent(MouseMoveEvent,
+            sendEvent(SA::EventTypes::MouseMoveEvent,
                       std::pair<int32_t, int32_t>(GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam)));
 
             if (!d->isHovered)
@@ -479,18 +479,18 @@ namespace SA
                 tme.dwHoverTime = HOVER_DEFAULT;
                 TrackMouseEvent(&tme);
                 d->isHovered = true;
-                sendEvent(MouseHoverEvent, true);
+                sendEvent(SA::EventTypes::MouseHoverEvent, true);
             }
             break;
         }
         case WM_MOUSELEAVE:
         {
             d->isHovered = false;
-            sendEvent(MouseHoverEvent, false);
+            sendEvent(SA::EventTypes::MouseHoverEvent, false);
             break;
         }
-        case WM_SETFOCUS: if (WIDGET_IN_FOCUS) WIDGET_IN_FOCUS->sendEvent(FocusInEvent, true); break;
-        case WM_KILLFOCUS: if (WIDGET_IN_FOCUS) WIDGET_IN_FOCUS->sendEvent(FocusOutEvent, false); break;
+        case WM_SETFOCUS: if (WIDGET_IN_FOCUS) WIDGET_IN_FOCUS->sendEvent(SA::EventTypes::FocusInEvent, true); break;
+        case WM_KILLFOCUS: if (WIDGET_IN_FOCUS) WIDGET_IN_FOCUS->sendEvent(SA::EventTypes::FocusOutEvent, false); break;
         case WM_PAINT:
         {
             HDC tmpDC = BeginPaint(d->hwnd, &d->paintStruct);
@@ -500,7 +500,7 @@ namespace SA
             SelectObject(d->paintingHandle, memBM);
             FillRect(d->paintingHandle, &d->rect, d->backBrush);
 
-            sendEvent(PaintEvent, true);
+            sendEvent(SA::EventTypes::PaintEvent, true);
 
             BitBlt(tmpDC, d->x, d->y, d->width, d->height, d->paintingHandle, 0, 0, SRCCOPY);
 
@@ -540,18 +540,18 @@ namespace SA
                 WIDGET_IN_FOCUS->focusEvent(false);
 
             WIDGET_IN_FOCUS = this;
-            WIDGET_IN_FOCUS->sendEvent(FocusInEvent, true);
+            WIDGET_IN_FOCUS->sendEvent(SA::EventTypes::FocusInEvent, true);
         }
         else if (WIDGET_IN_FOCUS)
         {
-            WIDGET_IN_FOCUS->sendEvent(FocusOutEvent, false);
+            WIDGET_IN_FOCUS->sendEvent(SA::EventTypes::FocusOutEvent, false);
             WIDGET_IN_FOCUS = nullptr;
         }
     }
 
     void WidgetWindows::keyEvent(unsigned int param, bool pressed)
     {
-        Keys keycode = Key_Unknown;
+        Keys keycode = SA::Keys::Key_Unknown;
 
         if (KEYS_MAP.find(param) != KEYS_MAP.end())
             keycode = KEYS_MAP.at(param);
@@ -564,7 +564,7 @@ namespace SA
         modifiers.numLock   = (GetKeyState(VK_NUMLOCK) & 0x0001);
 
         if (WIDGET_IN_FOCUS)
-            WIDGET_IN_FOCUS->sendEvent(EventTypes::KeyboardEvent, KeyEvent(keycode, modifiers, pressed));
+            WIDGET_IN_FOCUS->sendEvent(SA::EventTypes::KeyboardEvent, KeyEvent(keycode, modifiers, pressed));
     }
 
     void WidgetWindows::mouseEvent(MouseButton btn, bool pressed)
