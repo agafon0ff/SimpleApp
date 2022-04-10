@@ -6,11 +6,11 @@
 
 namespace SA
 {
-    class TextEdit : public Widget
+    class TextEdit : public SA::Widget
     {
     public:
 
-        explicit TextEdit(Widget *parent = nullptr);
+        explicit TextEdit(SA::Widget *parent = nullptr);
         virtual ~TextEdit();
 
         void setText(const std::string &text);

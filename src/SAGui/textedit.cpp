@@ -12,11 +12,11 @@ using std::endl;
 
 namespace SA
 {
-    struct TextEdit::TextEditPrivate
+    struct SA::TextEdit::TextEditPrivate
     {
         std::vector<std::string> strings;
         std::vector<size_t> rowsWidths;
-        std::stack<TextAction> actions;
+        std::stack<SA::TextAction> actions;
 
         int timerId = 0;
 
@@ -42,7 +42,7 @@ namespace SA
         bool pressed = false;
 
         // Text selection
-        TextSelection selection;
+        SA::TextSelection selection;
 
         // Text style
         StyleState styleState = EnableState;
@@ -54,11 +54,11 @@ namespace SA
         // Events listeners
         std::map<int, std::function<void (bool)> > hoverHanders;
 
-        ScrollBar *scrollBarV = nullptr;
-        ScrollBar *scrollBarH = nullptr;
+        SA::ScrollBar *scrollBarV = nullptr;
+        SA::ScrollBar *scrollBarH = nullptr;
     };
 
-    TextEdit::TextEdit(Widget *parent) : Widget(parent),
+    TextEdit::TextEdit(Widget *parent) : SA::Widget(parent),
         d(new TextEditPrivate)
     {
         using namespace std::placeholders;

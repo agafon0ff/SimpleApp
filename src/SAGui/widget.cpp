@@ -126,28 +126,28 @@ namespace SA
         return d->widget->height();
     }
 
-    Point Widget::pos()
+    SA::Point Widget::pos()
     {
-        return Point(d->widget->x(), d->widget->y());
+        return SA::Point(d->widget->x(), d->widget->y());
     }
 
-    Size Widget::size()
+    SA::Size Widget::size()
     {
-        return Size(d->widget->width(), d->widget->height());
+        return SA::Size(d->widget->width(), d->widget->height());
     }
 
-    Rect Widget::geometry()
+    SA::Rect Widget::geometry()
     {
-        return Rect(d->widget->x(), d->widget->y(),
+        return SA::Rect(d->widget->x(), d->widget->y(),
                     d->widget->width(), d->widget->height());
     }
 
-    void Widget::setPen(const Pen &pen)
+    void Widget::setPen(const SA::Pen &pen)
     {
         d->widget->setPen(pen.color.red, pen.color.green, pen.color.blue, pen.width);
     }
 
-    void Widget::setPen(const Color &color, unsigned int width)
+    void Widget::setPen(const SA::Color &color, unsigned int width)
     {
         d->widget->setPen(color.red, color.green, color.blue, width);
     }
@@ -158,7 +158,7 @@ namespace SA
         d->widget->setPen(red, green, blue, width);
     }
 
-    void Widget::setBrush(const Color &brush)
+    void Widget::setBrush(const SA::Color &brush)
     {
         d->widget->setBrush(brush.red, brush.green, brush.blue);
     }
@@ -169,12 +169,12 @@ namespace SA
         d->widget->setBrush(red, green, blue);
     }
 
-    void Widget::setCursorShape(CursorShapes shape)
+    void Widget::setCursorShape(SA::CursorShapes shape)
     {
         d->widget->setCursorShape(shape);
     }
 
-    void Widget::drawLine(const Point &p1, const Point &p2)
+    void Widget::drawLine(const SA::Point &p1, const SA::Point &p2)
     {
         d->widget->drawLine(p1.x, p1.y, p2.x, p2.y);
     }
@@ -184,7 +184,7 @@ namespace SA
         d->widget->drawLine(x1, y1, x2, y2);
     }
 
-    void Widget::drawRect(const Rect &rect)
+    void Widget::drawRect(const SA::Rect &rect)
     {
         d->widget->drawRect(rect.x, rect.y, rect.width, rect.height);
     }
@@ -194,7 +194,7 @@ namespace SA
         d->widget->drawRect(x, y, width, height);
     }
 
-    void Widget::drawText(const Point &pos, const std::string &text)
+    void Widget::drawText(const SA::Point &pos, const std::string &text)
     {
         d->widget->drawText(pos.x, pos.y, text);
     }
@@ -229,7 +229,7 @@ namespace SA
         return d->widget->isHovered();
     }
 
-    void Widget::keyboardEvent(const KeyEvent &event)
+    void Widget::keyboardEvent(const SA::KeyEvent &event)
     {
         std::ignore = event;
     }
@@ -238,17 +238,17 @@ namespace SA
     {
     }
 
-    void Widget::moveEvent(const Point &pos)
+    void Widget::moveEvent(const SA::Point &pos)
     {
         std::ignore = pos;
     }
 
-    void Widget::resizeEvent(const Size &size)
+    void Widget::resizeEvent(const SA::Size &size)
     {
         std::ignore = size;
     }
 
-    void Widget::mouseMoveEvent(const Point &pos)
+    void Widget::mouseMoveEvent(const SA::Point &pos)
     {
         std::ignore = pos;
     }
@@ -258,7 +258,7 @@ namespace SA
         std::ignore = state;
     }
 
-    void Widget::mouseButtonEvent(const MouseEvent &event)
+    void Widget::mouseButtonEvent(const SA::MouseEvent &event)
     {
         std::ignore = event;
     }
@@ -278,46 +278,46 @@ namespace SA
         d->widget->mainLoopEvent();
     }
 
-    void Widget::event(EventTypes type, const std::any &value)
+    void Widget::event(SA::EventTypes type, const std::any &value)
     {
         switch (type)
         {
-        case KeyboardEvent:
+        case SA::EventTypes::KeyboardEvent:
             keyboardEvent(std::any_cast<KeyEvent>(value));
             break;
-        case MouseMoveEvent:
+        case SA::EventTypes::MouseMoveEvent:
         {
             auto mousePair = std::any_cast<std::pair<int32_t, int32_t> >(value);
             mouseMoveEvent({mousePair.first, mousePair.second});
             break;
         }
-        case MouseHoverEvent:
+        case SA::EventTypes::MouseHoverEvent:
         {
             mouseHoverEvent(std::any_cast<bool>(value));
             break;
         }
-        case MouseButtonEvent:
+        case SA::EventTypes::MouseButtonEvent:
         {
             mouseButtonEvent(std::any_cast<MouseEvent>(value));
             break;
         }
-        case MouseWheelEvent:
+        case SA::EventTypes::MouseWheelEvent:
         {
             mouseWheelEvent(std::any_cast<int32_t>(value));
             break;
         }
-        case PaintEvent:
+        case SA::EventTypes::PaintEvent:
             paintEvent();
             break;
-        case MoveEvent:
+        case SA::EventTypes::MoveEvent:
         {
             auto movePair = std::any_cast<std::pair<int32_t, int32_t> >(value);
             moveEvent({movePair.first, movePair.second});
             break;
         }
-        case FocusInEvent: focusEvent(true); break;
-        case FocusOutEvent: focusEvent(false); break;
-        case ResizeEvent:
+        case SA::EventTypes::FocusInEvent: focusEvent(true); break;
+        case SA::EventTypes::FocusOutEvent: focusEvent(false); break;
+        case SA::EventTypes::ResizeEvent:
         {
             auto sizePair = std::any_cast<std::pair<uint32_t, uint32_t> >(value);
             resizeEvent({sizePair.first, sizePair.second});
