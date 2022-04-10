@@ -570,7 +570,16 @@ namespace SA
     void WidgetWindows::mouseEvent(MouseButton btn, bool pressed)
     {
         sendEvent(SA::EventTypes::MouseButtonEvent, MouseEvent(btn, pressed));
-        if (pressed) focusEvent(true);
+
+        if (pressed)
+        {
+            focusEvent(true);
+            SetCapture(d->hwnd);
+        }
+        else
+        {
+            ReleaseCapture();
+        }
     }
 
     void WidgetWindows::geometryUpdated()
