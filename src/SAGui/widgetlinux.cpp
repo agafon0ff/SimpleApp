@@ -234,6 +234,7 @@ namespace SA
         }
 
         WIDGETS_MAP.insert({d->window, this});
+        WIDGET_IN_FOCUS = this;
     }
 
     WidgetLinux::~WidgetLinux()
