@@ -1,6 +1,5 @@
 #pragma once
 #include <functional>
-#include <iostream>
 #include "SAGui/widget.h"
 
 namespace SA

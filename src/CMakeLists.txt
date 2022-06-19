@@ -10,9 +10,11 @@ set(SA_SOURCES
     SAGui/widgetwindows.cpp
     SAGui/button.cpp
     SAGui/textedit.cpp
+    SAGui/label.cpp
     SAGui/lineedit.cpp
     SAGui/scrollbar.cpp
-    SAGui/clipboard.cpp)
+    SAGui/clipboard.cpp
+    SANetwork/udpsocket.cpp)
 
 set(SA_HEADERS
     SACore/application.h
@@ -25,13 +27,16 @@ set(SA_HEADERS
     SAGui/widgetwindows.h
     SAGui/button.h
     SAGui/textedit.h
+    SAGui/label.h
     SAGui/lineedit.h
     SAGui/scrollbar.h
-    SAGui/clipboard.h)
+    SAGui/clipboard.h
+    SANetwork/udpsocket.h)
 
 set(SA_DIRS
     SACore
-    SAGui)
+    SAGui
+    SANetwork)
 
 if (UNIX)
     # X11 libs
@@ -51,4 +56,5 @@ add_library(SA ${SA_SOURCES} ${SA_HEADERS})
 target_include_directories(SA PUBLIC ${SA_DIRS}
     "${CMAKE_CURRENT_SOURCE_DIR/src}"
     "${CMAKE_CURRENT_SOURCE_DIR/src/SACore}"
-    "${CMAKE_CURRENT_SOURCE_DIR/src/SAGui}")
+    "${CMAKE_CURRENT_SOURCE_DIR/src/SAGui}"
+    "${CMAKE_CURRENT_SOURCE_DIR/src/SANetwork}")
