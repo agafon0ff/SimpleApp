@@ -143,8 +143,11 @@ namespace SA
 
         TextSelection selection = d->selection;
 
-        if (d->selection.rowStart > d->selection.rowEnd)
+        if (d->selection.posStart > d->selection.posEnd)
+        {
+            std::swap(selection.columnStart, selection.columnEnd);
             std::swap(selection.posStart, selection.posEnd);
+        }
 
         TextAction action(TextAction::RemoveText, selection.columnStart, selectedText());
         d->actions.push(action);
