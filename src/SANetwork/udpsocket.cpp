@@ -23,7 +23,8 @@ namespace SA
 {
     struct UdpSocket::UdpSocketPrivate
     {
-        int socket = -1;
+        int socketBind = -1;
+        int socketSend = -1;
         bool isBinded = false;
 
         sockaddr_in addressSrc;
@@ -39,24 +40,14 @@ namespace SA
     {
         d->dataIn.resize(DefaultLen, 0);
         d->dataTmp.reserve(DefaultLen);
-
-        d->socket = socket(AF_INET, SOCK_DGRAM, 0);
-
-        struct timeval read_timeout;
-        read_timeout.tv_sec = 0;
-        read_timeout.tv_usec = 10;
-        setsockopt(d->socket, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof(read_timeout));
+        d->socketSend = socket(AF_INET, SOCK_DGRAM, 0);
 
         SA::Application::instance().addToMainLoop(this);
     }
 
     SA::UdpSocket::~UdpSocket()
     {
-        unbind();
-
-        if (d->socket > -1)
-            ::close(d->socket);
-
+        deleteSocket();
         delete d;
     }
 
@@ -67,11 +58,13 @@ namespace SA
 
     bool UdpSocket::bind(uint32_t host, uint16_t port)
     {
+        if (!createSocket()) return false;
+
         d->addressSrc.sin_family = AF_INET;
         d->addressSrc.sin_port = htons(port);
         d->addressSrc.sin_addr.s_addr = htonl(host);
 
-        int state = ::bind(d->socket, (struct sockaddr *)&d->addressSrc, sizeof(d->addressSrc));
+        int state = ::bind(d->socketBind, (struct sockaddr *)&d->addressSrc, sizeof(d->addressSrc));
         d->isBinded = (state > -1);
 
         return d->isBinded;
@@ -87,20 +80,26 @@ namespace SA
         return bind(host.c_str(), port);
     }
 
+    bool UdpSocket::isBinded()
+    {
+        return d->isBinded;
+    }
+
     void UdpSocket::unbind()
     {
-        if (d->isBinded)
-            bind(0);
+        deleteSocket();
     }
 
     bool UdpSocket::send(const std::vector<char> &data, uint32_t host, uint16_t port)
     {
+        if (!d->socketSend) return false;
+
         struct sockaddr_in addr;
         addr.sin_family = AF_INET;
         addr.sin_port = htons(port);
         addr.sin_addr.s_addr = htonl(host);
 
-        int state = sendto(d->socket, data.data(), data.size(), MSG_CONFIRM, (const struct sockaddr *) &addr, sizeof(addr));
+        int state = sendto(d->socketSend, data.data(), data.size(), MSG_CONFIRM, (const struct sockaddr *) &addr, sizeof(addr));
         return (state > -1);
     }
 
@@ -133,7 +132,7 @@ namespace SA
     {
         if (!d->isBinded) return;
 
-        ssize_t bytesRead = recvfrom(d->socket, d->dataIn.data(),d->dataIn.size(), 0, (struct sockaddr*)NULL, NULL);
+        ssize_t bytesRead = recvfrom(d->socketBind, d->dataIn.data(),d->dataIn.size(), 0, (struct sockaddr*)NULL, NULL);
 
         if (bytesRead > -1)
         {
@@ -143,5 +142,28 @@ namespace SA
             for (const auto &it: d->readHanders)
                 it.second(d->dataTmp);
         }
+    }
+
+    bool UdpSocket::createSocket()
+    {
+        d->isBinded = false;
+        d->socketBind = socket(AF_INET, SOCK_DGRAM, 0);
+
+        struct timeval read_timeout;
+        read_timeout.tv_sec = 0;
+        read_timeout.tv_usec = 10;
+        setsockopt(d->socketBind, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof(read_timeout));
+
+        return (d->socketBind > -1);
+    }
+
+    void UdpSocket::deleteSocket()
+    {
+        d->isBinded = false;
+
+        if (d->socketBind > -1)
+            ::close(d->socketBind);
+
+        d->socketBind = -1;
     }
 }

@@ -19,6 +19,8 @@ namespace SA
         bool bind(const char* host, uint16_t port);
         bool bind(const std::string &host, uint16_t port);
 
+        bool isBinded();
+
         void unbind();
 
         bool send(const std::vector<char> &data, uint32_t host, uint16_t port);
@@ -30,6 +32,8 @@ namespace SA
 
     private:
         void mainLoopEvent();
+        bool createSocket();
+        void deleteSocket();
 
         struct UdpSocketPrivate;
         UdpSocketPrivate * const d;

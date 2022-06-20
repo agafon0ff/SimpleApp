@@ -31,17 +31,26 @@ void UdpSocketTest::btnBindPressed(bool state)
 {
     if (!state) return;
 
-    uint16_t port = 0;
+    if (!m_udpSocket.isBinded())
+    {
+        uint16_t port = 0;
 
-    try {
-        std::string strPort = m_lineEditPortRead.text();
-        port = stoi(strPort);
-    }  catch (...) {
-        return;
+        try {
+            std::string strPort = m_lineEditPortRead.text();
+            port = stoi(strPort);
+        }  catch (...) {
+            return;
+        }
+
+        if (m_udpSocket.bind(port))
+            m_btnBind.setText("Stop bind");
     }
-
-    bool binded = m_udpSocket.bind(port);
-    m_btnBind.setEnabled(!binded);
+    else
+    {
+        m_udpSocket.unbind();
+        if (!m_udpSocket.isBinded())
+            m_btnBind.setText("Start bind");
+    }
 }
 
 void UdpSocketTest::btnSendPressed(bool state)
