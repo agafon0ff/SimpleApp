@@ -14,7 +14,7 @@ set(SA_SOURCES
     SAGui/lineedit.cpp
     SAGui/scrollbar.cpp
     SAGui/clipboard.cpp
-    SANetwork/udpsocket.cpp)
+    SANetwork/udpsocketlinux.cpp)
 
 set(SA_HEADERS
     SACore/application.h

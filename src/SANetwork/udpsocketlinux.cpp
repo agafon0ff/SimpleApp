@@ -1,3 +1,5 @@
+#ifdef __linux__
+
 #include <memory>
 #include <vector>
 #include <string>
@@ -5,17 +7,11 @@
 #include "SANetwork/udpsocket.h"
 #include "SACore/application.h"
 
-#ifdef __linux__
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
 #include <arpa/inet.h>
-#endif //__linux__
-
-#ifdef WIN32
-
-#endif //WIN32
 
 static const size_t DefaultLen = 1024;
 
@@ -167,3 +163,5 @@ namespace SA
         d->socketBind = -1;
     }
 }
+
+#endif //__linux__
