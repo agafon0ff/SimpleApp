@@ -299,6 +299,8 @@ namespace SA
 
     void WidgetWindows::move(int32_t x, int32_t y)
     {
+        d->x = x;
+        d->y = y;
         MoveWindow(d->hwnd, x, y, d->width, d->height, true);
         update();
     }
@@ -311,6 +313,8 @@ namespace SA
 
     void WidgetWindows::setGeometry(int32_t x, int32_t y, uint32_t w, uint32_t h)
     {
+        d->x = x;
+        d->y = y;
         MoveWindow(d->hwnd, x, y, w, h, true);
         update();
     }
@@ -491,24 +495,7 @@ namespace SA
         }
         case WM_SETFOCUS: if (WIDGET_IN_FOCUS) WIDGET_IN_FOCUS->sendEvent(SA::EventTypes::FocusInEvent, true); break;
         case WM_KILLFOCUS: if (WIDGET_IN_FOCUS) WIDGET_IN_FOCUS->sendEvent(SA::EventTypes::FocusOutEvent, false); break;
-        case WM_PAINT:
-        {
-            HDC tmpDC = BeginPaint(d->hwnd, &d->paintStruct);
-
-            d->paintingHandle = CreateCompatibleDC(tmpDC);
-            HBITMAP memBM = CreateCompatibleBitmap(tmpDC, d->width, d->height);
-            SelectObject(d->paintingHandle, memBM);
-            FillRect(d->paintingHandle, &d->rect, d->backBrush);
-
-            sendEvent(SA::EventTypes::PaintEvent, true);
-
-            BitBlt(tmpDC, d->x, d->y, d->width, d->height, d->paintingHandle, 0, 0, SRCCOPY);
-
-            EndPaint(d->hwnd, &d->paintStruct);
-            DeleteDC(d->paintingHandle);
-            DeleteObject(memBM);
-            break;
-        }
+        case WM_PAINT: repaintWidget(); break;
         case WM_SETCURSOR:
         {
             if (LOWORD(lParam) == HTCLIENT)
@@ -582,29 +569,42 @@ namespace SA
         }
     }
 
-    void WidgetWindows::geometryUpdated()
+    void WidgetWindows::repaintWidget()
     {
-        GetClientRect(d->hwnd, &d->rect);
-        d->paintStruct.rcPaint = d->rect;
-
         int x = d->rect.left;
         int y = d->rect.top;
         int width = d->rect.right - d->rect.left;
         int height = d->rect.bottom - d->rect.top;
 
-        if (x != d->x || y != d->y)
-        {
-            d->x = x;
-            d->y = y;
-            sendEvent(MoveEvent,
-                      std::pair<int32_t, int32_t>(d->x, d->y));
-        }
+        HDC tmpDC = BeginPaint(d->hwnd, &d->paintStruct);
+
+        d->paintingHandle = CreateCompatibleDC(tmpDC);
+        HBITMAP memBM = CreateCompatibleBitmap(tmpDC, width, height);
+        SelectObject(d->paintingHandle, memBM);
+        FillRect(d->paintingHandle, &d->paintStruct.rcPaint, d->backBrush);
+
+        sendEvent(SA::EventTypes::PaintEvent, true);
+
+        BitBlt(tmpDC, x, y, width, height, d->paintingHandle, 0, 0, SRCCOPY);
+
+        EndPaint(d->hwnd, &d->paintStruct);
+        DeleteDC(d->paintingHandle);
+        DeleteObject(memBM);
+    }
+
+    void WidgetWindows::geometryUpdated()
+    {
+        GetClientRect(d->hwnd, &d->rect);
+        d->paintStruct.rcPaint = d->rect;
+
+        int width = d->rect.right - d->rect.left;
+        int height = d->rect.bottom - d->rect.top;
 
         if (width != d->width || height != d->height)
         {
             d->width = static_cast<int>(width);
             d->height = static_cast<int>(height);
-            sendEvent(ResizeEvent,
+            sendEvent(SA::EventTypes::ResizeEvent,
                       std::pair<uint32_t, uint32_t>(d->width, d->height));
         }
     }

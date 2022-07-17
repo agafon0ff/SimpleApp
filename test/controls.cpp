@@ -46,7 +46,7 @@ void Controls::btnAddPressed(bool state)
 void Controls::resizeEvent(const SA::Size &size)
 {
     m_textEdit.setGeometry(5, 5, size.width - 10, size.height - 40);
-    m_buttonAdd.setGeometry(size.width - 105, size.height - 30, 100, 25);
-    m_lineEdit.setGeometry(60, size.height - 30, size.width - 170, 25);
     m_label.setGeometry(5, size.height - 30, 55, 25);
+    m_lineEdit.setGeometry(60, size.height - 30, size.width - 170, 25);
+    m_buttonAdd.setGeometry(60 + m_lineEdit.width() + 5, size.height - 30, 100, 25);
 }

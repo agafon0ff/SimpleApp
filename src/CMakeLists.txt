@@ -14,7 +14,8 @@ set(SA_SOURCES
     SAGui/lineedit.cpp
     SAGui/scrollbar.cpp
     SAGui/clipboard.cpp
-    SANetwork/udpsocketlinux.cpp)
+    SANetwork/udpsocketlinux.cpp
+    SANetwork/udpsocketwindows.cpp)
 
 set(SA_HEADERS
     SACore/application.h
@@ -38,6 +39,8 @@ set(SA_DIRS
     SAGui
     SANetwork)
 
+add_library(SA ${SA_SOURCES} ${SA_HEADERS})
+
 if (UNIX)
     # X11 libs
     # sudo apt install libxtst-dev -y
@@ -49,9 +52,8 @@ endif (UNIX)
 if (WIN32)
     # user32.lib
     find_library(USER32 user32)
+    target_link_libraries(SA wsock32 ws2_32)
 endif (WIN32)
-
-add_library(SA ${SA_SOURCES} ${SA_HEADERS})
 
 target_include_directories(SA PUBLIC ${SA_DIRS}
     "${CMAKE_CURRENT_SOURCE_DIR/src}"

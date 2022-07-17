@@ -51,12 +51,13 @@ namespace SA
         void addEventListener(SA::Object *object);
 
         int windowProc(unsigned int msg, unsigned int wParam, long lParam);
-    private:
 
+    private:
         void sendEvent(SA::EventTypes type, const std::any &value);
         void focusEvent(bool state);
         void keyEvent(unsigned int param, bool pressed);
         void mouseEvent(SA::MouseButton btn, bool pressed);
+        void repaintWidget();
         void geometryUpdated();
 
         struct WidgetWindowsPrivate;
