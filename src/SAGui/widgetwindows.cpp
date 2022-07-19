@@ -414,15 +414,23 @@ namespace SA
     size_t WidgetWindows::textWidth(const char *text, size_t len)
     {
         SIZE textSize;
+        HFONT oldfont = (HFONT) SelectObject(d->dc, d->font);
         GetTextExtentPoint32(d->dc, text, len, &textSize);
+
+        SelectObject(d->dc, oldfont);
+        DeleteObject(d->font);
         return static_cast<int>(textSize.cx);
     }
 
     size_t WidgetWindows::textHeight()
     {
         SIZE textSize;
-        GetTextExtentPoint32(d->dc, " ", 1, &textSize);
-        return static_cast<size_t>(textSize.cy);
+        HFONT oldfont = (HFONT) SelectObject(d->dc, d->font);
+        GetTextExtentPoint32(d->dc, "@", 1, &textSize);
+
+        SelectObject(d->dc, oldfont);
+        DeleteObject(d->font);
+        return static_cast<int>(textSize.cy);
     }
 
     bool WidgetWindows::isHidden()
