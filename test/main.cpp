@@ -1,6 +1,8 @@
 #include "application.h"
 #include "snakegame.h"
 #include "controls.h"
+#include "udpsockettest.h"
+
 #include <csignal>
 
 void signalHandler(int)
@@ -24,8 +26,13 @@ int main()
 
     Controls tt;
     tt.setTitle("Controls");
-    tt.setGeometry(560, 150 , 410, 410);
+    tt.setGeometry(565, 150 , 410, 410);
     tt.show();
+
+    UdpSocketTest st;
+    st.setTitle("UdpSocket");
+    st.setGeometry(980, 150 , 610, 510);
+    st.show();
 
     return SA::Application::instance().exec();
 }

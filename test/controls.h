@@ -5,7 +5,7 @@
 #include "SAGui/button.h"
 #include "SAGui/textedit.h"
 #include "SAGui/lineedit.h"
-#include "snakegame.h"
+#include "SAGui/label.h"
 
 class Controls : public SA::Widget
 {
@@ -14,9 +14,10 @@ public:
     ~Controls();
 
 private:
-    SA::TextEdit *m_textEdit = nullptr;
-    SA::LineEdit *m_lineEdit = nullptr;
-    SA::Button *m_buttonAdd = nullptr;
+    SA::TextEdit m_textEdit;
+    SA::LineEdit m_lineEdit;
+    SA::Button m_buttonAdd;
+    SA::Label m_label;
 
     void btnAddPressed(bool state);
     void resizeEvent(const SA::Size &size);

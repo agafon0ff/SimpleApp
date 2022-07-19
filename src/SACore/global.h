@@ -56,6 +56,16 @@ namespace SA
         Horizontal
     };
 
+    enum Alignment
+    {
+        AlignLeft,
+        AlignRight,
+        AlignHCenter,
+        AlignTop,
+        AlignBottom,
+        AlignVCenter
+    };
+
     enum StyleState
     {
         DisableState,
