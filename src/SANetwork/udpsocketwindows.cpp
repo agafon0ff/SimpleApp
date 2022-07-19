@@ -1,5 +1,7 @@
 #ifdef WIN32
 
+#include <winsock2.h>
+
 #include <memory>
 #include <vector>
 #include <string>
@@ -7,39 +9,44 @@
 #include "SANetwork/udpsocket.h"
 #include "SACore/application.h"
 
-#include <winsock.h>
-
 static const size_t DefaultLen = 1024;
 
 namespace SA
 {
     struct UdpSocket::UdpSocketPrivate
     {
-//        int socketBind = -1;
-//        int socketSend = -1;
+        SOCKET socketBind = INVALID_SOCKET;
+        SOCKET socketSend = INVALID_SOCKET;
         bool isBinded = false;
+        bool isWinsockStarted = false;
 
-//        sockaddr_in addressSrc;
-//        sockaddr_in addressDst;
+        SOCKADDR_IN addressSrc;
+        SOCKADDR_IN addressDst;
 
         std::vector<char> dataIn, dataTmp;
-
         std::map<int, std::function<void (const std::vector<char>&)> > readHanders;
     };
 
     UdpSocket::UdpSocket() : SA::Object(),
         d(new UdpSocketPrivate)
     {
-//        d->dataIn.resize(DefaultLen, 0);
-//        d->dataTmp.reserve(DefaultLen);
-//        d->socketSend = socket(AF_INET, SOCK_DGRAM, 0);
+        WSADATA wsa;
+        long rc = WSAStartup(MAKEWORD(2, 0), &wsa);
+        d->isWinsockStarted = (rc == 0);
 
-        SA::Application::instance().addToMainLoop(this);
+        if (d->isWinsockStarted)
+        {
+            d->dataIn.resize(DefaultLen, 0);
+            d->dataTmp.reserve(DefaultLen);
+            d->socketSend = socket(AF_INET, SOCK_DGRAM, 0);
+
+            SA::Application::instance().addToMainLoop(this);
+        }
     }
 
     SA::UdpSocket::~UdpSocket()
     {
-//        deleteSocket();
+        deleteSocket();
         delete d;
     }
 
@@ -50,14 +57,14 @@ namespace SA
 
     bool UdpSocket::bind(uint32_t host, uint16_t port)
     {
-//        if (!createSocket()) return false;
+        if (!createSocket()) return false;
 
-//        d->addressSrc.sin_family = AF_INET;
-//        d->addressSrc.sin_port = htons(port);
-//        d->addressSrc.sin_addr.s_addr = htonl(host);
+        d->addressSrc.sin_family = AF_INET;
+        d->addressSrc.sin_port = htons(port);
+        d->addressSrc.sin_addr.s_addr = htonl(host);
 
-//        int state = ::bind(d->socketBind, (struct sockaddr *)&d->addressSrc, sizeof(d->addressSrc));
-//        d->isBinded = (state > -1);
+        long state = ::bind(d->socketBind, (SOCKADDR *)&d->addressSrc, sizeof(d->addressSrc));
+        d->isBinded = (state != SOCKET_ERROR);
 
         return d->isBinded;
     }
@@ -84,16 +91,15 @@ namespace SA
 
     bool UdpSocket::send(const std::vector<char> &data, uint32_t host, uint16_t port)
     {
-//        if (!d->socketSend) return false;
+        if (!d->socketSend) return false;
 
-//        struct sockaddr_in addr;
-//        addr.sin_family = AF_INET;
-//        addr.sin_port = htons(port);
-//        addr.sin_addr.s_addr = htonl(host);
+        SOCKADDR_IN addr;
+        addr.sin_family = AF_INET;
+        addr.sin_port = htons(port);
+        addr.sin_addr.s_addr = htonl(host);
 
-//        int state = sendto(d->socketSend, data.data(), data.size(), MSG_CONFIRM, (const struct sockaddr *) &addr, sizeof(addr));
-//        return (state > -1);
-        return false;
+        long state = sendto(d->socketSend, data.data(), data.size(), 0, (SOCKADDR*) &addr, sizeof(addr));
+        return (state != SOCKET_ERROR);
     }
 
     bool UdpSocket::send(const std::vector<char> &data, const char *host, uint16_t port)
@@ -123,42 +129,43 @@ namespace SA
 
     void UdpSocket::mainLoopEvent()
     {
-//        if (!d->isBinded) return;
+        if (!d->isBinded) return;
 
-//        ssize_t bytesRead = recvfrom(d->socketBind, d->dataIn.data(),d->dataIn.size(), 0, (struct sockaddr*)NULL, NULL);
+        ssize_t bytesRead = recvfrom(d->socketBind, d->dataIn.data(),d->dataIn.size(), 0, (struct sockaddr*)NULL, NULL);
 
-//        if (bytesRead > -1)
-//        {
-//            d->dataTmp.clear();
-//            d->dataTmp.insert(d->dataTmp.begin(), d->dataIn.begin(), d->dataIn.begin() + bytesRead);
+        if (bytesRead > -1)
+        {
+            d->dataTmp.clear();
+            d->dataTmp.insert(d->dataTmp.begin(), d->dataIn.begin(), d->dataIn.begin() + bytesRead);
 
-//            for (const auto &it: d->readHanders)
-//                it.second(d->dataTmp);
-//        }
+            for (const auto &it: d->readHanders)
+                it.second(d->dataTmp);
+        }
     }
 
     bool UdpSocket::createSocket()
     {
-//        d->isBinded = false;
-//        d->socketBind = socket(AF_INET, SOCK_DGRAM, 0);
+        d->isBinded = false;
+        d->socketBind = socket(AF_INET, SOCK_DGRAM, 0);
+        bool isSocketCreated = d->socketBind != INVALID_SOCKET;
 
-//        struct timeval read_timeout;
-//        read_timeout.tv_sec = 0;
-//        read_timeout.tv_usec = 10;
-//        setsockopt(d->socketBind, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof(read_timeout));
+        if (isSocketCreated)
+        {
+            int iVal = 10;
+            setsockopt(d->socketBind, SOL_SOCKET, SO_RCVTIMEO, (char *)&iVal, sizeof(iVal));
+        }
 
-//        return (d->socketBind > -1);
-        return false;
+        return isSocketCreated;
     }
 
     void UdpSocket::deleteSocket()
     {
-//        d->isBinded = false;
+        d->isBinded = false;
 
-//        if (d->socketBind > -1)
-//            ::close(d->socketBind);
+        if (d->socketBind != INVALID_SOCKET)
+            closesocket(d->socketBind);
 
-//        d->socketBind = -1;
+        d->socketBind = INVALID_SOCKET;
     }
 }
 
