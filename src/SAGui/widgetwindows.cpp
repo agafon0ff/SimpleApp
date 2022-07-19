@@ -72,13 +72,13 @@ namespace SA
         { VK_RMENU,     SA::Key_RMenu       },
         { VK_HELP,      SA::Key_Help        },
         { VK_SPACE,     SA::Key_Space       },
-        { VK_OEM_7,     SA::Key_Quote    },
+        { VK_OEM_7,     SA::Key_Quote       },
         { VK_MULTIPLY,  SA::Key_Asterisk    },
         { VK_ADD,       SA::Key_Plus        },
-        { VK_DECIMAL,   SA::Key_Comma       },
+        { VK_OEM_COMMA, SA::Key_Comma       },
         { VK_SUBTRACT,  SA::Key_Minus       },
-        { VK_SEPARATOR, SA::Key_Period      },
-        { VK_DIVIDE,    SA::Key_Slash       },
+        { VK_OEM_PERIOD,SA::Key_Period      },
+        { VK_OEM_2,     SA::Key_Slash       },
         { 0x30,         SA::Key_0           },
         { 0x31,         SA::Key_1           },
         { 0x32,         SA::Key_2           },
@@ -542,6 +542,7 @@ namespace SA
 
         if (KEYS_MAP.find(param) != KEYS_MAP.end())
             keycode = KEYS_MAP.at(param);
+        else cout << "Unknown symbol code: 0x" << std::hex << param << " " << pressed << endl;
 
         KeyModifiers modifiers;
         modifiers.shift     = (GetKeyState(VK_SHIFT) & 0x8000);
