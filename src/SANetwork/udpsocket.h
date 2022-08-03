@@ -4,7 +4,6 @@
 #include <functional>
 
 #include "SACore/object.h"
-#include "SACore/structs.h"
 
 namespace SA
 {
