@@ -300,6 +300,8 @@ namespace SA
 
     void WidgetLinux::resize(uint32_t width, uint32_t height)
     {
+        if (width < 1 || height < 1) return;
+
         d->width = width;
         d->height = height;
         d->isSizeChanged = true;
@@ -311,6 +313,8 @@ namespace SA
 
     void WidgetLinux::setGeometry(int32_t x, int32_t y, uint32_t w, uint32_t h)
     {
+        if (w < 1 || h < 1) return;
+
         d->x = x;
         d->y = y;
         d->width = w;

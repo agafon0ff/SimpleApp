@@ -307,12 +307,16 @@ namespace SA
 
     void WidgetWindows::resize(uint32_t w, uint32_t h)
     {
+        if (width < 1 || height < 1) return;
+
         MoveWindow(d->hwnd, d->x, d->y, w, h, true);
         update();
     }
 
     void WidgetWindows::setGeometry(int32_t x, int32_t y, uint32_t w, uint32_t h)
     {
+        if (w < 1 || h < 1) return;
+
         d->x = x;
         d->y = y;
         MoveWindow(d->hwnd, x, y, w, h, true);
