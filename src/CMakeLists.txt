@@ -2,6 +2,21 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -no-pie")
 
+if (UNIX)
+    # X11 libs
+    # sudo apt install libxtst-dev -y
+    find_package(X11 REQUIRED)
+    link_libraries(${X11_LIBRARIES})
+    include_directories(${X11_INCLUDE_DIR})
+
+endif (UNIX)
+
+if (WIN32)
+    # user32.lib
+    find_library(USER32 user32)
+    target_link_libraries(SA wsock32 ws2_32)
+endif (WIN32)
+
 set(SA_SOURCES
     SACore/application.cpp
     SACore/object.cpp
@@ -40,20 +55,6 @@ set(SA_DIRS
     SANetwork)
 
 add_library(SA ${SA_SOURCES} ${SA_HEADERS})
-
-if (UNIX)
-    # X11 libs
-    # sudo apt install libxtst-dev -y
-    find_package(X11 REQUIRED)
-    link_libraries(${X11_LIBRARIES})
-    include_directories(${X11_INCLUDE_DIR})
-endif (UNIX)
-
-if (WIN32)
-    # user32.lib
-    find_library(USER32 user32)
-    target_link_libraries(SA wsock32 ws2_32)
-endif (WIN32)
 
 target_include_directories(SA PUBLIC ${SA_DIRS}
     "${CMAKE_CURRENT_SOURCE_DIR/src}"
