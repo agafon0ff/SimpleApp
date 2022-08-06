@@ -274,8 +274,12 @@ namespace SA
         std::string result;
         result.reserve(d->textLength);
 
-        for (const std::string &text: d->strings)
-        { result += text; result += "\n"; }
+        for (int i=0; i<d->strings.size(); ++i)
+        {
+            result += d->strings[i];
+            if (i < d->strings.size() - 1)
+                result += "\n";
+        }
 
         return std::move(result);
     }
@@ -359,10 +363,12 @@ namespace SA
         TextSelection selection = d->selection;
         if (d->selection.rowStart > d->selection.rowEnd)
         {
-            std::swap(selection.columnStart, selection.columnEnd);
             std::swap(selection.posStart, selection.posEnd);
             std::swap(selection.rowStart, selection.rowEnd);
         }
+
+        if (d->selection.columnStart > d->selection.columnEnd)
+            std::swap(selection.columnStart, selection.columnEnd);
 
         TextAction action(TextAction::RemoveText, calcTextPos(selection.rowStart, selection.columnStart), selectedText());
         d->actions.push(action);
