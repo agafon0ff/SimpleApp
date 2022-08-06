@@ -22,12 +22,9 @@ namespace SA
         int socketBind = -1;
         int socketSend = -1;
         bool isBinded = false;
-
-        sockaddr_in addressSrc;
-        sockaddr_in addressDst;
+        sockaddr_in addressBind;
 
         std::vector<char> dataIn, dataTmp;
-
         std::map<int, std::function<void (const std::vector<char>&)> > readHanders;
     };
 
@@ -56,11 +53,11 @@ namespace SA
     {
         if (!createSocket()) return false;
 
-        d->addressSrc.sin_family = AF_INET;
-        d->addressSrc.sin_port = htons(port);
-        d->addressSrc.sin_addr.s_addr = htonl(host);
+        d->addressBind.sin_family = AF_INET;
+        d->addressBind.sin_port = htons(port);
+        d->addressBind.sin_addr.s_addr = htonl(host);
 
-        int state = ::bind(d->socketBind, (struct sockaddr *)&d->addressSrc, sizeof(d->addressSrc));
+        int state = ::bind(d->socketBind, (struct sockaddr *)&d->addressBind, sizeof(d->addressBind));
         d->isBinded = (state > -1);
 
         return d->isBinded;

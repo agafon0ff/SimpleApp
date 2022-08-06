@@ -19,9 +19,7 @@ namespace SA
         SOCKET socketSend = INVALID_SOCKET;
         bool isBinded = false;
         bool isWinsockStarted = false;
-
         SOCKADDR_IN addressSrc;
-        SOCKADDR_IN addressDst;
 
         std::vector<char> dataIn, dataTmp;
         std::map<int, std::function<void (const std::vector<char>&)> > readHanders;
