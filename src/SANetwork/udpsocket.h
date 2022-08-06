@@ -37,5 +37,5 @@ namespace SA
         struct UdpSocketPrivate;
         UdpSocketPrivate * const d;
 
-    }; // class Widget
+    }; // class UdpSocket
 } // namespace SA
