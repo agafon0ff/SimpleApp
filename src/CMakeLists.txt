@@ -30,7 +30,8 @@ set(SA_SOURCES
     SAGui/scrollbar.cpp
     SAGui/clipboard.cpp
     SANetwork/udpsocketlinux.cpp
-    SANetwork/udpsocketwindows.cpp)
+    SANetwork/udpsocketwindows.cpp
+    SANetwork/tcpsocket.cpp)
 
 set(SA_HEADERS
     SACore/application.h
@@ -47,7 +48,8 @@ set(SA_HEADERS
     SAGui/lineedit.h
     SAGui/scrollbar.h
     SAGui/clipboard.h
-    SANetwork/udpsocket.h)
+    SANetwork/udpsocket.h
+    SANetwork/tcpsocket.h)
 
 set(SA_DIRS
     SACore
