@@ -43,7 +43,7 @@ namespace SA
             d->socketSend = socket(AF_INET, SOCK_DGRAM, 0);
 
 #ifdef SACore
-            SA::Application::instance().addMainLoopHandler(std::bind(&UdpSocket::mainLoopEvent, this));
+            SA::Application::instance().addMainLoopHandler(std::bind(&UdpSocket::mainLoopHandler, this));
 #endif
         }
     }
@@ -131,7 +131,7 @@ namespace SA
             d->readHanders.erase(it);
     }
 
-    void UdpSocket::mainLoopEvent()
+    void UdpSocket::mainLoopHandler()
     {
         if (!d->isBinded) return;
 
