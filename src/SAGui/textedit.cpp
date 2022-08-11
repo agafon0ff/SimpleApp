@@ -4,6 +4,7 @@
 #include <map>
 
 #include "textedit.h"
+#include "scrollbar.h"
 #include "clipboard.h"
 #include "utility.h"
 
@@ -70,7 +71,7 @@ namespace SA
         d->scrollBarH->addScrollHandler(std::bind(&TextEdit::onScrollHorizontal, this, _1));
 
         d->timerId = startTimer(500);
-        d->rowHeight = textHeight() + 5;
+        d->rowHeight = textHeight() + 4;
         d->cursorHeight = d->rowHeight;
 
         resize(150, 40);

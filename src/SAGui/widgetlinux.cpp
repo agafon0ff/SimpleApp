@@ -446,7 +446,7 @@ namespace SA
         XDrawString(d->display,
                     d->window,
                     d->gc,
-                    x, y + textHeight(),
+                    x, y + textHeight() - d->font->descent,
                     text.c_str(), text.length());
     }
 
@@ -496,7 +496,7 @@ namespace SA
 
     size_t WidgetLinux::textHeight()
     {
-        return d->font->ascent;// + d->font->descent;
+        return d->font->ascent + d->font->descent;
     }
 
     bool WidgetLinux::isHidden()

@@ -1,7 +1,6 @@
 #pragma once
 #include <functional>
 #include "widget.h"
-#include "scrollbar.h"
 #include "global.h"
 
 namespace SA
