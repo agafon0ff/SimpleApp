@@ -51,7 +51,7 @@ namespace SA
         d(new LineEditPrivate)
     {
         d->timerId = startTimer(500);
-        d->cursorHeight = textHeight() + 4;
+        d->cursorHeight = textHeight() + 1;
 
         resize(150, 26);
         setCursorShape(Text);
@@ -574,7 +574,7 @@ namespace SA
         if (!d->blinkState) return;
 
         setPen(d->textColors[d->styleState], 2);
-        drawLine(d->textCursorX, d->textShiftPos.y,
+        drawLine(d->textCursorX, d->textShiftPos.y - 2,
                  d->textCursorX, d->textShiftPos.y + d->cursorHeight);
     }
 
