@@ -51,7 +51,7 @@ namespace SA
         d(new LineEditPrivate)
     {
         d->timerId = startTimer(500);
-        d->cursorHeight = textHeight() + 3;
+        d->cursorHeight = textHeight() + 1;
 
         resize(150, 26);
         setCursorShape(Text);
