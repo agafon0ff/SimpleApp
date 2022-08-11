@@ -1,7 +1,7 @@
 #include <tuple>
 
-#include "SACore/application.h"
-#include "SACore/object.h"
+#include "application.h"
+#include "object.h"
 
 namespace SA
 {

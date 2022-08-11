@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <iostream>
 
-#include "SACore/utility.h"
+#include "utility.h"
 #include "scrollbar.h"
 
 static const uint16_t MIN_HANDLE_SIZE = 30;
@@ -110,7 +110,7 @@ namespace SA
 
     int ScrollBar::addScrollHandler(const std::function<void (uint32_t)> &func)
     {
-        int id = 0;
+        int id = static_cast<int>(d->scrollHanders.size());
         for (auto const& it : d->scrollHanders) if (it.first != ++id) break;
         d->scrollHanders.insert({id, func});
         return id;

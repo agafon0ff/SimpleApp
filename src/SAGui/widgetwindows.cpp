@@ -1,9 +1,9 @@
 #ifdef WIN32
 
-#include "SAGui/widgetwindows.h"
-#include "SAGui/clipboard.h"
-#include "SACore/application.h"
-#include "SACore/global.h"
+#include "widgetwindows.h"
+#include "clipboard.h"
+#include "application.h"
+#include "global.h"
 
 #include <windowsx.h>
 #include <windows.h>
@@ -307,7 +307,7 @@ namespace SA
 
     void WidgetWindows::resize(uint32_t w, uint32_t h)
     {
-        if (width < 1 || height < 1) return;
+        if (w < 1 || h < 1) return;
 
         MoveWindow(d->hwnd, d->x, d->y, w, h, true);
         update();

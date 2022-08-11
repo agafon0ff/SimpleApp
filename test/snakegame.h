@@ -1,7 +1,7 @@
 #pragma once
 
-#include "SACore/structs.h"
-#include "SAGui/widget.h"
+#include "structs.h"
+#include "widget.h"
 
 class SnakeGame : public SA::Widget
 {

@@ -1,8 +1,8 @@
 #pragma once
 #include <functional>
-#include "SAGui/widget.h"
-#include "SAGui/scrollbar.h"
-#include "SACore/global.h"
+#include "widget.h"
+#include "scrollbar.h"
+#include "global.h"
 
 namespace SA
 {

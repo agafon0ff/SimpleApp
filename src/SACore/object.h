@@ -1,7 +1,7 @@
 #pragma once
 
 #include <any>
-#include "SACore/global.h"
+#include "global.h"
 
 namespace SA
 {

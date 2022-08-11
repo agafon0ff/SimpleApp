@@ -1,17 +1,21 @@
 #ifdef __linux__
 
 #include <memory>
-#include <vector>
 #include <string>
-
-#include "SANetwork/udpsocket.h"
-#include "SACore/application.h"
+#include <vector>
+#include <map>
 
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+
+#include "udpsocket.h"
+
+#ifdef SACore
+#include "application.h"
+#endif
 
 static const size_t DefaultLen = 1024;
 
@@ -28,14 +32,16 @@ namespace SA
         std::map<int, std::function<void (const std::vector<char>&)> > readHanders;
     };
 
-    UdpSocket::UdpSocket() : SA::Object(),
+    UdpSocket::UdpSocket():
         d(new UdpSocketPrivate)
     {
         d->dataIn.resize(DefaultLen, 0);
         d->dataTmp.reserve(DefaultLen);
         d->socketSend = socket(AF_INET, SOCK_DGRAM, 0);
 
-        SA::Application::instance().addToMainLoop(this);
+#ifdef SACore
+        SA::Application::instance().addMainLoopHandler(std::bind(&UdpSocket::mainLoopHandler, this));
+#endif
     }
 
     SA::UdpSocket::~UdpSocket()
@@ -108,7 +114,7 @@ namespace SA
 
     int UdpSocket::addReadHandler(const std::function<void (const std::vector<char>&)> &func)
     {
-        int id = 0;
+        int id = static_cast<int>(d->readHanders.size());
         for (auto const& it : d->readHanders) if (it.first != ++id) break;
         d->readHanders.insert({id, func});
         return id;
@@ -121,7 +127,7 @@ namespace SA
             d->readHanders.erase(it);
     }
 
-    void UdpSocket::mainLoopEvent()
+    void UdpSocket::mainLoopHandler()
     {
         if (!d->isBinded) return;
 

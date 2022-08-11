@@ -20,11 +20,13 @@ UdpSocketTest::UdpSocketTest(SA::Widget *parent) : SA::Widget(parent),
     m_btnBind.addPressHandler(std::bind(&UdpSocketTest::btnBindPressed, this, _1));
     m_btnSend.addPressHandler(std::bind(&UdpSocketTest::btnSendPressed, this, _1));
     m_udpSocket.addReadHandler(std::bind(&UdpSocketTest::dataReaded, this, _1));
+
+    std::cout << __PRETTY_FUNCTION__ << std::endl;
 }
 
 UdpSocketTest::~UdpSocketTest()
 {
-
+    std::cout << __PRETTY_FUNCTION__ << std::endl;
 }
 
 void UdpSocketTest::btnBindPressed(bool state)

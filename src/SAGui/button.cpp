@@ -2,8 +2,8 @@
 #include <algorithm>
 #include <map>
 
-#include "SAGui/button.h"
-#include "SACore/utility.h"
+#include "button.h"
+#include "utility.h"
 
 namespace SA
 {
@@ -113,7 +113,7 @@ namespace SA
 
     int Button::addHoverHandler(const std::function<void (bool)> &func)
     {
-        int id = 0;
+        int id = static_cast<int>(d->hoverHanders.size());
         for (auto const& it : d->hoverHanders) if (it.first != ++id) break;
         d->hoverHanders.insert({id, func});
         return id;
@@ -128,7 +128,7 @@ namespace SA
 
     int Button::addPressHandler(const std::function<void(bool)> &func)
     {
-        int id = 0;
+        int id = static_cast<int>(d->pressHanders.size());
         for (auto const& it : d->pressHanders) if (it.first != ++id) break;
         d->pressHanders.insert({id, func});
         return id;
@@ -143,7 +143,7 @@ namespace SA
 
     int Button::addCheckHandler(const std::function<void (bool)> &func)
     {
-        int id = 0;
+        int id = static_cast<int>(d->checkHanders.size());
         for (auto const& it : d->checkHanders) if (it.first != ++id) break;
         d->checkHanders.insert({id, func});
         return id;

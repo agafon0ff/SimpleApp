@@ -1,5 +1,5 @@
 #pragma once
-#include "SACore/global.h"
+#include "global.h"
 
 namespace SA
 {

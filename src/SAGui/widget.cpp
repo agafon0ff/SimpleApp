@@ -1,16 +1,16 @@
 #include <memory>
 #include <iostream>
 
-#include "SAGui/widget.h"
-#include "SACore/global.h"
-#include "SACore/application.h"
+#include "widget.h"
+#include "global.h"
+#include "application.h"
 
 #ifdef __linux__
-#include "SAGui/widgetlinux.h"
+#include "widgetlinux.h"
 #endif //__linux__
 
 #ifdef WIN32
-#include "SAGui/widgetwindows.h"
+#include "widgetwindows.h"
 #endif //WIN32
 
 namespace SA
@@ -47,7 +47,7 @@ namespace SA
         d->widget->addEventListener(this);
 #endif //WIN32
 
-        SA::Application::instance().addToMainLoop(this);
+        SA::Application::instance().addMainLoopHandler(std::bind(&Widget::mainLoopEvent, this));
     }
 
     Widget::~Widget()

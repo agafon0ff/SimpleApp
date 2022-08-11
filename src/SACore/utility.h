@@ -2,8 +2,8 @@
 
 #include <algorithm>
 
-#include "SACore/global.h"
-#include "SACore/structs.h"
+#include "global.h"
+#include "structs.h"
 
 namespace SA
 {

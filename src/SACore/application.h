@@ -2,7 +2,8 @@
 
 #include <cstddef>
 #include <string>
-#include "SACore/object.h"
+#include <functional>
+#include "object.h"
 
 namespace SA
 {
@@ -13,8 +14,8 @@ namespace SA
         int exec();
         void quit(int exitCode = 0);
 
-        void addToMainLoop(SA::Object *object);
-        void removeFromMainLoop(SA::Object *object);
+        int addMainLoopHandler(const std::function<void ()> &handler);
+        void removeMainLoopHandler(int id);
 
         int startTimer(SA::Object *object, int interval);
         bool killTimer(int id);
