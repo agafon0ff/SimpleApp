@@ -1,7 +1,7 @@
 #pragma once
 #include <functional>
-#include "SAGui/widget.h"
-#include "SACore/global.h"
+#include "widget.h"
+#include "global.h"
 
 namespace SA
 {

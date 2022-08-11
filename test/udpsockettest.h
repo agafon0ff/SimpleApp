@@ -1,12 +1,12 @@
 #pragma once
 
-#include "SACore/structs.h"
-#include "SAGui/widget.h"
-#include "SAGui/button.h"
-#include "SAGui/textedit.h"
-#include "SAGui/lineedit.h"
-#include "SAGui/label.h"
-#include "SANetwork/udpsocket.h"
+#include "structs.h"
+#include "widget.h"
+#include "button.h"
+#include "textedit.h"
+#include "lineedit.h"
+#include "label.h"
+#include "udpsocket.h"
 
 class UdpSocketTest : public SA::Widget
 {

@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <iostream>
 #include <thread>
 #include <chrono>
 #include <ctime>
@@ -26,7 +27,7 @@ namespace SA {
         int exitCode = 0;
         bool quitFlag = false;
 
-        std::list<SA::Object*> objects;
+        std::map<int, std::function<void ()> > mainLoopHandlers;
         std::map<int, TimerStruct> timers;
     };
 
@@ -42,8 +43,8 @@ namespace SA {
         {
             timesStep();
 
-            for(Object *object: d->objects)
-                object->mainLoopEvent();
+            for (const auto &it: d->mainLoopHandlers)
+                it.second();
 
             if (d->quitFlag) break;
 
@@ -59,14 +60,20 @@ namespace SA {
         d->quitFlag = true;
     }
 
-    void Application::addToMainLoop(SA::Object *object)
+    int Application::addMainLoopHandler(const std::function<void ()> &handler)
     {
-        d->objects.push_back(object);
+        int id = static_cast<int>(d->mainLoopHandlers.size());
+        for (auto const& it : d->mainLoopHandlers) if (it.first != ++id) break;
+        d->mainLoopHandlers.insert({id, handler});
+
+        return id;
     }
 
-    void Application::removeFromMainLoop(Object *object)
+    void Application::removeMainLoopHandler(int id)
     {
-        d->objects.remove(object);
+        auto it = d->mainLoopHandlers.find(id);
+        if (it != d->mainLoopHandlers.end())
+            d->mainLoopHandlers.erase(it);
     }
 
     int Application::startTimer(Object *object, int interval)

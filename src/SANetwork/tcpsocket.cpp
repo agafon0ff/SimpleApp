@@ -3,16 +3,19 @@
 #include <memory>
 #include <vector>
 #include <string>
-#include <iostream>
-
-#include "SANetwork/tcpsocket.h"
-#include "SACore/application.h"
+#include <map>
 
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <unistd.h>
 #include <arpa/inet.h>
+
+#include "tcpsocket.h"
+
+#ifdef SACore
+#include "application.h"
+#endif
 
 static const size_t DefaultLen = 1024;
 
@@ -29,13 +32,15 @@ namespace SA
         std::map<int, std::function<void ()> > disconnectHanders;
     };
 
-    TcpSocket::TcpSocket() : SA::Object(),
+    TcpSocket::TcpSocket():
         d(new TcpSocketPrivate)
     {
         d->dataIn.resize(DefaultLen, 0);
         d->dataTmp.reserve(DefaultLen);
 
-        SA::Application::instance().addToMainLoop(this);
+#ifdef SACore
+        SA::Application::instance().addMainLoopHandler(std::bind(&TcpSocket::mainLoopHandler, this));
+#endif
     }
 
     SA::TcpSocket::~TcpSocket()
@@ -86,7 +91,7 @@ namespace SA
 
     int TcpSocket::addReadHandler(const std::function<void (const std::vector<char>&)> &func)
     {
-        int id = 0;
+        int id = static_cast<int>(d->readHanders.size());
         for (auto const& it : d->readHanders) if (it.first != ++id) break;
         d->readHanders.insert({id, func});
         return id;
@@ -101,7 +106,7 @@ namespace SA
 
     int TcpSocket::addDisconnectHandler(const std::function<void()> &func)
     {
-        int id = 0;
+        int id = static_cast<int>(d->disconnectHanders.size());
         for (auto const& it : d->disconnectHanders) if (it.first != ++id) break;
         d->disconnectHanders.insert({id, func});
         return id;
@@ -114,7 +119,7 @@ namespace SA
             d->disconnectHanders.erase(it);
     }
 
-    void TcpSocket::mainLoopEvent()
+    void TcpSocket::mainLoopHandler()
     {
         if (!d->isConnected) return;
 

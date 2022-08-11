@@ -1,6 +1,6 @@
 #pragma once
-#include "SACore/object.h"
-#include "SACore/structs.h"
+#include "object.h"
+#include "structs.h"
 #include <string>
 
 namespace SA

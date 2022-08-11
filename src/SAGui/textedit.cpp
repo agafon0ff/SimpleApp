@@ -3,9 +3,9 @@
 #include <stack>
 #include <map>
 
-#include "SAGui/textedit.h"
-#include "SAGui/clipboard.h"
-#include "SACore/utility.h"
+#include "textedit.h"
+#include "clipboard.h"
+#include "utility.h"
 
 using std::cout;
 using std::endl;
@@ -472,7 +472,7 @@ namespace SA
 
     int TextEdit::addHoverHandler(const std::function<void (bool)> &func)
     {
-        int id = 0;
+        int id = static_cast<int>(d->hoverHanders.size());
         for (auto const& it : d->hoverHanders) if (it.first != ++id) break;
         d->hoverHanders.insert({id, func});
         return id;

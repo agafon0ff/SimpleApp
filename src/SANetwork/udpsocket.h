@@ -3,11 +3,9 @@
 #include <string>
 #include <functional>
 
-#include "SACore/object.h"
-
 namespace SA
 {
-    class UdpSocket : public SA::Object
+    class UdpSocket
     {
     public:
         UdpSocket();
@@ -28,9 +26,9 @@ namespace SA
 
         int addReadHandler(const std::function<void (const std::vector<char> &)> &func);
         void removeReadHandler(int id);
+        void mainLoopHandler();
 
     private:
-        void mainLoopEvent();
         bool createSocket();
         void deleteSocket();
 

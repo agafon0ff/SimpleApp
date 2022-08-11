@@ -1,5 +1,5 @@
-#include "SAGui/label.h"
-#include "SACore/utility.h"
+#include "label.h"
+#include "utility.h"
 
 namespace SA
 {

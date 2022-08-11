@@ -7,8 +7,8 @@
 #include <functional>
 #include <X11/Xlib.h>
 
-#include "SACore/object.h"
-#include "SACore/structs.h"
+#include "object.h"
+#include "structs.h"
 
 namespace SA
 {

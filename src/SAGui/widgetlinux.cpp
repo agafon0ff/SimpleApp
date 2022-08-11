@@ -1,8 +1,8 @@
 #ifdef __linux__
 
-#include "SACore/application.h"
-#include "SAGui/widgetlinux.h"
-#include "SAGui/clipboard.h"
+#include "application.h"
+#include "widgetlinux.h"
+#include "clipboard.h"
 
 #include <X11/cursorfont.h>
 #include <X11/Xlib.h>

@@ -5,7 +5,7 @@
 #include <tuple>
 
 #include "snakegame.h"
-#include "SACore/global.h"
+#include "global.h"
 
 struct SnakeGame::SnakeGamePrivate
 {

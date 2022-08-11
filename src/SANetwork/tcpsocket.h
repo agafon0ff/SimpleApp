@@ -3,11 +3,9 @@
 #include <string>
 #include <functional>
 
-#include "SACore/object.h"
-
 namespace SA
 {
-    class TcpSocket : public SA::Object
+    class TcpSocket
     {
     public:
         TcpSocket();
@@ -27,9 +25,9 @@ namespace SA
 
         int addDisconnectHandler(const std::function<void ()> &func);
         void removeDisconnectHandler(int id);
+        void mainLoopHandler();
 
     private:
-        void mainLoopEvent();
         bool createSocket();
         void deleteSocket();
 

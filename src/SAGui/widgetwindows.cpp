@@ -1,9 +1,9 @@
 #ifdef WIN32
 
-#include "SAGui/widgetwindows.h"
-#include "SAGui/clipboard.h"
-#include "SACore/application.h"
-#include "SACore/global.h"
+#include "widgetwindows.h"
+#include "clipboard.h"
+#include "application.h"
+#include "global.h"
 
 #include <windowsx.h>
 #include <windows.h>

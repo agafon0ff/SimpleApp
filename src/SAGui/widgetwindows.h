@@ -5,8 +5,8 @@
 #include <cstdint>
 #include <string>
 #include <map>
-#include "SACore/object.h"
-#include "SACore/structs.h"
+#include "object.h"
+#include "structs.h"
 
 namespace SA
 {

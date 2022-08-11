@@ -1,6 +1,6 @@
 #pragma once
 #include <functional>
-#include "SAGui/widget.h"
+#include "widget.h"
 
 namespace SA
 {

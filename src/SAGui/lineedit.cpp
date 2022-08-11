@@ -2,9 +2,9 @@
 #include <string>
 #include <stack>
 
-#include "SAGui/lineedit.h"
-#include "SAGui/clipboard.h"
-#include "SACore/utility.h"
+#include "lineedit.h"
+#include "clipboard.h"
+#include "utility.h"
 
 using std::cout;
 using std::endl;
@@ -225,7 +225,7 @@ namespace SA
 
     int LineEdit::addHoverHandler(const std::function<void (bool)> &func)
     {
-        int id = 0;
+        int id = static_cast<int>(d->hoverHanders.size());
         for (auto const& it : d->hoverHanders) if (it.first != ++id) break;
         d->hoverHanders.insert({id, func});
         return id;
@@ -240,7 +240,7 @@ namespace SA
 
     int LineEdit::addReturnHandler(const std::function<void ()> &func)
     {
-        int id = 0;
+        int id = static_cast<int>(d->returnHanders.size());
         for (auto const& it : d->returnHanders) if (it.first != ++id) break;
         d->returnHanders.insert({id, func});
         return id;
