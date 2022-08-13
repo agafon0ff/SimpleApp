@@ -457,9 +457,16 @@ namespace SA
         }
     }
 
-    void WidgetWindows::addEventListener(Object *object)
+    void WidgetWindows::addEventListener(SA::Object *object)
     {
         d->eventListners.push_back(object);
+    }
+
+    void WidgetLinux::removeEventListener(SA::Object *object)
+    {
+        auto it = find(d->eventListners.begin(), d->eventListners.end(), object);
+        if (it != d->eventListners.end())
+            d->eventListners.erase(it);
     }
 
     int WidgetWindows::windowProc(unsigned int msg, unsigned int wParam, long lParam)

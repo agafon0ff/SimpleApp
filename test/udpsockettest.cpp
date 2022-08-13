@@ -16,6 +16,7 @@ UdpSocketTest::UdpSocketTest(SA::Widget *parent) : SA::Widget(parent),
     m_btnBind("Start bind", this),
     m_btnSend("Send", this)
 {
+    setTitle("UdpSocketTest");
     using namespace std::placeholders;
     m_btnBind.addPressHandler(std::bind(&UdpSocketTest::btnBindPressed, this, _1));
     m_btnSend.addPressHandler(std::bind(&UdpSocketTest::btnSendPressed, this, _1));

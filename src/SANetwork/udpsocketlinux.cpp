@@ -23,6 +23,7 @@ namespace SA
 {
     struct UdpSocket::UdpSocketPrivate
     {
+        int mainLoopId = -1;
         int socketBind = -1;
         int socketSend = -1;
         bool isBinded = false;
@@ -40,12 +41,15 @@ namespace SA
         d->socketSend = socket(AF_INET, SOCK_DGRAM, 0);
 
 #ifdef SACore
-        SA::Application::instance().addMainLoopHandler(std::bind(&UdpSocket::mainLoopHandler, this));
+        d->mainLoopId = SA::Application::instance().addMainLoopListener(std::bind(&UdpSocket::mainLoopHandler, this));
 #endif
     }
 
     SA::UdpSocket::~UdpSocket()
     {
+#ifdef SACore
+        SA::Application::instance().removeMainLoopListener(d->mainLoopId);
+#endif
         deleteSocket();
         delete d;
     }

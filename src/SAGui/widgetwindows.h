@@ -49,6 +49,7 @@ namespace SA
 
         void mainLoopEvent();
         void addEventListener(SA::Object *object);
+        void removeEventListener(SA::Object *object);
 
         int windowProc(unsigned int msg, unsigned int wParam, long lParam);
 

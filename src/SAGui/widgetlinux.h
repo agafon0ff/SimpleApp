@@ -54,6 +54,7 @@ namespace SA
 
         void mainLoopEvent();
         void addEventListener(SA::Object *object);
+        void removeEventListener(SA::Object *object);
 
     private:
         void procEvent(XEvent *event);
