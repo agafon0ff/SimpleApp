@@ -12,10 +12,13 @@ namespace SA
     Object::Object() :
         d(new ObjectPrivate)
     {
+        SA::Application::instance().addMainLoopListener(this);
     }
 
     Object::~Object()
     {
+        Application::instance().killTimers(this);
+        Application::instance().removeMainLoopListener(this);
         delete d;
     }
 

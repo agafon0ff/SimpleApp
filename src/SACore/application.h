@@ -14,11 +14,15 @@ namespace SA
         int exec();
         void quit(int exitCode = 0);
 
-        int addMainLoopHandler(const std::function<void ()> &handler);
-        void removeMainLoopHandler(int id);
+        void addMainLoopListener(SA::Object *object);
+        void removeMainLoopListener(SA::Object *object);
+
+        int addMainLoopListener(const std::function<void ()> &handler);
+        void removeMainLoopListener(int id);
 
         int startTimer(SA::Object *object, int interval);
         bool killTimer(int id);
+        bool killTimers(SA::Object *object);
 
     protected:
         Application();

@@ -3,7 +3,6 @@
 
 #include "widget.h"
 #include "global.h"
-#include "application.h"
 
 #ifdef __linux__
 #include "widgetlinux.h"
@@ -38,20 +37,19 @@ namespace SA
 #ifdef __linux__
         SA::WidgetLinux *parentWidget = d->parent ? d->parent->d->widget : nullptr;
         d->widget = new WidgetLinux(parentWidget);
-        d->widget->addEventListener(this);
 #endif //__linux__
 
 #ifdef WIN32
         SA::WidgetWindows *parentWidget = d->parent ? d->parent->d->widget : nullptr;
         d->widget = new WidgetWindows(parentWidget);
-        d->widget->addEventListener(this);
 #endif //WIN32
 
-        SA::Application::instance().addMainLoopHandler(std::bind(&Widget::mainLoopEvent, this));
+        d->widget->addEventListener(this);
     }
 
     Widget::~Widget()
     {
+        d->widget->removeEventListener(this);
         delete d->widget;
         delete d;
     }

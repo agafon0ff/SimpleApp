@@ -8,6 +8,7 @@ Controls::Controls(SA::Widget *parent) : SA::Widget(parent),
     m_buttonAdd("Add", this),
     m_label("Text:", this)
 {
+    setTitle("Controls");
     using namespace std::placeholders;
 
     m_buttonAdd.addPressHandler(std::bind(&Controls::btnAddPressed, this, _1));

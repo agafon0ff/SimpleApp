@@ -26,8 +26,10 @@ namespace SA {
     {
         int exitCode = 0;
         bool quitFlag = false;
+        bool isRunning = false;
 
         std::map<int, std::function<void ()> > mainLoopHandlers;
+        std::vector<SA::Object*> mainLoopListeners;
         std::map<int, TimerStruct> timers;
     };
 
@@ -39,9 +41,15 @@ namespace SA {
 
     int Application::exec()
     {
+        if (d->isRunning) return 0;
+        d->isRunning = true;
+
         while(1)
         {
             timesStep();
+
+            for(SA::Object *object: d->mainLoopListeners)
+                object->mainLoopEvent();
 
             for (const auto &it: d->mainLoopHandlers)
                 it.second();
@@ -58,9 +66,22 @@ namespace SA {
     {
         d->exitCode = exitCode;
         d->quitFlag = true;
+        d->isRunning = false;
     }
 
-    int Application::addMainLoopHandler(const std::function<void ()> &handler)
+    void Application::addMainLoopListener(Object *object)
+    {
+        d->mainLoopListeners.push_back(object);
+    }
+
+    void Application::removeMainLoopListener(Object *object)
+    {
+        auto it = find(d->mainLoopListeners.begin(), d->mainLoopListeners.end(), object);
+        if (it != d->mainLoopListeners.end())
+            d->mainLoopListeners.erase(it);
+    }
+
+    int Application::addMainLoopListener(const std::function<void ()> &handler)
     {
         int id = static_cast<int>(d->mainLoopHandlers.size());
         for (auto const& it : d->mainLoopHandlers) if (it.first != ++id) break;
@@ -69,7 +90,7 @@ namespace SA {
         return id;
     }
 
-    void Application::removeMainLoopHandler(int id)
+    void Application::removeMainLoopListener(int id)
     {
         auto it = d->mainLoopHandlers.find(id);
         if (it != d->mainLoopHandlers.end())
@@ -100,6 +121,20 @@ namespace SA {
 
         it->second.removed = true;
         return true;
+    }
+
+    bool Application::killTimers(Object *object)
+    {
+        for (auto it = d->timers.begin(); it != d->timers.end(); ++it)
+        {
+            if (it->second.object == object)
+            {
+                d->timers.erase(it);
+                return true;
+            }
+        }
+
+        return false;
     }
 
     Application::Application(): d(new ApplicationPrivate)

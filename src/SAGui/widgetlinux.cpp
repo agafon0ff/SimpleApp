@@ -533,9 +533,16 @@ namespace SA
         }
     }
 
-    void WidgetLinux::addEventListener(Object *object)
+    void WidgetLinux::addEventListener(SA::Object *object)
     {
         d->eventListners.push_back(object);
+    }
+
+    void WidgetLinux::removeEventListener(SA::Object *object)
+    {
+        auto it = find(d->eventListners.begin(), d->eventListners.end(), object);
+        if (it != d->eventListners.end())
+            d->eventListners.erase(it);
     }
 
     void WidgetLinux::procEvent(XEvent *event)

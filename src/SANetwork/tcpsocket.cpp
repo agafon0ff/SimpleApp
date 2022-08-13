@@ -39,7 +39,7 @@ namespace SA
         d->dataTmp.reserve(DefaultLen);
 
 #ifdef SACore
-        SA::Application::instance().addMainLoopHandler(std::bind(&TcpSocket::mainLoopHandler, this));
+        SA::Application::instance().addMainLoopListener(std::bind(&TcpSocket::mainLoopHandler, this));
 #endif
     }
 
