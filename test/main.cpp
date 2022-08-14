@@ -2,34 +2,12 @@
 #include "snakegame.h"
 #include "controls.h"
 #include "udpsockettest.h"
+#include "tcpsockettest.h"
 
 #include <csignal>
 #include <cstring>
 #include <iostream>
 #include <memory>
-
-void sampleSnakeGame()
-{
-    SnakeGame sg;
-    sg.setGeometry(150, 150 , 410, 410);
-    sg.show();
-}
-
-void sampleControls()
-{
-    Controls tt;
-    tt.setTitle("Controls");
-    tt.setGeometry(565, 150 , 410, 410);
-    tt.show();
-}
-
-void sampleUdpSocket()
-{
-    UdpSocketTest st;
-    st.setTitle("UdpSocket");
-    st.setGeometry(980, 150 , 610, 510);
-    st.show();
-}
 
 void signalHandler(int)
 {
@@ -46,7 +24,7 @@ int main(int argc, char *argv[])
     signal(SIGQUIT, signalHandler);
 #endif // Q_OS_WIN
 
-   bool snake = false, controls = false, udpSocket = false;
+   bool snake = false, controls = false, udpSocket = false, tcpSocket = false;
 
     if (argc > 1)
     {
@@ -55,6 +33,7 @@ int main(int argc, char *argv[])
             if (strcmp(argv[i], "snake") == 0) snake = true;
             else if (strcmp(argv[i], "controls") == 0) controls = true;
             else if (strcmp(argv[i], "udp") == 0) udpSocket = true;
+            else if (strcmp(argv[i], "tcp") == 0) tcpSocket = true;
         }
     }
     else
@@ -62,6 +41,7 @@ int main(int argc, char *argv[])
         snake = true;
         controls = true;
         udpSocket = true;
+        tcpSocket = true;
     }
 
 
@@ -77,7 +57,7 @@ int main(int argc, char *argv[])
     if (controls)
     {
         ct = std::make_unique<Controls>();
-        ct->setGeometry(565, 150 , 410, 410);
+        ct->setGeometry(250, 180 , 410, 410);
         ct->show();
     }
 
@@ -85,8 +65,16 @@ int main(int argc, char *argv[])
     if (udpSocket)
     {
         us = std::make_unique<UdpSocketTest>();
-        us->setGeometry(980, 150 , 610, 510);
+        us->setGeometry(350, 210 , 610, 510);
         us->show();
+    }
+
+    std::unique_ptr<TcpSocketTest> ts;
+    if (tcpSocket)
+    {
+        ts = std::make_unique<TcpSocketTest>();
+        ts->setGeometry(450, 210 , 610, 510);
+        ts->show();
     }
 
     return SA::Application::instance().exec();

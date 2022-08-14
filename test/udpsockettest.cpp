@@ -1,4 +1,6 @@
 #include <iostream>
+#include <fstream>
+#include <string>
 #include <functional>
 #include "udpsockettest.h"
 
@@ -22,11 +24,13 @@ UdpSocketTest::UdpSocketTest(SA::Widget *parent) : SA::Widget(parent),
     m_btnSend.addPressHandler(std::bind(&UdpSocketTest::btnSendPressed, this, _1));
     m_udpSocket.addReadHandler(std::bind(&UdpSocketTest::dataReaded, this, _1));
 
+    loadSettings();
     std::cout << __PRETTY_FUNCTION__ << std::endl;
 }
 
 UdpSocketTest::~UdpSocketTest()
 {
+    saveSettings();
     std::cout << __PRETTY_FUNCTION__ << std::endl;
 }
 
@@ -105,4 +109,46 @@ void UdpSocketTest::resizeEvent(const SA::Size &size)
                                    height() - 30, 100, 25);
 
     m_btnSend.setGeometry(width() - 100, height() - 30, 95, 25);
+}
+
+void UdpSocketTest::loadSettings()
+{
+    std::ifstream ifs("udpsocket.conf");
+    std::map<std::string, std::string> map;
+    std::string line;
+
+    if (ifs.is_open())
+    {
+        while (std::getline(ifs, line))
+        {
+            for (size_t i=0; i<line.size(); ++i)
+            {
+                if (line[i] == '=')
+                    map[line.substr(0, i)] = line.substr(i + 1, line.size() - (i + 1));
+            }
+        }
+
+        ifs.close();
+    }
+
+    m_lineEditPortRead.setText(map["in_port"]);
+    m_lineEditPortSend.setText(map["out_port"]);
+    m_lineEditHostSend.setText(map["out_host"]);
+}
+
+void UdpSocketTest::saveSettings()
+{
+    std::ofstream ofs("udpsocket.conf");
+    std::map<std::string, std::string> map;
+    map["in_port"] = m_lineEditPortRead.text();
+    map["out_port"] = m_lineEditPortSend.text();
+    map["out_host"] = m_lineEditHostSend.text();
+
+    if (ofs.is_open())
+    {
+        for (auto it = map.begin(); it != map.end(); ++it)
+            ofs << it->first << "=" << it->second << std::endl;
+
+        ofs.close();
+    }
 }
