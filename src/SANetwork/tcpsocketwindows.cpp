@@ -1,15 +1,11 @@
-#ifdef __linux__
+#ifdef WIN32
+
+#include <winsock2.h>
 
 #include <memory>
 #include <vector>
 #include <string>
 #include <map>
-
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <arpa/inet.h>
 
 #include "tcpsocket.h"
 
@@ -23,9 +19,11 @@ namespace SA
 {
     struct TcpSocket::TcpSocketPrivate
     {
-        int socket = -1;
+        int mainLoopId = -1;
+        SOCKET socket = INVALID_SOCKET;
         bool isConnected = false;
-        sockaddr_in address;
+        bool isWinsockStarted = false;
+        SOCKADDR_IN address;
 
         std::vector<char> dataIn, dataTmp;
         std::map<int, std::function<void (const std::vector<char>&)> > readHanders;
@@ -35,16 +33,26 @@ namespace SA
     TcpSocket::TcpSocket():
         d(new TcpSocketPrivate)
     {
-        d->dataIn.resize(DefaultLen, 0);
-        d->dataTmp.reserve(DefaultLen);
+        WSADATA wsa;
+        long rc = WSAStartup(MAKEWORD(2, 0), &wsa);
+        d->isWinsockStarted = (rc == 0);
+
+        if (d->isWinsockStarted)
+        {
+            d->dataIn.resize(DefaultLen, 0);
+            d->dataTmp.reserve(DefaultLen);
 
 #ifdef SACore
-        SA::Application::instance().addMainLoopListener(std::bind(&TcpSocket::mainLoopHandler, this));
+            d->mainLoopId = SA::Application::instance().addMainLoopListener(std::bind(&TcpSocket::mainLoopHandler, this));
 #endif
+        }
     }
 
     SA::TcpSocket::~TcpSocket()
     {
+#ifdef SACore
+        SA::Application::instance().removeMainLoopListener(d->mainLoopId);
+#endif
         deleteSocket();
         delete d;
     }
@@ -57,8 +65,8 @@ namespace SA
         d->address.sin_port = htons(port);
         d->address.sin_addr.s_addr = htonl(host);
 
-        int state = ::connect(d->socket, (struct sockaddr *)&d->address, sizeof(d->address));
-        d->isConnected = (state > -1);
+        int state = ::connect(d->socket, (SOCKADDR *)&d->address, sizeof(d->address));
+        d->isConnected = (state > SOCKET_ERROR);
 
         return d->isConnected;
     }
@@ -145,24 +153,26 @@ namespace SA
     {
         d->isConnected = false;
         d->socket = socket(AF_INET, SOCK_STREAM, 0);
+        bool isSocketCreated = d->socket != INVALID_SOCKET;
 
-        struct timeval read_timeout;
-        read_timeout.tv_sec = 0;
-        read_timeout.tv_usec = 10;
-        setsockopt(d->socket, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof(read_timeout));
+        if (isSocketCreated)
+        {
+            int iVal = 10;
+            setsockopt(d->socket, SOL_SOCKET, SO_RCVTIMEO, (char *)&iVal, sizeof(iVal));
+        }
 
-        return (d->socket > -1);
+        return isSocketCreated;
     }
 
     void TcpSocket::deleteSocket()
     {
         d->isConnected = false;
 
-        if (d->socket > -1)
-            ::close(d->socket);
+        if (d->socket != INVALID_SOCKET)
+            closesocket(d->socket);
 
-        d->socket = -1;
+        d->socket = INVALID_SOCKET;
     }
 }
 
-#endif //__linux__
+#endif //WIN32
