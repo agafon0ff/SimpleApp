@@ -33,7 +33,7 @@ namespace SA
         Color handleColors[AllStates];
         Color backgrounds[AllStates];
 
-        std::map<int, std::function<void (uint32_t)> > scrollHanders;
+        std::map<int, std::function<void (uint32_t)> > scrollHandlers;
     };
 
     ScrollBar::ScrollBar(Orientation orientation, Widget *parent) : Widget(parent),
@@ -110,17 +110,17 @@ namespace SA
 
     int ScrollBar::addScrollHandler(const std::function<void (uint32_t)> &func)
     {
-        int id = static_cast<int>(d->scrollHanders.size());
-        for (auto const& it : d->scrollHanders) if (it.first != ++id) break;
-        d->scrollHanders.insert({id, func});
+        int id = static_cast<int>(d->scrollHandlers.size());
+        for (auto const& it : d->scrollHandlers) if (it.first != ++id) break;
+        d->scrollHandlers.insert({id, func});
         return id;
     }
 
     void ScrollBar::removeScrollHandler(int id)
     {
-        auto it = d->scrollHanders.find(id);
-        if (it != d->scrollHanders.end())
-            d->scrollHanders.erase(it);
+        auto it = d->scrollHandlers.find(id);
+        if (it != d->scrollHandlers.end())
+            d->scrollHandlers.erase(it);
     }
 
     void ScrollBar::paintEvent()
@@ -216,7 +216,7 @@ namespace SA
         if (value == d->value) return;
 
         d->value = value;
-        for (const auto &it: d->scrollHanders) it.second(d->value);
+        for (const auto &it: d->scrollHandlers) it.second(d->value);
     }
 
     void ScrollBar::updateSizes()

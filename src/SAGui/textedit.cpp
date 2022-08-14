@@ -53,7 +53,7 @@ namespace SA
         Color selectionColor = {140, 140, 140};
 
         // Events listeners
-        std::map<int, std::function<void (bool)> > hoverHanders;
+        std::map<int, std::function<void (bool)> > hoverHandlers;
 
         SA::ScrollBar *scrollBarV = nullptr;
         SA::ScrollBar *scrollBarH = nullptr;
@@ -473,17 +473,17 @@ namespace SA
 
     int TextEdit::addHoverHandler(const std::function<void (bool)> &func)
     {
-        int id = static_cast<int>(d->hoverHanders.size());
-        for (auto const& it : d->hoverHanders) if (it.first != ++id) break;
-        d->hoverHanders.insert({id, func});
+        int id = static_cast<int>(d->hoverHandlers.size());
+        for (auto const& it : d->hoverHandlers) if (it.first != ++id) break;
+        d->hoverHandlers.insert({id, func});
         return id;
     }
 
     void TextEdit::removeHoverHandler(int id)
     {
-        auto it = d->hoverHanders.find(id);
-        if (it != d->hoverHanders.end())
-            d->hoverHanders.erase(it);
+        auto it = d->hoverHandlers.find(id);
+        if (it != d->hoverHandlers.end())
+            d->hoverHandlers.erase(it);
     }
 
     void TextEdit::timerEvent(int id)
@@ -516,7 +516,7 @@ namespace SA
 
         d->styleState = state ? HoveredState : EnableState;
         update();
-        for (const auto &it: d->hoverHanders) it.second(state);
+        for (const auto &it: d->hoverHandlers) it.second(state);
     }
 
     void TextEdit::mouseMoveEvent(const Point &pos)

@@ -20,9 +20,9 @@ namespace SA
         Color textColors[AllStates];
         Color backgrounds[AllStates];
 
-        std::map<int, std::function<void (bool)> > hoverHanders;
-        std::map<int, std::function<void (bool)> > pressHanders;
-        std::map<int, std::function<void (bool)> > checkHanders;
+        std::map<int, std::function<void (bool)> > hoverHandlers;
+        std::map<int, std::function<void (bool)> > pressHandlers;
+        std::map<int, std::function<void (bool)> > checkHandlers;
     };
 
     Button::Button(Widget *parent) : Button("Button", parent)
@@ -113,47 +113,47 @@ namespace SA
 
     int Button::addHoverHandler(const std::function<void (bool)> &func)
     {
-        int id = static_cast<int>(d->hoverHanders.size());
-        for (auto const& it : d->hoverHanders) if (it.first != ++id) break;
-        d->hoverHanders.insert({id, func});
+        int id = static_cast<int>(d->hoverHandlers.size());
+        for (auto const& it : d->hoverHandlers) if (it.first != ++id) break;
+        d->hoverHandlers.insert({id, func});
         return id;
     }
 
     void Button::removeHoverHandler(int id)
     {
-        auto it = d->hoverHanders.find(id);
-        if (it != d->hoverHanders.end())
-            d->hoverHanders.erase(it);
+        auto it = d->hoverHandlers.find(id);
+        if (it != d->hoverHandlers.end())
+            d->hoverHandlers.erase(it);
     }
 
     int Button::addPressHandler(const std::function<void(bool)> &func)
     {
-        int id = static_cast<int>(d->pressHanders.size());
-        for (auto const& it : d->pressHanders) if (it.first != ++id) break;
-        d->pressHanders.insert({id, func});
+        int id = static_cast<int>(d->pressHandlers.size());
+        for (auto const& it : d->pressHandlers) if (it.first != ++id) break;
+        d->pressHandlers.insert({id, func});
         return id;
     }
 
     void Button::removePressHandler(int id)
     {
-        auto it = d->pressHanders.find(id);
-        if (it != d->pressHanders.end())
-            d->pressHanders.erase(it);
+        auto it = d->pressHandlers.find(id);
+        if (it != d->pressHandlers.end())
+            d->pressHandlers.erase(it);
     }
 
     int Button::addCheckHandler(const std::function<void (bool)> &func)
     {
-        int id = static_cast<int>(d->checkHanders.size());
-        for (auto const& it : d->checkHanders) if (it.first != ++id) break;
-        d->checkHanders.insert({id, func});
+        int id = static_cast<int>(d->checkHandlers.size());
+        for (auto const& it : d->checkHandlers) if (it.first != ++id) break;
+        d->checkHandlers.insert({id, func});
         return id;
     }
 
     void Button::removeCheckHandler(int id)
     {
-        auto it = d->checkHanders.find(id);
-        if (it != d->checkHanders.end())
-            d->checkHanders.erase(it);
+        auto it = d->checkHandlers.find(id);
+        if (it != d->checkHandlers.end())
+            d->checkHandlers.erase(it);
     }
 
     void Button::paintEvent()
@@ -176,7 +176,7 @@ namespace SA
         d->styleState = d->checked ? CheckedState :
                                      state ? HoveredState : EnableState;
         update();
-        for (const auto &it: d->hoverHanders) it.second(state);
+        for (const auto &it: d->hoverHandlers) it.second(state);
     }
 
     void Button::mouseButtonEvent(const MouseEvent &event)
@@ -202,11 +202,11 @@ namespace SA
 
         update();
 
-        for (const auto &it: d->pressHanders) it.second(event.pressed);
+        for (const auto &it: d->pressHandlers) it.second(event.pressed);
 
         if (d->checkable)
-        { if(event.pressed) for (const auto &it: d->checkHanders) it.second(d->checked); }
-        else for (const auto &it: d->checkHanders) it.second(d->checked);
+        { if(event.pressed) for (const auto &it: d->checkHandlers) it.second(d->checked); }
+        else for (const auto &it: d->checkHandlers) it.second(d->checked);
     }
 
     void Button::calcTextColors(const Color &color)

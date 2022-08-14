@@ -4,8 +4,6 @@
 #include <memory>
 #include <functional>
 
-#include "tcpsocket.h"
-
 namespace SA
 {
     class TcpServer
@@ -16,14 +14,15 @@ namespace SA
 
         bool listen(uint16_t port);
         void close();
+        bool isListen();
 
-        int addConnectHandler(const std::function<void (std::shared_ptr<TcpSocket>)> &func);
+        int addConnectHandler(const std::function<void (int sockDscr, uint32_t host, uint16_t port)> &func);
         void removeConnectHandler(int id);
         void mainLoopHandler();
 
     private:
-        bool createSocket();
-        void deleteSocket();
+        bool createServer();
+        void deleteServer();
 
         struct TcpServerPrivate;
         TcpServerPrivate * const d;

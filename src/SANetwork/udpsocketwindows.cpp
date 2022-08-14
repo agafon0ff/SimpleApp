@@ -27,7 +27,7 @@ namespace SA
         SOCKADDR_IN addressSrc;
 
         std::vector<char> dataIn, dataTmp;
-        std::map<int, std::function<void (const std::vector<char>&)> > readHanders;
+        std::map<int, std::function<void (const std::vector<char>&)> > readHandlers;
     };
 
     UdpSocket::UdpSocket():
@@ -122,17 +122,17 @@ namespace SA
 
     int UdpSocket::addReadHandler(const std::function<void (const std::vector<char>&)> &func)
     {
-        int id = static_cast<int>(d->readHanders.size());
-        for (auto const& it : d->readHanders) if (it.first != ++id) break;
-        d->readHanders.insert({id, func});
+        int id = static_cast<int>(d->readHandlers.size());
+        for (auto const& it : d->readHandlers) if (it.first != ++id) break;
+        d->readHandlers.insert({id, func});
         return id;
     }
 
     void UdpSocket::removeReadHandler(int id)
     {
-        auto it = d->readHanders.find(id);
-        if (it != d->readHanders.end())
-            d->readHanders.erase(it);
+        auto it = d->readHandlers.find(id);
+        if (it != d->readHandlers.end())
+            d->readHandlers.erase(it);
     }
 
     void UdpSocket::mainLoopHandler()
@@ -146,7 +146,7 @@ namespace SA
             d->dataTmp.clear();
             d->dataTmp.insert(d->dataTmp.begin(), d->dataIn.begin(), d->dataIn.begin() + bytesRead);
 
-            for (const auto &it: d->readHanders)
+            for (const auto &it: d->readHandlers)
                 it.second(d->dataTmp);
         }
     }

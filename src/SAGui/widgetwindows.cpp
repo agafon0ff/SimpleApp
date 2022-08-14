@@ -462,7 +462,7 @@ namespace SA
         d->eventListners.push_back(object);
     }
 
-    void WidgetLinux::removeEventListener(SA::Object *object)
+    void WidgetWindows::removeEventListener(SA::Object *object)
     {
         auto it = find(d->eventListners.begin(), d->eventListners.end(), object);
         if (it != d->eventListners.end())
