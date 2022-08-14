@@ -5,11 +5,13 @@ set(SA_NETWORK_SOURCES
     udpsocketlinux.cpp
     udpsocketwindows.cpp
     tcpsocketlinux.cpp
-    tcpsocketwindows.cpp)
+    tcpsocketwindows.cpp
+    tcpserver.cpp)
 
 set(SA_NETWORK_HEADERS
     udpsocket.h
-    tcpsocket.h)
+    tcpsocket.h
+    tcpserver.h)
 
 add_library(SANetwork ${SA_NETWORK_SOURCES} ${SA_NETWORK_HEADERS})
 

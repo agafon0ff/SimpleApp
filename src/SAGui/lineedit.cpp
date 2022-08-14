@@ -43,8 +43,8 @@ namespace SA
         Color selectionColor = {140, 140, 140};
 
         // Events listeners
-        std::map<int, std::function<void (bool)> > hoverHanders;
-        std::map<int, std::function<void ()> > returnHanders;
+        std::map<int, std::function<void (bool)> > hoverHandlers;
+        std::map<int, std::function<void ()> > returnHandlers;
     };
 
     LineEdit::LineEdit(Widget *parent) : Widget(parent),
@@ -225,32 +225,32 @@ namespace SA
 
     int LineEdit::addHoverHandler(const std::function<void (bool)> &func)
     {
-        int id = static_cast<int>(d->hoverHanders.size());
-        for (auto const& it : d->hoverHanders) if (it.first != ++id) break;
-        d->hoverHanders.insert({id, func});
+        int id = static_cast<int>(d->hoverHandlers.size());
+        for (auto const& it : d->hoverHandlers) if (it.first != ++id) break;
+        d->hoverHandlers.insert({id, func});
         return id;
     }
 
     void LineEdit::removeHoverHandler(int id)
     {
-        auto it = d->hoverHanders.find(id);
-        if (it != d->hoverHanders.end())
-            d->hoverHanders.erase(it);
+        auto it = d->hoverHandlers.find(id);
+        if (it != d->hoverHandlers.end())
+            d->hoverHandlers.erase(it);
     }
 
     int LineEdit::addReturnHandler(const std::function<void ()> &func)
     {
-        int id = static_cast<int>(d->returnHanders.size());
-        for (auto const& it : d->returnHanders) if (it.first != ++id) break;
-        d->returnHanders.insert({id, func});
+        int id = static_cast<int>(d->returnHandlers.size());
+        for (auto const& it : d->returnHandlers) if (it.first != ++id) break;
+        d->returnHandlers.insert({id, func});
         return id;
     }
 
     void LineEdit::removeReturnHandler(int id)
     {
-        auto it = d->returnHanders.find(id);
-        if (it != d->returnHanders.end())
-            d->returnHanders.erase(it);
+        auto it = d->returnHandlers.find(id);
+        if (it != d->returnHandlers.end())
+            d->returnHandlers.erase(it);
     }
 
     void LineEdit::timerEvent(int id)
@@ -283,7 +283,7 @@ namespace SA
 
         d->styleState = state ? HoveredState : EnableState;
         update();
-        for (const auto &it: d->hoverHanders) it.second(state);
+        for (const auto &it: d->hoverHandlers) it.second(state);
     }
 
     void LineEdit::mouseMoveEvent(const Point &pos)
@@ -467,7 +467,7 @@ namespace SA
 
     void LineEdit::keyReactionReturn()
     {
-        for (const auto &it: d->returnHanders) it.second();
+        for (const auto &it: d->returnHandlers) it.second();
     }
 
     void LineEdit::keyReactionHome()
