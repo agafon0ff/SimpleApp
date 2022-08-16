@@ -10,6 +10,7 @@ namespace SA
     {
         std::string text;
         bool enable = true;
+        bool pressed = false;
         bool checked = false;
         Point textShiftPos = {DEFAULT_TEXT_SHIFT, DEFAULT_TEXT_SHIFT};
         Rect boxRect = {DEFAULT_BOX_INDENT, DEFAULT_BOX_INDENT,
@@ -26,6 +27,10 @@ namespace SA
 
         Alignment textAlignH = SA::AlignLeft;
         Alignment textAlignV = SA::AlignVCenter;
+
+        std::map<int, std::function<void (bool)> > hoverHandlers;
+        std::map<int, std::function<void (bool)> > pressHandlers;
+        std::map<int, std::function<void (bool)> > checkHandlers;
     };
 
     CheckBox::CheckBox(Widget *parent) : Widget(parent),
@@ -38,13 +43,14 @@ namespace SA
         calcBoxBackgrounds({30, 30, 30});
         calcCheckmarkColors({120, 120, 120});
         setBackground({40, 40, 40});
+
+        calcCheckboxRect();
+        calcTextShiftPos();
     }
 
     CheckBox::CheckBox(const std::string &text, Widget *parent) : CheckBox(parent)
     {
         d->text = text;
-        calcCheckboxRect();
-        calcTextShiftPos();
     }
 
     CheckBox::~CheckBox()
@@ -92,6 +98,11 @@ namespace SA
     bool CheckBox::isChecked()
     {
         return d->checked;
+    }
+
+    bool CheckBox::isPressed()
+    {
+        return d->pressed;
     }
 
     void CheckBox::setTextAlignmentH(Alignment state)
@@ -148,6 +159,14 @@ namespace SA
         else d->boxBorderPens[state] = pen;
     }
 
+    void CheckBox::setCheckmarkColor(const Color &color, StyleState state)
+    {
+        if (state == AllStates)
+            for (int i=static_cast<int>(DisableState); i<static_cast<int>(AllStates); ++i)
+                d->checkmarkColors[static_cast<StyleState>(i)] = color;
+        else d->checkmarkColors[state] = color;
+    }
+
     void CheckBox::setBoxBackground(const Color &color, StyleState state)
     {
         if (state == AllStates)
@@ -156,12 +175,49 @@ namespace SA
         else d->boxBackgrounds[state] = color;
     }
 
-    void CheckBox::setCheckmarkColor(const Color &color, StyleState state)
+    int CheckBox::addHoverHandler(const std::function<void (bool)> &func)
     {
-        if (state == AllStates)
-            for (int i=static_cast<int>(DisableState); i<static_cast<int>(AllStates); ++i)
-                d->checkmarkColors[static_cast<StyleState>(i)] = color;
-        else d->checkmarkColors[state] = color;
+        int id = static_cast<int>(d->hoverHandlers.size());
+        for (auto const& it : d->hoverHandlers) if (it.first != ++id) break;
+        d->hoverHandlers.insert({id, func});
+        return id;
+    }
+
+    void CheckBox::removeHoverHandler(int id)
+    {
+        auto it = d->hoverHandlers.find(id);
+        if (it != d->hoverHandlers.end())
+            d->hoverHandlers.erase(it);
+    }
+
+    int CheckBox::addPressHandler(const std::function<void(bool)> &func)
+    {
+        int id = static_cast<int>(d->pressHandlers.size());
+        for (auto const& it : d->pressHandlers) if (it.first != ++id) break;
+        d->pressHandlers.insert({id, func});
+        return id;
+    }
+
+    void CheckBox::removePressHandler(int id)
+    {
+        auto it = d->pressHandlers.find(id);
+        if (it != d->pressHandlers.end())
+            d->pressHandlers.erase(it);
+    }
+
+    int CheckBox::addCheckHandler(const std::function<void (bool)> &func)
+    {
+        int id = static_cast<int>(d->checkHandlers.size());
+        for (auto const& it : d->checkHandlers) if (it.first != ++id) break;
+        d->checkHandlers.insert({id, func});
+        return id;
+    }
+
+    void CheckBox::removeCheckHandler(int id)
+    {
+        auto it = d->checkHandlers.find(id);
+        if (it != d->checkHandlers.end())
+            d->checkHandlers.erase(it);
     }
 
     void CheckBox::paintEvent()
@@ -173,12 +229,34 @@ namespace SA
 
     void CheckBox::mouseHoverEvent(bool state)
     {
+        if (!d->enable) return;
 
+        d->styleState = d->checked ? CheckedState :
+                                     state ? HoveredState : EnableState;
+        update();
+        for (const auto &it: d->hoverHandlers) it.second(state);
     }
 
     void CheckBox::mouseButtonEvent(const MouseEvent &event)
     {
+        if (!d->enable) return;
+        if (event.button != ButtonLeft) return;
 
+        d->pressed = event.pressed;
+
+        if (event.pressed)
+        {
+            d->checked = !d->checked;
+            d->styleState = d->checked ? CheckedState : HoveredState;
+
+            for (const auto &it: d->checkHandlers)
+                it.second(d->checked);
+        }
+
+        update();
+
+        for (const auto &it: d->pressHandlers)
+            it.second(event.pressed);
     }
 
     void CheckBox::resizeEvent(const SA::Size &size)
@@ -265,10 +343,13 @@ namespace SA
         setPen(d->boxBorderPens[d->styleState]);
         drawRect(d->boxRect);
 
-        setBrush(d->checkmarkColors[d->styleState]);
-        setPen(d->checkmarkColors[d->styleState], 1);
-        drawRect(d->boxRect.x + 3, d->boxRect.y + 3,
-                 d->boxRect.width - 6, d->boxRect.height - 6);
+        if (d->checked)
+        {
+            setBrush(d->checkmarkColors[d->styleState]);
+            setPen(d->checkmarkColors[d->styleState], 1);
+            drawRect(d->boxRect.x + 3, d->boxRect.y + 3,
+                     d->boxRect.width - 6, d->boxRect.height - 6);
+        }
     }
 
 } // namespace SA

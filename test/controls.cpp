@@ -42,7 +42,9 @@ void Controls::btnAddPressed(bool state)
 {
     if (!state) return;
     m_textEdit.append(m_lineEdit.text());
-    m_lineEdit.clear();
+
+    if (m_checkBox.isChecked())
+        m_lineEdit.clear();
 }
 
 void Controls::resizeEvent(const SA::Size &size)

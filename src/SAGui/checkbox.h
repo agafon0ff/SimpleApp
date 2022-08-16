@@ -8,7 +8,7 @@ namespace SA
     class CheckBox : public Widget
     {
     public:
-        CheckBox(Widget *parent = nullptr);
+        explicit CheckBox(Widget *parent = nullptr);
         CheckBox(const std::string &text, Widget *parent = nullptr);
         ~CheckBox();
 
@@ -21,6 +21,7 @@ namespace SA
 
         void setChecked(bool state);
         bool isChecked();
+        bool isPressed();
 
         void setTextAlignmentH(SA::Alignment state);
         void setTextAlignmentV(SA::Alignment state);
@@ -35,6 +36,15 @@ namespace SA
         void setBoxBorderPen(const Pen &pen, StyleState state = AllStates);
         void setCheckmarkColor(const Color &color, StyleState state = AllStates);
         void setBoxBackground(const Color &color, StyleState state = AllStates);
+
+        int addHoverHandler(const std::function<void (bool)> &func);
+        void removeHoverHandler(int id);
+
+        int addPressHandler(const std::function<void (bool)> &func);
+        void removePressHandler(int id);
+
+        int addCheckHandler(const std::function<void (bool)> &func);
+        void removeCheckHandler(int id);
 
     protected:
         virtual void paintEvent();

@@ -71,6 +71,8 @@ namespace SA
         DisableState,
         EnableState,
         HoveredState,
+        PressedState,
+        CheckedState,
         AllStates
     };
 
