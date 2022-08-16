@@ -7,17 +7,6 @@ namespace SA
     class Button : public Widget
     {
     public:
-
-        enum StyleState
-        {
-            DisableState,
-            EnableState,
-            HoveredState,
-            PressedState,
-            CheckedState,
-            AllStates
-        };
-
         explicit Button(Widget *parent = nullptr);
         Button(const std::string &text, Widget *parent = nullptr);
         virtual ~Button();

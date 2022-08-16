@@ -24,7 +24,8 @@ set(SA_GUI_SOURCES
     label.cpp
     lineedit.cpp
     scrollbar.cpp
-    clipboard.cpp)
+    clipboard.cpp
+    checkbox.cpp)
 
 set(SA_GUI_HEADERS
     widget.h
@@ -35,7 +36,8 @@ set(SA_GUI_HEADERS
     label.h
     lineedit.h
     scrollbar.h
-    clipboard.h)
+    clipboard.h
+    checkbox.h)
 
 add_library(SAGui ${SA_GUI_SOURCES} ${SA_GUI_HEADERS})
 
