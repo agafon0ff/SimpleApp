@@ -27,6 +27,7 @@ namespace SA
         bool isListen = false;
         sockaddr_in address;
 
+        std::vector<int> sockets;
         std::map<int, std::function<void (int, uint16_t, uint32_t)> > connectHandlers;
     };
 
@@ -100,8 +101,10 @@ namespace SA
 
         if (newsockfd > -1)
         {
+            d->sockets.push_back(newsockfd);
+
             for (const auto &it: d->connectHandlers)
-                it.second(d->socketFd, socketAddr.sin_addr.s_addr, socketAddr.sin_port);
+                it.second(newsockfd, socketAddr.sin_addr.s_addr, socketAddr.sin_port);
         }
     }
 
@@ -110,11 +113,16 @@ namespace SA
         d->isListen = false;
         d->socketFd = socket(AF_INET, SOCK_STREAM, 0);
 
-        struct timeval read_timeout;
-        read_timeout.tv_sec = 0;
-        read_timeout.tv_usec = 10;
-        setsockopt(d->socketFd, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof(read_timeout));
+        if (d->socketFd > -1) {
 
+            int iSetOption = 1;
+            setsockopt(d->socketFd, SOL_SOCKET, SO_REUSEADDR, (char*)&iSetOption, sizeof(iSetOption));
+
+            struct timeval read_timeout;
+            read_timeout.tv_sec = 0;
+            read_timeout.tv_usec = 10;
+            setsockopt(d->socketFd, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof(read_timeout));
+        }
         return (d->socketFd > -1);
     }
 
@@ -122,12 +130,20 @@ namespace SA
     {
         d->isListen = false;
 
-        if (d->socketFd > -1)
+        for (int socketFd : d->sockets) {
+            if (socketFd > -1) {
+                ::shutdown(socketFd, SHUT_RDWR);
+                ::close(socketFd);
+            }
+        }
+
+        if (d->socketFd > -1) {
+            ::shutdown(d->socketFd, SHUT_RDWR);
             ::close(d->socketFd);
+        }
 
         d->socketFd = -1;
     }
-
 }
 
 #endif //__linux__

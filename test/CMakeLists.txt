@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(SimpleApp LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -no-pie")
 
@@ -10,13 +10,15 @@ set(SOURCES main.cpp
     snakegame.cpp
     controls.cpp
     udpsockettest.cpp
-    tcpsockettest.cpp)
+    tcpsockettest.cpp
+    tcpservertest.cpp)
 
 set(HEADERS
     snakegame.h
     controls.h
     udpsockettest.h
-    tcpsockettest.h)
+    tcpsockettest.h
+    tcpservertest.h)
 
 include_directories(test)
 

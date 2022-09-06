@@ -32,6 +32,11 @@ namespace SA
         bool createSocket();
         void deleteSocket();
 
+        UdpSocket(const SA::UdpSocket &) = delete;
+        UdpSocket(SA::UdpSocket &&) = delete;
+        void operator = (const SA::UdpSocket &) = delete;
+        void operator = (SA::UdpSocket &&) = delete;
+
         struct UdpSocketPrivate;
         UdpSocketPrivate * const d;
 
