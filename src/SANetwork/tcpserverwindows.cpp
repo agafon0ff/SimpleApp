@@ -1,16 +1,12 @@
-#ifdef __linux__
+#ifdef WIN32
+
+#include <winsock2.h>
 
 #include <iostream>
 #include <memory>
 #include <vector>
 #include <string>
 #include <map>
-
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <arpa/inet.h>
 
 #include "tcpserver.h"
 
@@ -22,21 +18,29 @@ namespace SA
 {
     struct TcpServer::TcpServerPrivate
     {
-        int socketFd = -1;
+        SOCKET socketFd = INVALID_SOCKET;
         int mainLoopId = -1;
         bool isListen = false;
-        sockaddr_in address;
+        bool isWinsockStarted = false;
+        SOCKADDR_IN address;
 
-        std::vector<int> sockets;
+        std::vector<SOCKET> sockets;
         std::map<int, std::function<void (int, uint16_t, uint32_t)> > connectHandlers;
     };
 
     TcpServer::TcpServer():
         d(new TcpServerPrivate)
     {
+        WSADATA wsa;
+        long rc = WSAStartup(MAKEWORD(2, 2), &wsa);
+        d->isWinsockStarted = (rc == 0);
+
+        if (d->isWinsockStarted)
+        {
 #ifdef SACore
         d->mainLoopId = SA::Application::instance().addMainLoopListener(std::bind(&TcpServer::mainLoopHandler, this));
 #endif
+        }
     }
 
     SA::TcpServer::~TcpServer()
@@ -45,6 +49,7 @@ namespace SA
         SA::Application::instance().removeMainLoopListener(d->mainLoopId);
 #endif
         deleteServer();
+        WSACleanup();
         delete d;
     }
 
@@ -95,16 +100,17 @@ namespace SA
     {
         if (!d->isListen) return;
 
-        struct sockaddr_in socketAddr;
-        socklen_t adrlen = sizeof(socketAddr);
-        int newsockfd = accept(d->socketFd, (struct sockaddr *) &socketAddr, &adrlen);
+        SOCKADDR_IN socketAddr;
+        int sockaddrLen = sizeof(socketAddr);
 
-        if (newsockfd > -1)
+        SOCKET newsockfd = ::accept(d->socketFd, (SOCKADDR *)&socketAddr, &sockaddrLen);
+
+        if (newsockfd != SOCKET_ERROR)
         {
             d->sockets.push_back(newsockfd);
 
             for (const auto &it: d->connectHandlers)
-                it.second(newsockfd, socketAddr.sin_addr.s_addr, socketAddr.sin_port);
+                it.second(static_cast<int>(newsockfd), socketAddr.sin_addr.s_addr, socketAddr.sin_port);
         }
     }
 
@@ -112,18 +118,22 @@ namespace SA
     {
         d->isListen = false;
         d->socketFd = socket(AF_INET, SOCK_STREAM, 0);
+        bool isSocketCreated = (d->socketFd != INVALID_SOCKET);
 
-        if (d->socketFd > -1) {
+        if (isSocketCreated) {
 
             int iSetOption = 1;
             setsockopt(d->socketFd, SOL_SOCKET, SO_REUSEADDR, (char*)&iSetOption, sizeof(iSetOption));
 
-            struct timeval read_timeout;
-            read_timeout.tv_sec = 0;
-            read_timeout.tv_usec = 10;
-            setsockopt(d->socketFd, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof(read_timeout));
+            int iVal = 10;
+            setsockopt(d->socketFd, SOL_SOCKET, SO_RCVTIMEO, (char *)&iVal, sizeof(iVal));
+
+            unsigned long iMode = 1;
+            int res = ioctlsocket(d->socketFd, FIONBIO, &iMode);
+            isSocketCreated = (res == NO_ERROR);
         }
-        return (d->socketFd > -1);
+
+        return isSocketCreated;
     }
 
     void TcpServer::deleteServer()
@@ -131,19 +141,19 @@ namespace SA
         d->isListen = false;
 
         for (int socketFd : d->sockets) {
-            if (socketFd > -1) {
-                ::shutdown(socketFd, SHUT_RDWR);
-                ::close(socketFd);
+            if (socketFd != INVALID_SOCKET) {
+                ::shutdown(socketFd, SD_BOTH);
+                ::closesocket(socketFd);
             }
         }
 
-        if (d->socketFd > -1) {
-            ::shutdown(d->socketFd, SHUT_RDWR);
-            ::close(d->socketFd);
+        if (d->socketFd != INVALID_SOCKET) {
+            ::shutdown(d->socketFd, SD_BOTH);
+            ::closesocket(d->socketFd);
         }
 
-        d->socketFd = -1;
+        d->socketFd = INVALID_SOCKET;
     }
 }
 
-#endif //__linux__
+#endif //WIN32
