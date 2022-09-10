@@ -1,4 +1,4 @@
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(SA_NETWORK_SOURCES
@@ -6,7 +6,8 @@ set(SA_NETWORK_SOURCES
     udpsocketwindows.cpp
     tcpsocketlinux.cpp
     tcpsocketwindows.cpp
-    tcpserver.cpp)
+    tcpserverlinux.cpp
+    tcpserverwindows.cpp)
 
 set(SA_NETWORK_HEADERS
     udpsocket.h
