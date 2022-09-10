@@ -18,6 +18,7 @@
 #endif
 
 static const size_t DefaultLen = 1024;
+static const int ConnectionCheckInterval = 500;
 
 namespace SA
 {
@@ -30,7 +31,7 @@ namespace SA
 
         std::vector<char> dataIn, dataTmp;
         std::map<int, std::function<void (const std::vector<char>&)> > readHandlers;
-        std::map<int, std::function<void ()> > disconnectHandlers;
+        std::map<int, std::function<void (int)> > disconnectHandlers;
     };
 
     TcpSocket::TcpSocket():
@@ -93,6 +94,28 @@ namespace SA
         return (::send(d->socketFd, data.data(), data.size(), 0) > -1);
     }
 
+    int TcpSocket::descriptor()
+    {
+        return d->socketFd;
+    }
+
+    void TcpSocket::setDescriptor(int descr)
+    {
+        if (descr <= -1) return;
+
+        d->socketFd = descr;
+
+        int optval = -1;
+        socklen_t optlen = sizeof(optval);
+        int res = getsockopt(descr, SOL_SOCKET, SO_ERROR, &optval, &optlen);
+        d->isConnected = (optval==0 && res==0);
+
+        struct timeval read_timeout;
+        read_timeout.tv_sec = 0;
+        read_timeout.tv_usec = 10;
+        ::setsockopt(descr, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof(read_timeout));
+    }
+
     int TcpSocket::addReadHandler(const std::function<void (const std::vector<char>&)> &func)
     {
         int id = static_cast<int>(d->readHandlers.size());
@@ -108,7 +131,7 @@ namespace SA
             d->readHandlers.erase(it);
     }
 
-    int TcpSocket::addDisconnectHandler(const std::function<void()> &func)
+    int TcpSocket::addDisconnectHandler(const std::function<void (int)> &func)
     {
         int id = static_cast<int>(d->disconnectHandlers.size());
         for (auto const& it : d->disconnectHandlers) if (it.first != ++id) break;
@@ -140,32 +163,26 @@ namespace SA
         else if(bytesRead == 0)
         {
             deleteSocket();
+
             for (const auto &it: d->disconnectHandlers)
-                it.second();
+                it.second(d->socketFd);
         }
     }
 
     bool TcpSocket::createSocket()
     {
         d->isConnected = false;
-        d->socketFd = socket(AF_INET, SOCK_STREAM, 0);
-
-        struct timeval read_timeout;
-        read_timeout.tv_sec = 0;
-        read_timeout.tv_usec = 10;
-        setsockopt(d->socketFd, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof(read_timeout));
-
-        return (d->socketFd > -1);
+        int descr = socket(AF_INET, SOCK_STREAM, 0);
+        setDescriptor(descr);
+        return (descr > -1);
     }
 
     void TcpSocket::deleteSocket()
     {
-        d->isConnected = false;
-
-        if (d->socketFd > -1)
+        if (d->isConnected)
             ::close(d->socketFd);
 
-        d->socketFd = -1;
+        d->isConnected = false;
     }
 }
 

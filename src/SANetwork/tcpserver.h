@@ -24,6 +24,11 @@ namespace SA
         bool createServer();
         void deleteServer();
 
+        TcpServer(const SA::TcpServer &) = delete;
+        TcpServer(SA::TcpServer &&) = delete;
+        void operator = (const SA::TcpServer &) = delete;
+        void operator = (SA::TcpServer &&) = delete;
+
         struct TcpServerPrivate;
         TcpServerPrivate * const d;
 

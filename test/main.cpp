@@ -3,6 +3,7 @@
 #include "controls.h"
 #include "udpsockettest.h"
 #include "tcpsockettest.h"
+#include "tcpservertest.h"
 
 #include <csignal>
 #include <cstring>
@@ -24,7 +25,8 @@ int main(int argc, char *argv[])
     signal(SIGQUIT, signalHandler);
 #endif // Q_OS_WIN
 
-   bool snake = false, controls = false, udpSocket = false, tcpSocket = false;
+   bool snake = false, controls = false;
+   bool udpSocket = false, tcpSocket = false, tcpServer = false;
 
     if (argc > 1)
     {
@@ -34,6 +36,7 @@ int main(int argc, char *argv[])
             else if (strcmp(argv[i], "controls") == 0) controls = true;
             else if (strcmp(argv[i], "udp") == 0) udpSocket = true;
             else if (strcmp(argv[i], "tcp") == 0) tcpSocket = true;
+            else if (strcmp(argv[i], "server") == 0) tcpServer = true;
         }
     }
     else
@@ -42,6 +45,7 @@ int main(int argc, char *argv[])
         controls = true;
         udpSocket = true;
         tcpSocket = true;
+        tcpServer = true;
     }
 
 
@@ -73,8 +77,16 @@ int main(int argc, char *argv[])
     if (tcpSocket)
     {
         ts = std::make_unique<TcpSocketTest>();
-        ts->setGeometry(450, 210 , 610, 510);
+        ts->setGeometry(450, 240 , 610, 510);
         ts->show();
+    }
+
+    std::unique_ptr<TcpServerTest>sr;
+    if (tcpServer)
+    {
+        sr = std::make_unique<TcpServerTest>();
+        sr->setGeometry(550, 270 , 610, 510);
+        sr->show();
     }
 
     return SA::Application::instance().exec();

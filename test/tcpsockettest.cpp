@@ -20,7 +20,7 @@ TcpSocketTest::TcpSocketTest(SA::Widget *parent) : SA::Widget(parent),
     m_btnConnect.addPressHandler(std::bind(&TcpSocketTest::btnConnectPressed, this, _1));
     m_btnSend.addPressHandler(std::bind(&TcpSocketTest::btnSendPressed, this, _1));
     m_tcpSocket.addReadHandler(std::bind(&TcpSocketTest::dataReaded, this, _1));
-    m_tcpSocket.addDisconnectHandler([this](){
+    m_tcpSocket.addDisconnectHandler([this](int){
         m_btnConnect.setText("Connect");
         m_textEditRead.append("=== Disconnected from server ===");
     });

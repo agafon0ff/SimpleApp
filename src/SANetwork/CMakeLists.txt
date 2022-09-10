@@ -6,7 +6,8 @@ set(SA_NETWORK_SOURCES
     udpsocketwindows.cpp
     tcpsocketlinux.cpp
     tcpsocketwindows.cpp
-    tcpserver.cpp)
+    tcpserverlinux.cpp
+    tcpserverwindows.cpp)
 
 set(SA_NETWORK_HEADERS
     udpsocket.h

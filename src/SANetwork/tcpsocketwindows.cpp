@@ -27,7 +27,7 @@ namespace SA
 
         std::vector<char> dataIn, dataTmp;
         std::map<int, std::function<void (const std::vector<char>&)> > readHandlers;
-        std::map<int, std::function<void ()> > disconnectHandlers;
+        std::map<int, std::function<void (int)> > disconnectHandlers;
     };
 
     TcpSocket::TcpSocket():
@@ -97,6 +97,24 @@ namespace SA
         return (::send(d->socketFd, data.data(), data.size(), 0) > -1);
     }
 
+    int TcpSocket::descriptor()
+    {
+        return d->socketFd;
+    }
+
+    void TcpSocket::setDescriptor(int descr)
+    {
+        if (descr <= -1) return;
+        SOCKET socketFd = static_cast<SOCKET>(descr);
+        if (descr == INVALID_SOCKET) return;
+
+        d->socketFd = socketFd;
+        d->isConnected = true;
+
+        int iVal = 10;
+        ::setsockopt(d->socketFd, SOL_SOCKET, SO_RCVTIMEO, (char *)&iVal, sizeof(iVal));
+    }
+
     int TcpSocket::addReadHandler(const std::function<void (const std::vector<char>&)> &func)
     {
         int id = static_cast<int>(d->readHandlers.size());
@@ -112,7 +130,7 @@ namespace SA
             d->readHandlers.erase(it);
     }
 
-    int TcpSocket::addDisconnectHandler(const std::function<void()> &func)
+    int TcpSocket::addDisconnectHandler(const std::function<void(int)> &func)
     {
         int id = static_cast<int>(d->disconnectHandlers.size());
         for (auto const& it : d->disconnectHandlers) if (it.first != ++id) break;
@@ -144,34 +162,26 @@ namespace SA
         else if(bytesRead == 0)
         {
             deleteSocket();
+
             for (const auto &it: d->disconnectHandlers)
-                it.second();
+                it.second(d->socketFd);
         }
     }
 
     bool TcpSocket::createSocket()
     {
+        SOCKET descr = socket(AF_INET, SOCK_STREAM, 0);
+        setDescriptor(static_cast<int>(descr));
         d->isConnected = false;
-        d->socketFd = socket(AF_INET, SOCK_STREAM, 0);
-        bool isSocketCreated = d->socketFd != INVALID_SOCKET;
-
-        if (isSocketCreated)
-        {
-            int iVal = 10;
-            setsockopt(d->socketFd, SOL_SOCKET, SO_RCVTIMEO, (char *)&iVal, sizeof(iVal));
-        }
-
-        return isSocketCreated;
+        return (descr != INVALID_SOCKET);
     }
 
     void TcpSocket::deleteSocket()
     {
-        d->isConnected = false;
-
         if (d->socketFd != INVALID_SOCKET)
             closesocket(d->socketFd);
 
-        d->socketFd = INVALID_SOCKET;
+        d->isConnected = false;
     }
 }
 
