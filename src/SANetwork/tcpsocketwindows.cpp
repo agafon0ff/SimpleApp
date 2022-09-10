@@ -54,6 +54,7 @@ namespace SA
         SA::Application::instance().removeMainLoopListener(d->mainLoopId);
 #endif
         deleteSocket();
+        WSACleanup();
         delete d;
     }
 
