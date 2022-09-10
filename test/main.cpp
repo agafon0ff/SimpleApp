@@ -45,6 +45,7 @@ int main(int argc, char *argv[])
         controls = true;
         udpSocket = true;
         tcpSocket = true;
+        tcpServer = true;
     }
 
 
