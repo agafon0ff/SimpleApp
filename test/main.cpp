@@ -9,6 +9,15 @@
 #include <cstring>
 #include <iostream>
 #include <memory>
+#include <vector>
+
+template <class T>
+void createSample(std::vector<std::unique_ptr<SA::Widget>> &container, SA::Rect rect)
+{
+    container.emplace_back(std::make_unique<T>());
+    container.back()->setGeometry(rect);
+    container.back()->show();
+}
 
 void signalHandler(int)
 {
@@ -48,46 +57,13 @@ int main(int argc, char *argv[])
         tcpServer = true;
     }
 
+    std::vector<std::unique_ptr<SA::Widget>> widgets;
 
-    std::unique_ptr<SnakeGame> sg;
-    if (snake)
-    {
-        sg = std::make_unique<SnakeGame>();
-        sg->setGeometry(150, 150 , 410, 410);
-        sg->show();
-    }
-
-    std::unique_ptr<Controls> ct;
-    if (controls)
-    {
-        ct = std::make_unique<Controls>();
-        ct->setGeometry(250, 180 , 410, 410);
-        ct->show();
-    }
-
-    std::unique_ptr<UdpSocketTest> us;
-    if (udpSocket)
-    {
-        us = std::make_unique<UdpSocketTest>();
-        us->setGeometry(350, 210 , 610, 510);
-        us->show();
-    }
-
-    std::unique_ptr<TcpSocketTest> ts;
-    if (tcpSocket)
-    {
-        ts = std::make_unique<TcpSocketTest>();
-        ts->setGeometry(450, 240 , 610, 510);
-        ts->show();
-    }
-
-    std::unique_ptr<TcpServerTest>sr;
-    if (tcpServer)
-    {
-        sr = std::make_unique<TcpServerTest>();
-        sr->setGeometry(550, 270 , 610, 510);
-        sr->show();
-    }
+    if (snake) createSample<SnakeGame>(widgets, {150, 150 , 410, 410});
+    if (controls) createSample<Controls>(widgets, {250, 180 , 410, 410});
+    if (udpSocket) createSample<UdpSocketTest>(widgets, {350, 210 , 610, 510});
+    if (tcpSocket) createSample<TcpSocketTest>(widgets, {450, 240 , 610, 510});
+    if (tcpServer) createSample<TcpServerTest>(widgets, {550, 270 , 610, 510});
 
     return SA::Application::instance().exec();
 }
