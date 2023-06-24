@@ -287,6 +287,40 @@ namespace SA
         XStoreName(d->display, d->window, title.c_str());
     }
 
+    void WidgetLinux::setIcon(const std::vector<uint8_t> &pixmap, size_t width, size_t height)
+    {
+         const unsigned char* pixmapData = pixmap.data();
+
+         size_t sz = width * height;
+         size_t asz = sz + 2;
+         uint64_t* longPixmap = (uint64_t*)malloc(asz * sizeof(uint64_t));
+         int channels = 4;
+         int rowSize = width * channels;
+         uint64_t* p = longPixmap;
+         *p++ = width;
+         *p++ = height;
+         uint8_t r, g, b, a;
+
+         for (int y = 0; y < height; ++y)
+         {
+             for (int x = 0; x < width; x++)
+             {
+                 r = pixmapData[y * rowSize + x * channels + 0];
+                 g = pixmapData[y * rowSize + x * channels + 1];
+                 b = pixmapData[y * rowSize + x * channels + 2];
+
+                 if (channels >= 4) a = pixmapData[y * rowSize + x * channels + 3];
+                 else a = 255;
+
+                 *p++ = a << 24 | r << 16 | g << 8 | b ;
+             }
+         }
+
+         XChangeProperty(d->display, d->window, XInternAtom(d->display, "_NET_WM_ICON", true),
+                         XA_CARDINAL, 32, PropModeReplace, (const unsigned char*) longPixmap, asz);
+         free(longPixmap);
+    }
+
     void WidgetLinux::move(int32_t x, int32_t y)
     {
         d->x = x;
@@ -450,37 +484,12 @@ namespace SA
                     text.c_str(), text.length());
     }
 
-    static const uint8_t xlogo16_bits[] = {
-           0x0f, 0x80, 0x1e, 0x80, 0x3c, 0x40, 0x78, 0x20, 0x78, 0x10, 0xf0, 0x08,
-           0xe0, 0x09, 0xc0, 0x05, 0xc0, 0x02, 0x40, 0x07, 0x20, 0x0f, 0x20, 0x1e,
-           0x10, 0x1e, 0x08, 0x3c, 0x04, 0x78, 0x02, 0xf0};
-
-    void WidgetLinux::drawImage(int32_t x, int32_t y, uint32_t width, uint32_t height, const std::string &path)
+    void WidgetLinux::drawImage(const std::vector<uint8_t> &pixmap, const Rect &rect)
     {
-        Pixmap bitmap = XCreateBitmapFromData(d->display, d->window,
-                                              reinterpret_cast<const char*>(xlogo16_bits),
-                                              16, 16);
-//        Pixmap bitmap;
-//        unsigned int bitmap_width, bitmap_height;
-//        int hotspot_x, hotspot_y;
-//        int rc = XReadBitmapFile(d->display, d->window,
-//                                 path.c_str(),
-//                                 &bitmap_width, &bitmap_height,
-//                                 &bitmap,
-//                                 &hotspot_x, &hotspot_y);
-//        switch (rc) {
-//        case BitmapOpenFailed: cout << "XReadBitmapFile - could not open file: " << path << endl; return;
-//        case BitmapFileInvalid: cout << "XReadBitmapFile - file doesn't contain a valid bitmap: " << path << endl; return;
-//        case BitmapNoMemory: cout << "XReadBitmapFile - not enough memory: " << path << endl; return;
-//        }
-
-        XCopyPlane(d->display, bitmap, d->window, d->gc,
-                   0, 0,
-                   16, 16,
-                   x, y,
-                   1);
-
-        XSync(d->display, False);
+        Visual *visual = DefaultVisual(d->display, 0);
+        XImage *ximage = XCreateImage(d->display, visual, 24, ZPixmap, 0, (char*)pixmap.data(), rect.width, rect.height, XBitmapPad(d->display), 0);
+        XPutImage(d->display, d->window, d->gc, ximage, 0, 0, rect.x, rect.y, rect.width, rect.height);
+        XSync(d->display, 1);
         XFlush(d->display);
     }
 

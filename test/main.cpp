@@ -4,6 +4,7 @@
 #include "udpsockettest.h"
 #include "tcpsockettest.h"
 #include "tcpservertest.h"
+#include "imagetest.h"
 
 #include <csignal>
 #include <cstring>
@@ -34,7 +35,7 @@ int main(int argc, char *argv[])
     signal(SIGQUIT, signalHandler);
 #endif // Q_OS_WIN
 
-   bool snake = false, controls = false;
+   bool snake = false, controls = false, image = false;
    bool udpSocket = false, tcpSocket = false, tcpServer = false;
 
     if (argc > 1)
@@ -46,6 +47,7 @@ int main(int argc, char *argv[])
             else if (strcmp(argv[i], "udp") == 0) udpSocket = true;
             else if (strcmp(argv[i], "tcp") == 0) tcpSocket = true;
             else if (strcmp(argv[i], "server") == 0) tcpServer = true;
+            else if (strcmp(argv[i], "image") == 0) image = true;
         }
     }
     else
@@ -55,6 +57,7 @@ int main(int argc, char *argv[])
         udpSocket = true;
         tcpSocket = true;
         tcpServer = true;
+        image = true;
     }
 
     std::vector<std::unique_ptr<SA::Widget>> widgets;
@@ -64,6 +67,7 @@ int main(int argc, char *argv[])
     if (udpSocket) createSample<UdpSocketTest>(widgets, {350, 210 , 610, 510});
     if (tcpSocket) createSample<TcpSocketTest>(widgets, {450, 240 , 610, 510});
     if (tcpServer) createSample<TcpServerTest>(widgets, {550, 270 , 610, 510});
+    if (image) createSample<ImageTest>(widgets, {650, 300 , 300, 300});
 
     return SA::Application::instance().exec();
 }
