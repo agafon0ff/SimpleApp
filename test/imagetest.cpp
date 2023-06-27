@@ -31,8 +31,6 @@ void ImageTest::loadPixmap()
 
     ifs.close();
 
-    setIcon(pixmap, 200, 200);
-
     // convert RGBA -> BGRA
     for(int i = 0; i < pixmap.size(); i += 4)
     {
@@ -41,6 +39,8 @@ void ImageTest::loadPixmap()
        pixmap[i]   = red;
        pixmap[i+2] = blue;
     }
+
+    setIcon(pixmap, 200, 200);
 }
 
 void ImageTest::paintEvent()
