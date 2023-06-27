@@ -2,6 +2,7 @@
 #include <iterator>
 #include <vector>
 #include "imagetest.h"
+#include "utility.h"
 
 ImageTest::ImageTest(SA::Widget *parent) : SA::Widget(parent)
 {
@@ -31,15 +32,7 @@ void ImageTest::loadPixmap()
 
     ifs.close();
 
-    // convert RGBA -> BGRA
-    for(int i = 0; i < pixmap.size(); i += 4)
-    {
-       uint8_t red  = pixmap[i+2];
-       uint8_t blue = pixmap[i];
-       pixmap[i]   = red;
-       pixmap[i+2] = blue;
-    }
-
+    SA::rgba2bgra(pixmap);
     setIcon(pixmap, 200, 200);
 }
 

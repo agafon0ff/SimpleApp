@@ -61,6 +61,8 @@ void SnakeGame::timerEvent(int id)
 {
     if (d->timerId == id)
         updateSnakePos();
+
+    std::cout << __PRETTY_FUNCTION__ << " cursor pos: " << cursorPos() << std::endl;
 }
 
 void SnakeGame::paintEvent()

@@ -1,5 +1,6 @@
 #pragma once
 #include "global.h"
+#include <iostream>
 
 namespace SA
 {
@@ -34,6 +35,12 @@ namespace SA
 
         Point(int x_, int y_): x(x_), y(y_) {}
         Point(){}
+
+        friend std::ostream &operator<< (std::ostream &output, const Point &p)
+        {
+            output << "x: " << p.x << ", y: " << p.y;
+            return output;
+        }
     };
 
     struct Size
@@ -45,6 +52,12 @@ namespace SA
             width(width_), height(height_) {}
 
         Size(){}
+
+        friend std::ostream &operator<< (std::ostream &output, const Size &s)
+        {
+            output << "w: " << s.width << ", h: " << s.height;
+            return output;
+        }
     };
 
     struct Rect

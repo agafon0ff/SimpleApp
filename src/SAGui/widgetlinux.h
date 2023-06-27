@@ -42,6 +42,9 @@ namespace SA
         void setCursorShape(CursorShapes shape);
         void setFont();
 
+        SA::Point cursorPos();
+        SA::Size displaySize();
+
         void drawLine(int32_t x1, int32_t y1, int32_t x2, int32_t y2);
         void drawRect(int32_t x, int32_t y, uint32_t width, uint32_t height);
         void drawText(int32_t x, int32_t y, const std::string &text);

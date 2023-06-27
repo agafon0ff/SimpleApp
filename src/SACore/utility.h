@@ -64,4 +64,18 @@ namespace SA
 
     inline void darker(Color &color, unsigned char subtract){ darker(color, color, subtract); }
 
+    template <class T>
+    inline void rgba2bgra(T &array)
+    {
+        if (array.size() % 4 != 0) return;
+
+        for(int i = 0; i < array.size(); i += 4)
+        {
+           uint8_t red  = array[i+2];
+           uint8_t blue = array[i];
+           array[i]   = red;
+           array[i+2] = blue;
+        }
+    }
+
 } // namespace SA

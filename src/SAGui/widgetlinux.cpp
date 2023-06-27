@@ -305,9 +305,9 @@ namespace SA
          {
              for (int x = 0; x < width; x++)
              {
-                 r = pixmapData[y * rowSize + x * channels + 0];
+                 b = pixmapData[y * rowSize + x * channels + 0];
                  g = pixmapData[y * rowSize + x * channels + 1];
-                 b = pixmapData[y * rowSize + x * channels + 2];
+                 r = pixmapData[y * rowSize + x * channels + 2];
 
                  if (channels >= 4) a = pixmapData[y * rowSize + x * channels + 3];
                  else a = 255;
@@ -438,6 +438,28 @@ namespace SA
         }
 
         XSetFont(d->display, d->gc, d->font->fid);
+    }
+
+    SA::Point WidgetLinux::cursorPos()
+    {
+        SA::Point pos {0, 0};
+        Window root, win;
+        int winX, winY;
+        unsigned int mask;
+
+        int result = XQueryPointer(d->display, XRootWindow(d->display, 0), // NOLINT
+                                   &root, &win,
+                                   &pos.x, &pos.y, &winX, &winY, &mask);
+        return pos;
+    }
+
+    SA::Size WidgetLinux::displaySize()
+    {
+        SA::Size size {0, 0};
+        int snum = DefaultScreen(d->display);
+        size.width = DisplayWidth(d->display, snum);
+        size.height = DisplayHeight(d->display, snum);
+        return size;
     }
 
     void WidgetLinux::drawLine(int32_t x1, int32_t y1, int32_t x2, int32_t y2)

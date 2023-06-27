@@ -177,6 +177,11 @@ namespace SA
         d->widget->setCursorShape(shape);
     }
 
+    SA::Point Widget::cursorPos()
+    {
+        return d->widget->cursorPos();
+    }
+
     void Widget::drawLine(const SA::Point &p1, const SA::Point &p2)
     {
         d->widget->drawLine(p1.x, p1.y, p2.x, p2.y);
