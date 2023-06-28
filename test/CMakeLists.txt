@@ -11,14 +11,16 @@ set(SOURCES main.cpp
     controls.cpp
     udpsockettest.cpp
     tcpsockettest.cpp
-    tcpservertest.cpp)
+    tcpservertest.cpp
+    imagetest.cpp)
 
 set(HEADERS
     snakegame.h
     controls.h
     udpsockettest.h
     tcpsockettest.h
-    tcpservertest.h)
+    tcpservertest.h
+    imagetest.h)
 
 include_directories(test)
 

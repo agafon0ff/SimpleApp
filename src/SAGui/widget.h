@@ -2,6 +2,7 @@
 #include "object.h"
 #include "structs.h"
 #include <string>
+#include <vector>
 
 namespace SA
 {
@@ -16,6 +17,7 @@ namespace SA
         void update();
 
         void setTitle(const std::string &title);
+        void setIcon(const std::vector<uint8_t> &pixmap, size_t width, size_t height);
 
         void move(const SA::Point &pos);
         void move(int x, int y);
@@ -46,6 +48,9 @@ namespace SA
 
         void setCursorShape(SA::CursorShapes shape);
 
+        SA::Point cursorPos();
+        SA::Size displaySize();
+
         void drawLine(const SA::Point &p1, const Point &p2);
         void drawLine(int x1, int y1, int x2, int y2);
 
@@ -54,6 +59,8 @@ namespace SA
 
         void drawText(const SA::Point &pos, const std::string &text);
         void drawText(int x, int y, const std::string &text);
+
+        void drawImage(const std::vector<uint8_t> &pixmap, const SA::Rect &rect);
 
         size_t textWidth(const std::string &text);
         size_t textWidth(const char* text, size_t len);

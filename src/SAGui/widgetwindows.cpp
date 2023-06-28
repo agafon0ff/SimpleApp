@@ -297,6 +297,22 @@ namespace SA
         SetWindowText(d->hwnd, title.c_str());
     }
 
+    void WidgetWindows::setIcon(const std::vector<uint8_t> &pixmap, size_t width, size_t height)
+    {
+        ICONINFO iconInfo;
+        iconInfo.fIcon = TRUE;
+        iconInfo.xHotspot = 0;
+        iconInfo.yHotspot = 0;
+        iconInfo.hbmMask = CreateCompatibleBitmap(d->dc, width, height);
+        iconInfo.hbmColor = CreateBitmap(width, height, 1, 32, pixmap.data());
+
+        HICON hIcon = CreateIconIndirect(&iconInfo);
+
+        SendMessage(d->hwnd, WM_SETICON, ICON_SMALL, (LPARAM)hIcon);
+        DeleteObject(iconInfo.hbmMask);
+        DeleteObject(iconInfo.hbmColor);
+    }
+
     void WidgetWindows::move(int32_t x, int32_t y)
     {
         d->x = x;
@@ -379,6 +395,26 @@ namespace SA
         d->font = (HFONT)GetStockObject(SYSTEM_FIXED_FONT);
     }
 
+    Point WidgetWindows::cursorPos()
+    {
+        SA::Point pos {0, 0};
+        POINT p;
+
+        GetCursorPos(&p);
+        pos.x = p.x;
+        pos.y = p.y;
+
+        return pos;
+    }
+
+    Size WidgetWindows::displaySize()
+    {
+        SA::Size size {0, 0};
+        size.width  = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+        size.height = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+        return size;
+    }
+
     void WidgetWindows::drawLine(int32_t x1, int32_t y1, int32_t x2, int32_t y2)
     {
         if (!d->paintingHandle) return;
@@ -408,6 +444,19 @@ namespace SA
             TextOut(d->paintingHandle, x, y, text.c_str(), text.size());
             SelectObject(d->dc, fontTmp);
         }
+    }
+
+    void WidgetWindows::drawImage(const std::vector<uint8_t> &pixmap, const Rect &rect)
+    {
+        HBITMAP hbmColor = CreateBitmap(rect.width, rect.height, 1, 32, pixmap.data());
+
+        HDC hdcMem = CreateCompatibleDC(d->paintingHandle);
+        HGDIOBJ hbmOld = SelectObject(hdcMem, hbmColor);
+
+        BitBlt(d->paintingHandle, rect.x, rect.y, rect.width, rect.height, hdcMem, 0, 0, SRCCOPY);
+
+        SelectObject(hdcMem, hbmOld);
+        DeleteDC(hdcMem);
     }
 
     size_t WidgetWindows::textWidth(const std::string &text)

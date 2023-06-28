@@ -74,6 +74,11 @@ namespace SA
         d->widget->setTitle(title);
     }
 
+    void Widget::setIcon(const std::vector<uint8_t> &pixmap, size_t width, size_t height)
+    {
+        d->widget->setIcon(pixmap, width, height);
+    }
+
     void Widget::move(const Point &pos)
     {
         d->widget->move(pos.x, pos.y);
@@ -172,6 +177,16 @@ namespace SA
         d->widget->setCursorShape(shape);
     }
 
+    SA::Point Widget::cursorPos()
+    {
+        return d->widget->cursorPos();
+    }
+
+    Size Widget::displaySize()
+    {
+        return d->widget->displaySize();
+    }
+
     void Widget::drawLine(const SA::Point &p1, const SA::Point &p2)
     {
         d->widget->drawLine(p1.x, p1.y, p2.x, p2.y);
@@ -200,6 +215,11 @@ namespace SA
     void Widget::drawText(int x, int y, const std::string &text)
     {
         d->widget->drawText(x, y, text);
+    }
+
+    void Widget::drawImage(const std::vector<uint8_t> &pixmap, const Rect &rect)
+    {
+        d->widget->drawImage(pixmap, rect);
     }
 
     size_t Widget::textWidth(const std::string &text)
