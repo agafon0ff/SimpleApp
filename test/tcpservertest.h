@@ -25,6 +25,7 @@ private:
     SA::Button m_btnStart;
     SA::Button m_btnSend;
     SA::TcpServer m_tcpServer;
+    int disconnectHandlerId;
 
     std::vector<std::shared_ptr<SA::TcpSocket> > m_sockets;
     std::shared_ptr<SA::TcpSocket> m_disconnectedSocket;

@@ -33,7 +33,8 @@ TcpServerTest::~TcpServerTest()
 
 void TcpServerTest::onSocketConnected(int sockDscr, uint32_t host, uint16_t port)
 {
-    m_disconnectedSocket.reset();
+    if (m_disconnectedSocket.get() && m_disconnectedSocket->descriptor() != sockDscr)
+        m_disconnectedSocket.reset();
 
     auto socket = std::make_shared<SA::TcpSocket>();
     m_sockets.push_back(socket);
@@ -56,7 +57,6 @@ void TcpServerTest::onSocketDisconnected(int sockDscr)
             break;
         }
     }
-
 
     if (it != m_sockets.end())
         m_sockets.erase(it);

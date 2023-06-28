@@ -122,7 +122,7 @@ namespace SA
 
         if (isSocketCreated) {
 
-            int iSetOption = 1;
+            int iSetOption = 0;
             setsockopt(d->socketFd, SOL_SOCKET, SO_REUSEADDR, (char*)&iSetOption, sizeof(iSetOption));
 
             int iVal = 10;

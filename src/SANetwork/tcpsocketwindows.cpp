@@ -2,6 +2,7 @@
 
 #include <winsock2.h>
 
+#include <iostream>
 #include <memory>
 #include <vector>
 #include <string>
@@ -111,6 +112,7 @@ namespace SA
 
         d->socketFd = socketFd;
         d->isConnected = true;
+        std::cout << __PRETTY_FUNCTION__ << " desc: " << d->socketFd << std::endl;
 
         int iVal = 10;
         ::setsockopt(d->socketFd, SOL_SOCKET, SO_RCVTIMEO, (char *)&iVal, sizeof(iVal));
@@ -180,7 +182,13 @@ namespace SA
     void TcpSocket::deleteSocket()
     {
         if (d->socketFd != INVALID_SOCKET)
-            closesocket(d->socketFd);
+        {
+            if (::shutdown(d->socketFd, SD_SEND) == SOCKET_ERROR)
+            {
+                ::closesocket(d->socketFd);
+                ::WSACleanup();
+            }
+        }
 
         d->isConnected = false;
     }
