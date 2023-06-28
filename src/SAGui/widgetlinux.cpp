@@ -447,9 +447,10 @@ namespace SA
         int winX, winY;
         unsigned int mask;
 
-        int result = XQueryPointer(d->display, XRootWindow(d->display, 0), // NOLINT
-                                   &root, &win,
-                                   &pos.x, &pos.y, &winX, &winY, &mask);
+        XQueryPointer(d->display, XRootWindow(d->display, 0),
+                      &root, &win,
+                      &pos.x, &pos.y, &winX, &winY, &mask);
+
         return pos;
     }
 

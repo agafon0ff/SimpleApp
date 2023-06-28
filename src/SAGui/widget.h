@@ -47,7 +47,9 @@ namespace SA
                       unsigned char blue);
 
         void setCursorShape(SA::CursorShapes shape);
+
         SA::Point cursorPos();
+        SA::Size displaySize();
 
         void drawLine(const SA::Point &p1, const Point &p2);
         void drawLine(int x1, int y1, int x2, int y2);

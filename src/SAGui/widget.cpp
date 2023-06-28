@@ -182,6 +182,11 @@ namespace SA
         return d->widget->cursorPos();
     }
 
+    Size Widget::displaySize()
+    {
+        return d->widget->displaySize();
+    }
+
     void Widget::drawLine(const SA::Point &p1, const SA::Point &p2)
     {
         d->widget->drawLine(p1.x, p1.y, p2.x, p2.y);

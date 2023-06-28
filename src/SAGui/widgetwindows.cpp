@@ -395,6 +395,26 @@ namespace SA
         d->font = (HFONT)GetStockObject(SYSTEM_FIXED_FONT);
     }
 
+    Point WidgetWindows::cursorPos()
+    {
+        SA::Point pos {0, 0};
+        POINT p;
+
+        GetCursorPos(&p);
+        pos.x = p.x;
+        pos.y = p.y;
+
+        return pos;
+    }
+
+    Size WidgetWindows::displaySize()
+    {
+        SA::Size size {0, 0};
+        size.width  = GetSystemMetrics(SM_CXVIRTUALSCREEN);
+        size.height = GetSystemMetrics(SM_CYVIRTUALSCREEN);
+        return size;
+    }
+
     void WidgetWindows::drawLine(int32_t x1, int32_t y1, int32_t x2, int32_t y2)
     {
         if (!d->paintingHandle) return;
