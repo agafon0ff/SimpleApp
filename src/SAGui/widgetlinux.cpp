@@ -649,8 +649,9 @@ namespace SA
         KeySym key = XLookupKeysym(event, 0);
         Keys keycode = Key_Unknown;
 
-        if (KEYS_MAP.find(key) != KEYS_MAP.end())
-            keycode = KEYS_MAP.at(key);
+        auto it = KEYS_MAP.find(key);
+        if (it != KEYS_MAP.end())
+            keycode = it->second;
         else cout << "keycode: " << std::hex << key << endl;
 
         KeyModifiers modifiers;
