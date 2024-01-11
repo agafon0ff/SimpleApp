@@ -608,8 +608,9 @@ namespace SA
     {
         Keys keycode = SA::Keys::Key_Unknown;
 
-        if (KEYS_MAP.find(param) != KEYS_MAP.end())
-            keycode = KEYS_MAP.at(param);
+        auto it = KEYS_MAP.find(param);
+        if (it != KEYS_MAP.end())
+            keycode = it->second;
         else cout << "Unknown symbol code: 0x" << std::hex << param << " " << pressed << endl;
 
         KeyModifiers modifiers;

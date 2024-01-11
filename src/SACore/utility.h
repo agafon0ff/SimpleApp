@@ -22,37 +22,40 @@ namespace SA
 
     inline char getCharacter(const KeyEvent &event)
     {
-        char result = 0;
         bool isChar = (event.keycode >= Key_A && event.keycode <= Key_Z);
 
         if (isChar)
         {
             if (event.modifiers.shift || event.modifiers.capsLock)
             {
-                if (CHARS_UPPERCASE.find(event.keycode) != CHARS_UPPERCASE.end())
-                    return CHARS_UPPERCASE[event.keycode];
+                auto it = CHARS_UPPERCASE.find(event.keycode);
+                if (it != CHARS_UPPERCASE.end())
+                    return it->second;
             }
             else
             {
-                if (CHARS_LOWERCASE.find(event.keycode) != CHARS_LOWERCASE.end())
-                    return CHARS_LOWERCASE[event.keycode];
+                auto it = CHARS_LOWERCASE.find(event.keycode);
+                if (it != CHARS_LOWERCASE.end())
+                    return it->second;
             }
         }
         else
         {
             if (event.modifiers.shift)
             {
-                if (SYMBOLS_UPPERCASE.find(event.keycode) != SYMBOLS_UPPERCASE.end())
-                    return SYMBOLS_UPPERCASE[event.keycode];
+                auto it = SYMBOLS_UPPERCASE.find(event.keycode);
+                if (it != SYMBOLS_UPPERCASE.end())
+                    return it->second;
             }
             else
             {
-                if (SYMBOLS_LOWERCASE.find(event.keycode) != SYMBOLS_LOWERCASE.end())
-                    return SYMBOLS_LOWERCASE[event.keycode];
+                auto it = SYMBOLS_LOWERCASE.find(event.keycode);
+                if (it != SYMBOLS_LOWERCASE.end())
+                    return it->second;
             }
         }
 
-        return result;
+        return 0;
     }
 
     inline void darker(const Color &src, Color &dst, unsigned char subtract)
